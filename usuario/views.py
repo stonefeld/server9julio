@@ -1,8 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponse
-from .models import Persona, Entrada 
+from .models import Persona, Entrada
 
-# Create your views here.
 def respuesta(request):
     if request.method == 'GET':
         nrSocio = request.GET.get('nrSocio', '')
@@ -11,11 +10,11 @@ def respuesta(request):
         #try:  
         user = Persona.objects.get(nrSocio = nrSocio)
         print(user)
-        if(lugar == '1'): 
+        if(lugar == '1'):
             lugar = 'general'
             entrada = Entrada(lugar = 'general',persona = user)
             entrada.save()
-        rta = '1'     
+        rta = '1'
         #except:
             #rta = '-1'
 
