@@ -3,7 +3,6 @@ from django.http import HttpResponse, JsonResponse
 from .models import Persona, Entrada
 
 
-# Create your views here.
 def respuesta(request):
     if request.method == 'GET':
         rta = 'No existe'
