@@ -41,6 +41,9 @@ INSTALLED_APPS = [
     # Own
     'usuariosistema.apps.UsuariosistemaConfig',
     'usuario.apps.UsuarioConfig',
+    'registroGeneral.apps.RegistrogeneralConfig',
+    'registroPileta.apps.RegistropiletaConfig',
+    'registroTenis.apps.RegistrotenisConfig',
 
     # Third party apps
     'crispy_forms',

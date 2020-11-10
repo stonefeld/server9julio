@@ -1,20 +1,19 @@
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
-from usuario.models import Persona, Entrada
+from usuario.models import Persona
 
-# Create your views here.
 def respuesta(request):
     if request.method == 'GET':
         nrTarjeta = request.GET.get('nrTarjeta', '')
-        try:  
-            user = Persona.objects.get(nrTarjeta = nrTarjeta)
+        try:
+            user = Persona.objects.get(nrTarjeta=nrTarjeta)
             if(user.general == True):
-                entrada = Entrada(lugar = 'tenis',persona = user)
+                entrada = Entrada(lugar='tenis', persona=user)
                 entrada.save()
                 rta = '1'
             else:
                 rta = '0'
         except:
             rta = '-1'
-            
+
         return HttpResponse("<h1>Valor correcto</h1><p>" + rta + "</p>")

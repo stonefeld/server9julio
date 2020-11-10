@@ -1,7 +1,6 @@
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
-from .models import Persona, Entrada
-
+from .models import Persona
 
 def respuesta(request):
     if request.method == 'GET':
