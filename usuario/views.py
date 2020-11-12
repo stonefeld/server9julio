@@ -14,8 +14,10 @@ def tablaIngresos(request):
                 Q(lugar__icontains = busqueda) |
                 Q(tiempo__icontains = busqueda) |
                 Q(persona__nombre__icontains = busqueda) |
-                Q(persona__apellido__icontains = busqueda)
+                Q(persona__apellido__icontains = busqueda) |
+                Q(persona__dni__icontains = busqueda)
             ).distinct()
             
 
         return render(request, 'usuario/tablaIngresos.html', {'entradas': entradas})
+
