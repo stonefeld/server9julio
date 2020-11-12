@@ -1,0 +1,25 @@
+<form method="get">
+  <div class="input-group">
+    <input type="text"  placeholder="Buscar..." name="buscar" value="">
+    <div>
+      <button type="submit">
+        <i>Buscar</i>
+      </button>
+    </div>
+  </div>
+</form>
+
+<table>
+    <tr>
+        <th>Usuario</th>
+        <th>Lugar</th>
+        <th>Hora</th>
+    </tr>
+    {% for item in entradas %}
+    <tr> 
+        <td>{{ item.persona }}</td>
+        <td>{{ item.lugar }}</td>
+        <td>{{ item.tiempo }}</td>
+    </tr>
+    {% endfor %}
+</table>
