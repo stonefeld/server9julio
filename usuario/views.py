@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
-from .models import Persona, Entrada
 from django.db.models import Q
+from .models import Persona, Entrada
 
 
 def tablaIngresos(request):
@@ -17,7 +17,6 @@ def tablaIngresos(request):
                 Q(persona__apellido__icontains = busqueda) |
                 Q(persona__dni__icontains = busqueda)
             ).distinct()
-            
 
         return render(request, 'usuario/tablaIngresos.html', {'entradas': entradas})
 

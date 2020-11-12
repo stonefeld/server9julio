@@ -5,7 +5,7 @@ from usuario.models import Persona, Entrada
 def respuesta(request):
     if request.method == 'GET':
         nrTarjeta = request.GET.get('nrTarjeta', '')
-        try:  
+        try:
             user = Persona.objects.get(nrTarjeta = nrTarjeta)
             if(user.general == True):
                 entrada = Entrada(lugar = 'general',persona = user)
@@ -15,7 +15,5 @@ def respuesta(request):
                 rta = '0'
         except:
             rta = '-1'
-            
-        return HttpResponse("<h1>Valor correcto</h1><p>" + rta + "</p>")
 
-# Create your views here.
+        return HttpResponse("<h1>Valor correcto</h1><p>" + rta + "</p>")

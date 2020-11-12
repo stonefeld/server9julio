@@ -39,8 +39,12 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     # Own
-    'usuariosistema.apps.UsuariosistemaConfig',
+    'estacionamiento.apps.EstacionamientoConfig',
+    'registroGeneral.apps.RegistrogeneralConfig',
+    'registroPileta.apps.RegistropiletaConfig',
+    'registroTenis.apps.RegistrotenisConfig',
     'usuario.apps.UsuarioConfig',
+    'usuariosistema.apps.UsuariosistemaConfig',
 
     # Third party apps
     'crispy_forms',
@@ -85,10 +89,10 @@ WSGI_APPLICATION = 'server_9julio.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': '9Julio_DB',
+        'NAME': 'django',
         'USER': 'root',
         'PASSWORD': '',
-        'HOST': '127.0.0.1',
+        'HOST': 'localhost',
         'PORT': 3306,
     }
 }
