@@ -1,6 +1,7 @@
 from django.shortcuts import render
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from .models import Persona, Entrada
+
 
 def respuesta(request):
     if request.method == 'GET':
@@ -15,7 +16,7 @@ def respuesta(request):
             entrada = Entrada(lugar = 'general',persona = user)
             entrada.save()
         rta = '1'
-        #except:
-            #rta = '-1'
+    except:
+            rta = '-1'
 
         return HttpResponse("<h1>Valor correcto</h1><p>" + rta + "</p>")

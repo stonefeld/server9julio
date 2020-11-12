@@ -24,4 +24,9 @@ urlpatterns = [
 
     path('', include('usuariosistema.urls')),
     path('usuario/', include('usuario.urls')),
+    path('',include('usuario.urls')),
+    path('general/', include('registroGeneral.urls')),
+    path('tenis/', include('registroTenis.urls')),
+    path('pileta/',include('registroPileta.urls')),
+    path('estacionamiento/',include('estacionamiento.urls'))
 ]
