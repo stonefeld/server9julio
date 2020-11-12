@@ -37,6 +37,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'estacionamiento.apps.EstacionamientoConfig',
+    'registroGeneral.apps.RegistrogeneralConfig',
+    'registroPileta.apps.RegistropiletaConfig',
+    'registroTenis.apps.RegistrotenisConfig',
 
     # Own
     'usuariosistema.apps.UsuariosistemaConfig',
@@ -45,6 +49,8 @@ INSTALLED_APPS = [
     # Third party apps
     'crispy_forms',
 ]
+
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -86,7 +92,7 @@ DATABASES = {
         'NAME': 'django',
         'USER': 'root',
         'PASSWORD': '',
-        'HOST': 'localhost',
+        'HOST': '127.0.0.1',
         'PORT': 3306,
     }
 }

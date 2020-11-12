@@ -1,22 +1,23 @@
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 from .models import Persona, Entrada
+from django.db.models import Q
 
 
-def respuesta(request):
+def tablaIngresos(request):
     if request.method == 'GET':
-        nrSocio = request.GET.get('nrSocio', '')
-        lugar = request.GET.get('lugar', '')
-        print(lugar,nrSocio)
-        #try:  
-        user = Persona.objects.get(nrSocio = nrSocio)
-        print(user)
-        if(lugar == '1'):
-            lugar = 'general'
-            entrada = Entrada(lugar = 'general',persona = user)
-            entrada.save()
-        rta = '1'
-    except:
-            rta = '-1'
+        entradas = Entrada.objects.all()
+        busqueda = request.GET.get("buscar")
 
-        return HttpResponse("<h1>Valor correcto</h1><p>" + rta + "</p>")
+        if busqueda:
+            entradas = Entrada.objects.filter(
+                Q(lugar__icontains = busqueda) |
+                Q(tiempo__icontains = busqueda) |
+                Q(persona__nombre__icontains = busqueda) |
+                Q(persona__apellido__icontains = busqueda) |
+                Q(persona__dni__icontains = busqueda)
+            ).distinct()
+            
+
+        return render(request, 'usuario/tablaIngresos.html', {'entradas': entradas})
+
