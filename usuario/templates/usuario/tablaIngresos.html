@@ -1,25 +1,42 @@
-<form method="get">
-  <div class="input-group">
-    <input type="text"  placeholder="Buscar..." name="buscar" value="">
-    <div>
-      <button type="submit">
-        <i>Buscar</i>
-      </button>
-    </div>
-  </div>
-</form>
+{% extends "usuariosistema/base.html" %}
+{% block content %}
 
-<table>
-    <tr>
-        <th>Usuario</th>
-        <th>Lugar</th>
-        <th>Hora</th>
-    </tr>
-    {% for item in entradas %}
-    <tr> 
-        <td>{{ item.persona }}</td>
-        <td>{{ item.lugar }}</td>
-        <td>{{ item.tiempo }}</td>
-    </tr>
-    {% endfor %}
-</table>
+<div class="hero-image">
+  <div class="hero-text">
+    <h1>Historial </h1>
+    <p style="font-size: 20px;">Sistema de Control</p>
+  </div>
+</div> 
+
+<div class="wrapper" style="padding-left:80px; padding-right:80px;">
+  <form method="get">
+    <div class="input-group mx-auto" style="margin-top: 50px;">
+      <input type="text"  placeholder="Buscar..." name="buscar" value="">
+      <div>
+        <button class="btn btn-secondary" type="submit" style="margin-left: 20px;">
+          <i>Buscar</i>
+        </button>
+      </div>
+    </div>
+  </form>
+
+  <table class="table" style="margin-top: 20px;">
+    <thead>
+      <tr>
+          <th>Usuario</th>
+          <th>Lugar</th>
+          <th>Hora</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in entradas %}
+      <tr> 
+          <td>{{ item.persona }}</td>
+          <td>{{ item.lugar }}</td>
+          <td>{{ item.tiempo }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock content%}
