@@ -39,14 +39,15 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     # Own
-    'usuariosistema.apps.UsuariosistemaConfig',
-    'usuario.apps.UsuarioConfig',
     'registroGeneral.apps.RegistrogeneralConfig',
     'registroPileta.apps.RegistropiletaConfig',
     'registroTenis.apps.RegistrotenisConfig',
+    'usuario.apps.UsuarioConfig',
+    'usuariosistema.apps.UsuariosistemaConfig',
 
     # Third party apps
     'crispy_forms',
+    'django_tables2',
 ]
 
 MIDDLEWARE = [

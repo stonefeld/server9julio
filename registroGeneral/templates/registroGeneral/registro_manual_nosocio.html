@@ -1,0 +1,39 @@
+{% extends "usuariosistema/base.html" %}
+
+{% load crispy_forms_tags %}
+{% block content %}
+    <div class="content-section">
+        <form method="POST">
+            {% csrf_token %}
+            <fieldset class="form-group">
+                <legend class="border-bottom mb-4">Join Today</legend>
+                {{ form|crispy }}
+            </fieldset>
+            <table>
+                <thead>
+                    <tr>
+                        <td>Nombre</td>
+                        <td>DNI</td>
+                        <td>Número de Socio</td>
+                        <td>Número de Tarjeta</td>
+                    </tr>
+                </thead>
+                {% for object in obj %}
+                <tbody>
+                    <tr class="clickable_row">
+                        <td><a href="#">{{ object.nombre_apellido }}</a></td>
+                        <td><a href="#">{{ object.dni }}</a></td>
+                        <td><a href="#">{{ object.nrSocio }}</a></td>
+                        <td><a href="#">{{ object.nrTarjeta }}</a></td>
+                    </tr>
+                </tbody>
+                {% endfor %}
+            </table>
+
+            <br>
+            <div class="form-group">
+                <button class="btn btn-outline-info" type="submit">Sign Up</button>
+            </div>
+        </form>
+    </div>
+{% endblock %}

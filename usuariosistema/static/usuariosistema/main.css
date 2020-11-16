@@ -1,3 +1,12 @@
+tr.clickable_row:hover {
+  background: #81a9ac;
+}
+td a {
+  padding: 16px;
+}
+
+
+
 body {
   background: #fafafa;
   color: #333333;

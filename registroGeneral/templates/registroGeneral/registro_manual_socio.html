@@ -1,0 +1,20 @@
+{% extends "usuariosistema/base.html" %}
+
+{% load crispy_forms_tags %}
+{% load render_table from django_tables2 %}
+{% block content %}
+    <div class="content-section">
+        <div id="form_card" class="card-panel col s12">
+            <form method="POST">
+                <fieldset class="form-group">
+                    <legend class="border-bottom mb-4">Registro Socio</legend>
+                    {% csrf_token %}
+                    {% render_table table %}
+                </fieldset>
+                <div class="form-group">
+                    <button class="btn btn-outline-info" type="submit">Dejar pasar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}

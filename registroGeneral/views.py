@@ -1,16 +1,20 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.contrib import messages
-from .models import EntradaGeneral
+
+from django_tables2 import SingleTableView, RequestConfig
+
+from .models import EntradaGeneral, Persona
 from .forms import RegistroEntradaGeneralForms
+from .tables import EntradaGeneralTable
 
 def respuesta(request):
     if request.method == 'GET':
         nrTarjeta = request.GET.get('nrTarjeta', '')
         try:
-            user = EntradaGeneral.objects.all().persona.get(nrTarjeta=nrTarjeta)
+            user = Persona.objects.get(nrTarjeta=nrTarjeta)
             if(user.general == True):
-                entrada = Entrada(lugar='general',persona=user)
+                entrada = EntradaGeneral(lugar='general', persona=user)
                 entrada.save()
                 rta = '1'
 
@@ -20,9 +24,32 @@ def respuesta(request):
         except:
             rta = '-1'
 
-        return HttpResponse("<h1>Valor correcto</h1><p>" + rta + "</p>")
+        return HttpResponse(rta)
 
 def registro(request):
+    return render(request, 'registroGeneral/registro_manual_seleccion.html', context={})
+
+def registro_socio(request):
+    if request.method == 'POST':
+        pks = request.POST.getlist('seleccion')
+        for pk in pks:
+            persona = Persona.objects.get(nrTarjeta=pk)
+            if persona.general:
+                entrada = EntradaGeneral(lugar='general', persona=persona)
+                entrada.save()
+
+            else:
+                messages.error(request, f'El usuario ' +  persona.nombre_apellido + ' no tiene acceso.')
+
+        return redirect('usuariosistema:home')
+
+    else:
+        table = EntradaGeneralTable(Persona.objects.filter(general=True))
+        RequestConfig(request).configure(table)
+
+    return render(request, 'registroGeneral/registro_manual_socio.html', { 'table': table })
+
+def registro_nosocio(request):
     if request.method == 'POST':
         form = RegistroEntradaGeneralForms(request.POST)
         if form.is_valid():
@@ -32,5 +59,7 @@ def registro(request):
 
     else:
         form = RegistroEntradaGeneralForms()
+        obj = Persona.objects.all()
 
-    return render(request, 'registroGeneral/registro_manual.html', { 'form': form })
+    return render(request, 'registroGeneral/registro_manual_nosocio.html', { 'form': form, 'obj': obj })
+
