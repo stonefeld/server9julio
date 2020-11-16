@@ -1,6 +1,8 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.contrib import messages
+from django.db.models import Q
+from django.contrib.auth.decorators import login_required
 
 from django_tables2 import SingleTableView, RequestConfig
 
@@ -26,9 +28,11 @@ def respuesta(request):
 
         return HttpResponse(rta)
 
+@login_required
 def registro(request):
     return render(request, 'registroGeneral/registro_manual_seleccion.html', context={})
 
+@login_required
 def registro_socio(request):
     if request.method == 'POST':
         pks = request.POST.getlist('seleccion')
@@ -43,12 +47,24 @@ def registro_socio(request):
 
         return redirect('usuariosistema:home')
 
-    else:
-        table = EntradaGeneralTable(Persona.objects.filter(general=True))
+    elif request.method == 'GET':
+        persona = Persona.objects.all()
+        busqueda = request.GET.get("buscar")
+
+        if busqueda:
+            persona = Persona.objects.filter(
+                Q(nrSocio__icontains = busqueda) |
+                Q(nombre_apellido__icontains = busqueda) |
+                Q(nrTarjeta__icontains = busqueda) |
+                Q(dni__icontains = busqueda)
+            ).distinct()
+
+        table = EntradaGeneralTable(persona.filter(general=True))
         RequestConfig(request).configure(table)
 
     return render(request, 'registroGeneral/registro_manual_socio.html', { 'table': table })
 
+@login_required
 def registro_nosocio(request):
     if request.method == 'POST':
         form = RegistroEntradaGeneralForms(request.POST)
