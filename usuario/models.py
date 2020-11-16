@@ -9,6 +9,7 @@ class Persona(models.Model):
     general = models.BooleanField(default=False)
     pileta = models.BooleanField(default=False)
     tenis = models.BooleanField(default=False)
+    deuda = models.FloatField(null=True)
 
     def __str__(self):
         return "%s" % (self.nombre)

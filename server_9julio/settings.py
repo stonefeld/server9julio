@@ -44,8 +44,12 @@ INSTALLED_APPS = [
 
     # Third party apps
     'crispy_forms',
+    'django_crontab', #pip install django-crontab
 ]
 
+CRONJOBS = [
+    ('20 4 * * *', 'usuario.cron.my_scheduled_job')
+]
 
 
 MIDDLEWARE = [
