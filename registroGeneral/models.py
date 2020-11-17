@@ -1,13 +1,14 @@
 from django.db import models
-from django.utils import timezone
+from django.utils import timezone, dateformat
 
 from usuario.models import Persona
 
 class EntradaGeneral(models.Model):
     lugar = models.CharField(max_length=30)
     persona = models.ForeignKey(Persona, on_delete=models.CASCADE)
-    tiempo = models.DateTimeField(default=timezone.now)
+    tiempo = models.DateTimeField(default=dateformat.format(timezone.now(), 'Y-m-d H:i:s'))
 
     def __str__(self):
-        return str(self.persona) + " - " + str(self.tiempo)
+        tiempo = self.tiempo
+        return str(tiempo) + " - " + str(self.persona)
 
