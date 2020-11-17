@@ -45,6 +45,12 @@ def registro_socio(request):
             else:
                 messages.error(request, f'El usuario ' +  persona.nombre_apellido + ' no tiene acceso.')
 
+        if len(pks) > 1:
+            messages.success(request, f'Usuarios registrados con éxito.')
+
+        else:
+            messages.success(request, f'Usuario registrado con éxito.')
+
         return redirect('usuariosistema:home')
 
     elif request.method == 'GET':

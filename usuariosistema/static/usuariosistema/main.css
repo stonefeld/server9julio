@@ -1,21 +1,57 @@
-tr.clickable_row:hover {
-  background: #81a9ac;
-}
-td a {
-  padding: 16px;
-}
-
-
-
 body {
+  width: 100%;
   background: #fafafa;
   color: #333333;
-  margin-top: 5rem;
+  text-align: center;
 }
 
+/* The hero image */
+.hero-image {
+  /* Use "linear-gradient" to add a darken background effect to the image (photographer.jpg). This will make the text easier to read */
+  background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url("redes.jpg");
+
+  /* Set a specific height */
+  height: 300px;
+
+  /* Position and center the image to scale nicely on all screens */
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  position: relative;
+}
+
+/* Place text in the middle of the image */
+.hero-text {
+  text-align: center;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -30%);
+  color: white;
+}
+
+.wrapper{
+  width: 100%;
+  margin: 0 auto;
+}
+
+.content-area{
+  width: 100%;
+  position: relative;
+  background: #ddd;
+
+}
+
+.content-area h2{
+  font-family: Arial, Helvetica, sans-serif;
+  letter-spacing: 4px;
+  padding-top: 30px;
+}
+
+/*
 h1, h2, h3, h4, h5, h6 {
   color: #444444;
-}
+}*/
 
 ul {
   margin: 0;

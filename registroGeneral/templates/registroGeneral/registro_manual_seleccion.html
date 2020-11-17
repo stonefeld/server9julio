@@ -1,20 +1,27 @@
 {% extends "usuariosistema/base.html" %}
 
 {% load crispy_forms_tags %}
+
 {% block content %}
-    <div class="content-section">
-        <div id="form_card" class="card-panel col s12">
-            <fieldset class="form-group">
-                <legend class="border-bottom mb-4">Acceso Manual</legend>
-            </fieldset>
-            <div class="form-group">
-                <a href={% url "registroGeneral:registro-socio" %}>
-                    <button class="btn btn-outline-info" type="submit">Socio</button>
-                </a>
-                <a href={% url "registroGeneral:registro-nosocio" %}>
-                    <button class="btn btn-outline-info" type="submit">No socio</button>
-                </a>
-            </div>
-        </div>
+  <div class="hero-image">
+    <div class="hero-text">
+      <h1>Acceso Manual</h1>
+      <p style="font-size: 20px;">Sistema de Control</p>
     </div>
+  </div>
+
+  <div class="content-section">
+    <div id="form_card" class="card-panel col s12">
+
+      <div class="form-group" style="padding:20px;">
+        <a href={% url "registroGeneral:registro-socio" %}>
+          <button class="btn btn-outline-info" type="submit">Socio</button>
+        </a>
+        <a href={% url "registroGeneral:registro-nosocio" %}>
+          <button class="btn btn-outline-info" type="submit">No socio</button>
+        </a>
+      </div>
+
+    </div>
+  </div>
 {% endblock %}
