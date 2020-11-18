@@ -39,12 +39,17 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     # Own
-    'usuariosistema.apps.UsuariosistemaConfig',
+    'registroGeneral.apps.RegistrogeneralConfig',
+    'registroPileta.apps.RegistropiletaConfig',
+    'registroTenis.apps.RegistrotenisConfig',
     'usuario.apps.UsuarioConfig',
+    'usuariosistema.apps.UsuariosistemaConfig',
 
     # Third party apps
     'crispy_forms',
     'django_crontab', #pip install django-crontab #python manage.py crontab add
+    'django_tables2',
+
 ]
 
 CRONJOBS = [
@@ -127,9 +132,9 @@ TIME_ZONE = 'America/Argentina/Buenos_Aires'
 
 USE_I18N = True
 
-USE_L10N = True
+USE_L10N = False
 
-USE_TZ = True
+USE_TZ = False
 
 
 # Static files (CSS, JavaScript, Images)

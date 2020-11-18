@@ -25,6 +25,10 @@ urlpatterns = [
     path('estacionamiento/',include('estacionamiento.urls')),
     path('login/', auth_views.LoginView.as_view(template_name='usuariosistema/login.html'), name='login'),
     path('logout/', auth_views.LogoutView.as_view(template_name='usuariosistema/logout.html'), name='logout'),
+
     path('', include('usuariosistema.urls')),
     path('usuario/', include('usuario.urls')),
+    path('general/', include('registroGeneral.urls')),
+    path('tenis/', include('registroTenis.urls')),
+    path('pileta/',include('registroPileta.urls')),
 ]

@@ -1,0 +1,39 @@
+{% extends "usuariosistema/base.html" %}
+
+{% load crispy_forms_tags %}
+{% load render_table from django_tables2 %}
+
+{% block content %}
+  <div class="hero-image">
+    <div class="hero-text">
+      <h1>Registro de Socios</h1>
+      <p style="font-size: 20px;">Sistema de Control</p>
+    </div>
+  </div>
+
+  <div class="content-section" style="padding:20px;">
+    <div id="form_card" class="card-panel col s12">
+
+      <form method="get">
+        <div class="input-group mx-auto" style="margin-bottom: 25px;">
+          <input type="text"  placeholder="Buscar..." name="buscar" value="">
+            <div>
+              <button class="btn btn-secondary" type="submit" style="margin-left: 20px;">
+                <i>Buscar</i>
+              </button>
+            </div>
+          </input>
+        </div>
+      </form>
+
+      <form method="POST">
+        {% csrf_token %}
+        {% render_table table %}
+        <div class="form-group">
+          <button class="btn btn-outline-info" type="submit">Dejar pasar</button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+{% endblock %}

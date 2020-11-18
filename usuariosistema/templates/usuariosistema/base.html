@@ -12,16 +12,16 @@
     <link rel="stylesheet" title="text/css" href="{% static 'usuariosistema/main.css' %}">
 
     {% if title %}
-      <title>Django Blog - {{ title }}</title>
+      <title>Server 9 de Julio - {{ title }}</title>
     {% else %}
-      <title>Django Blog</title>
+      <title>Server 9 de Julio</title>
     {% endif %}
   </head>
   <body>
     <header class="site-header">
       <nav class="navbar navbar-expand-md navbar-dark bg-steel fixed-top">
         <div class="container">
-          <a class="navbar-brand mr-4" href="{% url 'usuariosistema:home' %}">Django Blog</a>
+          <a class="navbar-brand mr-4" href="{% url 'usuariosistema:home' %}">Server 9 de Julio</a>
           <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggle" aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
           </button>
@@ -29,14 +29,15 @@
             <div class="navbar-nav mr-auto">
               <a class="nav-item nav-link" href="{% url 'usuariosistema:home' %}">Inicio</a>
               <a class="nav-item nav-link" href="{% url 'usuario:entrada-respuesta' %}">Historial</a>
+              <a class="nav-item nav-link" href="{% url 'registroGeneral:registro' %}">Acceso Manual</a>
             </div>
             <!-- Navbar Right Side -->
             <div class="navbar-nav">
               {% if user.is_authenticated %}
-                <a class="nav-item nav-link" href="{% url 'logout' %}">Logout</a>
+                <a class="nav-item nav-link" href="{% url 'logout' %}">Cerrar sesión</a>
               {% else %}
-                <a class="nav-item nav-link" href="{% url 'login' %}">Login</a>
-                <a class="nav-item nav-link" href="{% url 'usuariosistema:registro' %}">Register</a>
+                <a class="nav-item nav-link" href="{% url 'login' %}">Iniciar sesión</a>
+                <a class="nav-item nav-link" href="{% url 'usuariosistema:registro' %}">Registrarse</a>
               {% endif %}
             </div>
           </div>
