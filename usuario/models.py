@@ -2,9 +2,9 @@ from django.db import models
 from django.utils import timezone
 
 class Persona(models.Model):
-    nrTarjeta = models.IntegerField(primary_key=True, null=False, blank=False, verbose_name='Nr. de Tarjeta')
     nombre_apellido = models.CharField(max_length=30, verbose_name='Nombre y Apellido')
     dni = models.IntegerField(verbose_name='DNI')
+    nrTarjeta = models.IntegerField(null=False, blank=False, verbose_name='Nr. de Tarjeta')
     nrSocio = models.IntegerField(null=True, blank=True, verbose_name='Nr. de Socio')
     general = models.BooleanField(default=False)
     pileta = models.BooleanField(default=False)

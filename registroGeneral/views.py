@@ -37,7 +37,7 @@ def registro_socio(request):
     if request.method == 'POST':
         pks = request.POST.getlist('seleccion')
         for pk in pks:
-            persona = Persona.objects.get(nrTarjeta=pk)
+            persona = Persona.objects.get(id=pk)
             if persona.general:
                 entrada = EntradaGeneral(lugar='general', persona=persona)
                 entrada.save()
