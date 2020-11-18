@@ -3,6 +3,15 @@ from django.http import HttpResponse, JsonResponse
 from .models import Persona, Entrada
 from django.db.models import Q
 import pandas as pd
+from .forms import PersonaForm
+
+
+
+def nrTarjeta(request):
+    form = PersonaForm(request.POST or None)
+    if form.is_valid():
+        form.save()
+    return render(request,'usuario/vincularTarjetas.html' )
 
 
 def tablaIngresos(request):

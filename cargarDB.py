@@ -1,8 +1,11 @@
 import pandas as pd
+from datetime import date
 
 deudaMax = 300
 listaUsuarios = [] #lista de usuarios actualizados
 location = 'C:/Users/User/Desktop/Servidor SAGVB/saldosPrueba.csv'
+today = date.today()
+print(today.strftime("%Y%m%d"))
 #xlsx = pd.ExcelFile('C:/Users/User/Desktop/Servidor SAGVB/saldos.xls')
 df = pd.read_csv(location,encoding='unicode_escape',error_bad_lines=False, names = list('abcdefghijklmnopqrstuv'))#name=list('abecedario')
 df.drop('b', inplace=True, axis=1)

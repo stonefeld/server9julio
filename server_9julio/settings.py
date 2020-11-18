@@ -44,7 +44,7 @@ INSTALLED_APPS = [
 
     # Third party apps
     'crispy_forms',
-    'django_crontab', #pip install django-crontab
+    'django_crontab', #pip install django-crontab #python manage.py crontab add
 ]
 
 CRONJOBS = [
