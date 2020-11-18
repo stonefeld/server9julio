@@ -3,7 +3,7 @@ import django_tables2 as tables
 from .models import EntradaGeneral, Persona
 
 class EntradaGeneralTable(tables.Table):
-    seleccion = tables.CheckBoxColumn(accessor='nrTarjeta')
+    seleccion = tables.CheckBoxColumn(accessor='id')
 
     class Meta:
         model = Persona

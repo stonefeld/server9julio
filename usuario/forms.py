@@ -1,12 +1,13 @@
 from django import forms
-from .models import EntradaGeneral, Persona
+from .models import  Persona
+from registroGeneral.models import  EntradaGeneral
 
 
 class PersonaForm(forms.ModelForm):
     class Meta:
         model = Persona
         fields = [
-            'nombre',
+            'nombre_apellido',
             'dni',
             'nrSocio',
             'nrTarjeta',

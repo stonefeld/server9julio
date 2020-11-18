@@ -3,9 +3,7 @@ from django.http import HttpResponse
 from django.contrib import messages
 from django.db.models import Q
 from django.contrib.auth.decorators import login_required
-
 from django_tables2 import SingleTableView, RequestConfig
-
 from .models import EntradaGeneral, Persona
 from .forms import RegistroEntradaGeneralForms
 from .tables import EntradaGeneralTable
@@ -16,7 +14,7 @@ def respuesta(request):
         try:
             user = Persona.objects.get(nrTarjeta=nrTarjeta)
             if(user.general == True):
-                entrada = EntradaGeneral(lugar='general', persona=user)
+                entrada = EntradaGeneral(lugar='GENERAL', persona=user)
                 entrada.save()
                 rta = '1'
 
@@ -37,9 +35,9 @@ def registro_socio(request):
     if request.method == 'POST':
         pks = request.POST.getlist('seleccion')
         for pk in pks:
-            persona = Persona.objects.get(nrTarjeta=pk)
+            persona = Persona.objects.get(id=pk)
             if persona.general:
-                entrada = EntradaGeneral(lugar='general', persona=persona)
+                entrada = EntradaGeneral(lugar='GENERAL', persona=persona)
                 entrada.save()
 
             else:

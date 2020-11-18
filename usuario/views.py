@@ -25,7 +25,7 @@ def tablaIngresos(request):
             entradas = EntradaGeneral.objects.filter(
                 Q(lugar__icontains = busqueda) |
                 Q(tiempo__icontains = busqueda) |
-                Q(persona__nombre__icontains = busqueda) |
+                Q(persona__nombre_apellido__icontains = busqueda) |
                 Q(persona__dni__icontains = busqueda)
             ).distinct()
             
