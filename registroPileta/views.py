@@ -11,7 +11,7 @@ def respuesta(request):
         try:
             user = Persona.objects.get(nrTarjeta=nrTarjeta)
             if(user.general == True):
-                entrada = Entrada(lugar='pileta', persona=user)
+                entrada = Entrada(lugar='PILETAS', persona=user)
                 entrada.save()
                 rta = '1'
             else:

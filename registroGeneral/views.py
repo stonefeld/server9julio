@@ -16,7 +16,7 @@ def respuesta(request):
         try:
             user = Persona.objects.get(nrTarjeta=nrTarjeta)
             if(user.general == True):
-                entrada = EntradaGeneral(lugar='general', persona=user)
+                entrada = EntradaGeneral(lugar='GENERAL', persona=user)
                 entrada.save()
                 rta = '1'
 
@@ -39,7 +39,7 @@ def registro_socio(request):
         for pk in pks:
             persona = Persona.objects.get(id=pk)
             if persona.general:
-                entrada = EntradaGeneral(lugar='general', persona=persona)
+                entrada = EntradaGeneral(lugar='GENERAL', persona=persona)
                 entrada.save()
 
             else:

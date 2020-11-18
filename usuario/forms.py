@@ -1,9 +1,19 @@
 from django import forms
-from django.forms import ModelForm
+from .models import  Persona
+from registroGeneral.models import  EntradaGeneral
 
-from .models import EntradaGeneral
 
-class RegistroUsuario(ModelForm):
+class PersonaForm(forms.ModelForm):
+    class Meta:
+        model = Persona
+        fields = [
+            'nombre_apellido',
+            'dni',
+            'nrSocio',
+            'nrTarjeta',
+        ]
+
+class RegistroUsuario(forms.ModelForm):
     lugar = forms.CharField()
     tiempo = forms.DateTimeField()
 

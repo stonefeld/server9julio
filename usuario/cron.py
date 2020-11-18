@@ -1,39 +1,7 @@
-from django.shortcuts import render
-from django.http import HttpResponse, JsonResponse
-from .models import Persona
-from registroGeneral.models import EntradaGeneral 
-from django.contrib.auth.decorators import login_required
-from django.db.models import Q
+from .models import Persona, Entrada
 import pandas as pd
-from .forms import PersonaForm
 
-
-
-def nrTarjeta(request):
-    form = PersonaForm(request.POST or None)
-    if form.is_valid():
-        form.save()
-    return render(request,'usuario/vincularTarjetas.html' )
-
-@login_required
-def tablaIngresos(request):
-    if request.method == 'GET':
-        entradas = EntradaGeneral.objects.all()
-        busqueda = request.GET.get("buscar")
-
-        if busqueda:
-            entradas = EntradaGeneral.objects.filter(
-                Q(lugar__icontains = busqueda) |
-                Q(tiempo__icontains = busqueda) |
-                Q(persona__nombre_apellido__icontains = busqueda) |
-                Q(persona__dni__icontains = busqueda)
-            ).distinct()
-            
-
-        return render(request, 'usuario/tablaIngresos.html', {'entradas': entradas})
-
-
-def cargarDB(request):
+def cargarDB():
     deudaMax = 300
     listaUsuarios = [] #lista de usuarios actualizados
     location = 'C:/Users/User/Desktop/Servidor SAGVB/saldosPrueba.csv'
@@ -61,7 +29,7 @@ def cargarDB(request):
                     usuario.deuda = float((df['Deuda'][ind]).replace(',',''))
                     usuario.save()
             except:
-                usuario = Persona(nombre_apellido = df['Socio'][ind], nrSocio = int(df['NrSocio'][ind]), general = False, deuda = float((df['Deuda'][ind]).replace(',','')) ) #sino existe el usuario crearlo
+                usuario = Persona(nombre = df['Socio'][ind], nrSocio = int(df['NrSocio'][ind]), general = False, deuda = float((df['Deuda'][ind]).replace(',','')) ) #sino existe el usuario crearlo
                 usuario.save()
                 usuario = Persona.objects.get(nrSocio = int(df['NrSocio'][ind]))
                 listaUsuarios.append(usuario.id)
@@ -74,7 +42,7 @@ def cargarDB(request):
                     usuario.deuda = float((df['Deuda'][ind]).replace(',',''))
                     usuario.save()
             except :
-                usuario = Persona(nombre_apellido = df['Socio'][ind], nrSocio = int(df['NrSocio'][ind]), general = True, deuda = float((df['Deuda'][ind]).replace(',','')) ) #sino existe el usuario crearlo
+                usuario = Persona(nombre = df['Socio'][ind], nrSocio = int(df['NrSocio'][ind]), general = True, deuda = float((df['Deuda'][ind]).replace(',','')) ) #sino existe el usuario crearlo
                 usuario.save()
                 usuario = Persona.objects.get(nrSocio = int(df['NrSocio'][ind]))
                 listaUsuarios.append(usuario.id)
@@ -84,5 +52,3 @@ def cargarDB(request):
         if persona.id not in listaUsuarios:
             persona.general = False
             persona.save()
-
-    return HttpResponse("<h1>Valor correcto</h1>")

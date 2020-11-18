@@ -47,8 +47,15 @@ INSTALLED_APPS = [
 
     # Third party apps
     'crispy_forms',
+    'django_crontab', #pip install django-crontab #python manage.py crontab add
     'django_tables2',
+
 ]
+
+CRONJOBS = [
+    ('20 4 * * *', 'usuario.cron.my_scheduled_job')
+]
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -87,10 +94,10 @@ WSGI_APPLICATION = 'server_9julio.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'django',
+        'NAME': '9Julio_db',
         'USER': 'root',
         'PASSWORD': '',
-        'HOST': 'localhost',
+        'HOST': '127.0.0.1',
         'PORT': 3306,
     }
 }
