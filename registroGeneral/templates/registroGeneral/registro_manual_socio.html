@@ -1,4 +1,4 @@
-{% extends "usuariosistema/base.html" %}
+{% extends "base.html" %}
 
 {% load crispy_forms_tags %}
 {% load render_table from django_tables2 %}
@@ -27,11 +27,11 @@
       </form>
 
       <form method="POST">
-        {% csrf_token %}
-        {% render_table table %}
         <div class="form-group">
           <button class="btn btn-outline-info" type="submit">Dejar pasar</button>
         </div>
+        {% csrf_token %}
+        {% render_table table %}
       </form>
 
     </div>

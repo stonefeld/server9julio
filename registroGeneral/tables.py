@@ -7,7 +7,7 @@ class EntradaGeneralTable(tables.Table):
 
     class Meta:
         model = Persona
-        template_name = 'registroGeneral/bootstrap4.html'
+        template_name = 'table_template.html'
         fields = ['nrSocio', 'nombre_apellido', 'nrTarjeta', 'dni']
         order_by = 'nrSocio'
         orderable = True

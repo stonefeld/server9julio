@@ -1,4 +1,4 @@
-{% extends "usuariosistema/base.html" %}
+{% extends "base.html" %}
 
 {% block content %}
 <div class="hero-image">
@@ -26,6 +26,7 @@
           <th>Usuario</th>
           <th>Lugar</th>
           <th>Hora</th>
+          <th>Acción</th>
       </tr>
     </thead>
     <tbody>
@@ -34,6 +35,11 @@
           <td>{{ item.persona }}</td>
           <td>{{ item.lugar }}</td>
           <td>{{ item.tiempo }}</td>
+          {% if item.entra %}
+          <td>Entró</td>
+          {% elif item.sale %}
+          <td>Salió</td>
+          {% endif %}
       </tr>
       {% endfor %}
     </tbody>

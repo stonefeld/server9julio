@@ -1,14 +1,15 @@
 from django.db import models
-from django.utils import timezone, dateformat
+from django.utils.timezone import now, localtime
 
 from usuario.models import Persona
 
 class EntradaGeneral(models.Model):
-    lugar = models.CharField(max_length=30)
     persona = models.ForeignKey(Persona, on_delete=models.CASCADE)
-    tiempo = models.DateTimeField(default=dateformat.format(timezone.now(), 'Y-m-d H:i:s'))
+    lugar = models.CharField(max_length=30)
+    tiempo = models.DateTimeField(default=now)
+    entra = models.BooleanField(default=True)
+    sale = models.BooleanField(default=False)
 
     def __str__(self):
-        tiempo = self.tiempo
-        return str(tiempo) + " - " + str(self.persona)
+        return str(localtime(self.tiempo)) + " - " + str(self.persona)
 
