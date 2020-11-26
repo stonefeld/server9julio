@@ -13,6 +13,9 @@ class Persona(models.Model):
 
     def __str__(self):
         return str(self.nombre_apellido)
+    
+    def get_absolute_url(self):
+        return f"/usuario/tarjetas/{self.id}/"
 
 class NoSocio(models.Model):
     id = models.IntegerField(primary_key=True, null=False, blank=False, serialize=True)

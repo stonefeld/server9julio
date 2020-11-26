@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -44,6 +45,7 @@ INSTALLED_APPS = [
     'registroTenis.apps.RegistrotenisConfig',
     'usuario.apps.UsuarioConfig',
     'usuariosistema.apps.UsuariosistemaConfig',
+    'draganddrop.apps.DragAndDropConfig',
 
     # Third party apps
     'crispy_forms',
@@ -144,3 +146,6 @@ STATIC_URL = '/static/'
 
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'usuariosistema:home'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+MEDIA_URL = '/media/'

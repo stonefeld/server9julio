@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpResponse, JsonResponse
 from .models import Persona
 from registroGeneral.models import EntradaGeneral 
@@ -6,14 +6,44 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 import pandas as pd
 from .forms import PersonaForm
+from registroGeneral.tables import EntradaGeneralTable
+from django_tables2 import SingleTableView, RequestConfig
+from django.contrib import messages
 
-
-
-def nrTarjeta(request):
-    form = PersonaForm(request.POST or None)
+@login_required
+def vincular(request, id):
+    obj = Persona.objects.get(id=id)
+    form = PersonaForm(request.POST or None , instance=obj)
     if form.is_valid():
         form.save()
-    return render(request,'usuario/vincularTarjetas.html' )
+    if request.method == 'POST':
+        return redirect('usuariosistema:home')
+    else:
+        return render(request,'usuario/vinculacion.html', {'form': form })
+
+@login_required
+def nrTarjeta(request):
+    if request.method == 'POST':
+        pks = request.POST.getlist('seleccion')
+        persona = Persona.objects.get(id=pks[0])      
+        return redirect(persona.get_absolute_url())
+
+    elif request.method == 'GET':
+        persona = Persona.objects.all()
+        busqueda = request.GET.get("buscar")
+
+        if busqueda:
+            persona = Persona.objects.filter(
+                Q(nrSocio__icontains = busqueda) |
+                Q(nombre_apellido__icontains = busqueda) |
+                Q(nrTarjeta__icontains = busqueda) |
+                Q(dni__icontains = busqueda)
+            ).distinct()
+
+        table = EntradaGeneralTable(persona.filter(general=True))
+        RequestConfig(request).configure(table)
+
+    return render(request, 'usuario/vincularTarjetas.html', { 'table': table })
 
 @login_required
 def tablaIngresos(request):
@@ -32,7 +62,7 @@ def tablaIngresos(request):
 
         return render(request, 'usuario/tablaIngresos.html', {'entradas': entradas})
 
-
+@login_required
 def cargarDB(request):
     deudaMax = 300
     listaUsuarios = [] #lista de usuarios actualizados
