@@ -30,9 +30,6 @@ urlpatterns = [
 
     path('', include('usuariosistema.urls')),
     path('usuario/', include('usuario.urls')),
-    path('general/', include('registroGeneral.urls')),
-    path('tenis/', include('registroTenis.urls')),
-    path('pileta/',include('registroPileta.urls')),
     path('upload/', include('draganddrop.urls')),
 ]
 if settings.DEBUG:

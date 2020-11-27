@@ -11,18 +11,22 @@ from .tables import EntradaGeneralTable
 def respuesta(request):
     if request.method == 'GET':
         nrTarjeta = request.GET.get('nrTarjeta', '')
+        direccion = request.GET.get('direccion','')
         try:
-            user = Persona.objects.get(nrTarjeta=nrTarjeta)
+            user = Persona.objects.get(nrTarjeta=int(nrTarjeta))
             if(user.general == True):
-                entrada = EntradaGeneral(lugar='GENERAL', persona=user)
+                if int(direccion) == 1:
+                    entrada = EntradaGeneral(lugar='GENERAL', persona=user, direccion = 'SALIDA')
+                else:
+                    entrada = EntradaGeneral(lugar='GENERAL', persona=user, direccion = 'ENTRADA')
                 entrada.save()
-                rta = '1'
+                rta = '#1'
 
             else:
-                rta = '0'
+                rta = '#0'
 
         except:
-            rta = '-1'
+            rta = '#-1'
 
         return HttpResponse(rta)
 
@@ -34,10 +38,11 @@ def registro(request):
 def registro_socio(request):
     if request.method == 'POST':
         pks = request.POST.getlist('seleccion')
+        direccion = request.POST.getlist('direccion')
         for pk in pks:
             persona = Persona.objects.get(id=pk)
             if persona.general:
-                entrada = EntradaGeneral(lugar='GENERAL', persona=persona)
+                entrada = EntradaGeneral(lugar='GENERAL', persona=persona, direccion = direccion[0])
                 entrada.save()
 
             else:
