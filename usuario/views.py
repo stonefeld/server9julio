@@ -66,9 +66,11 @@ def tablaIngresos(request):
 def cargarDB(request):
     deudaMax = 300
     listaUsuarios = [] #lista de usuarios actualizados
-    location = 'C:/Users/User/Desktop/Servidor SAGVB/saldosPrueba.csv'
-    #xlsx = pd.ExcelFile('C:/Users/User/Desktop/Servidor SAGVB/saldos.xls')
-    df = pd.read_csv(location,encoding='unicode_escape',error_bad_lines=False, names = list('abcdefghijklmnopqrstuv'))#name=list('abecedario')
+    location = './media/saldos.csv'
+    try:
+        df = pd.read_csv(location,encoding='unicode_escape',error_bad_lines=False, names = list('abcdefghijklmnopqrstuv'))#name=list('abecedario')
+    except :
+        return HttpResponse('error archivo incorrecto')
     df.drop('b', inplace=True, axis=1)
     df.drop('d', inplace=True, axis=1)
     for column in list('ghijklmnopqrstuv'):
@@ -78,6 +80,8 @@ def cargarDB(request):
             df['e'][ind] = df['f'][ind]
     df.drop('f', inplace=True, axis=1)
     df = df.rename(columns={'a':'NrSocio', 'c':'Socio','e':'Deuda'})
+    if df['NrSocio'][6] != 'Composición de Saldos':
+        return HttpResponse('error archivo incorrecto')
     for row in range(10):
         df = df.drop(row)
     df = df.dropna()
@@ -114,5 +118,12 @@ def cargarDB(request):
         if persona.id not in listaUsuarios:
             persona.general = False
             persona.save()
+    try:
+        noSocio = personas.objects.get(nombre_apellido = 'NOSOCIO')
+        noSocio.general = True
+        noSocio.save()
+    except :
+        noSocio = Persona(nrSocio = 0, nombre_apellido = 'NOSOCIO', general = True, deuda=0.0)
+        noSocio.save()
 
-    return HttpResponse("<h1>Valor correcto</h1>")
+    return redirect('usuariosistema:home')

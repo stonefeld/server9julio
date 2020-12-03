@@ -76,15 +76,19 @@ def registro_socio(request):
 @login_required
 def registro_nosocio(request):
     if request.method == 'POST':
-        form = RegistroEntradaGeneralForms(request.POST)
-        if form.is_valid():
-            form.save()
-            messages.success(request, f'Usuario registrado. Puede pasar')
-            return redirect('usuariosistema:home')
+        cantidad = request.POST.getlist('cantidad')
+        direccion = request.POST.getlist('direccion')
+        try:
+            cantidad = int(cantidad[0])
+            direccion = direccion[0]
+            for i in range(cantidad):
+                entrada = EntradaGeneral(lugar='GENERAL', persona=Persona.objects.get(nombre_apellido = 'NOSOCIO'), direccion = direccion)
+                entrada.save()
+        except:
+            return HttpResponse('error')
 
-    else:
-        form = RegistroEntradaGeneralForms()
-        obj = Persona.objects.all()
+        return redirect('usuariosistema:home')
+    return render(request, 'registroGeneral/registro_manual_nosocio.html', context={})
 
-    return render(request, 'registroGeneral/registro_manual_nosocio.html', { 'form': form, 'obj': obj })
+
 
