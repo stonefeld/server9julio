@@ -1,3 +1,5 @@
+import os
+
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.contrib import messages
@@ -51,6 +53,9 @@ def registro_socio(request):
         else:
             messages.success(request, f'Usuario registrado con éxito.')
 
+        cant = len(pks)
+        ip = 'localhost'
+        os.system('python3 ./scripts/client.py abrir_tiempo ' + str(cant) + ' ' + ip)
         return redirect('usuariosistema:home')
 
     elif request.method == 'GET':
