@@ -80,8 +80,8 @@ def cargarDB(request):
             df['e'][ind] = df['f'][ind]
     df.drop('f', inplace=True, axis=1)
     df = df.rename(columns={'a':'NrSocio', 'c':'Socio','e':'Deuda'})
-    if df['NrSocio'][6] != 'Composición de Saldos':
-        return HttpResponse('error archivo incorrecto')
+    #if df['NrSocio'][6] != 'Composición de Saldos':
+    #    return HttpResponse('error archivo incorrecto')
     for row in range(10):
         df = df.drop(row)
     df = df.dropna()
@@ -116,14 +116,9 @@ def cargarDB(request):
     personas = Persona.objects.all()
     for persona in personas:
         if persona.id not in listaUsuarios:
-            persona.general = False
-            persona.save()
-    try:
-        noSocio = personas.objects.get(nombre_apellido = 'NOSOCIO')
-        noSocio.general = True
-        noSocio.save()
-    except :
-        noSocio = Persona(nrSocio = 0, nombre_apellido = 'NOSOCIO', general = True, deuda=0.0)
-        noSocio.save()
+            if persona.nombre_apellido != 'NOSOCIO' :
+                persona.general = False
+                persona.save()
+    
 
     return redirect('usuariosistema:home')

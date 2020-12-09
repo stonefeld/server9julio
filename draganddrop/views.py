@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.views.generic import TemplateView, ListView, CreateView
 from django.core.files.storage import FileSystemStorage
 from django.urls import reverse_lazy
+from usuario.models import Deuda
 from os import remove
 from os import path
 
@@ -16,4 +17,10 @@ def upload(request):
         name = fs.save('saldos.csv', uploaded_file)
         context['url'] = fs.url(name)
         return redirect('usuario:cargarDB')
+    else:
+        context = {
+            'deuda': Deuda.objects.all().last()
+        }
+        print(context)
+        
     return render(request, 'draganddrop/upload.html', context)

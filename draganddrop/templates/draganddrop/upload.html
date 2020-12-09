@@ -17,6 +17,8 @@
             <form class="form-container" method="post" enctype="multipart/form-data">
               <div class="form-group">
                 <h2>Subir</h2>
+                <label for="deuda">Deuda Max:</label>
+                <input type="number" id="deuda" name="deuda" value={{deuda.deuda}}><br><br>
                 {% csrf_token %}
                 <input type="file" name="document">
                 <button type="submit">Subir archivo</button>
