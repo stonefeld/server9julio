@@ -1,41 +1,34 @@
-{% extends "base.html" %}
+{% extends "usuariosistema/base.html" %}
 
 {% load crispy_forms_tags %}
+{% load render_table from django_tables2 %}
 
 {% block content %}
-  <div class="content-section">
-    <form method="POST">
-      {% csrf_token %}
-      <fieldset class="form-group">
-        <legend class="border-bottom mb-4">Join Today</legend>
-        {{ form|crispy }}
-      </fieldset>
+  <div class="hero-image">
+    <div class="hero-text">
+      <h1>Entrada NoSocios</h1>
+      <p style="font-size: 20px;">Sistema de Control</p>
+    </div>
+  </div>
 
-      <table>
-        <thead>
-          <tr>
-            <td>Nombre</td>
-            <td>DNI</td>
-            <td>Número de Socio</td>
-            <td>Número de Tarjeta</td>
-          </tr>
-        </thead>
-        {% for object in obj %}
-        <tbody>
-          <tr class="clickable_row">
-            <td><a href="#">{{ object.nombre_apellido }}</a></td>
-            <td><a href="#">{{ object.dni }}</a></td>
-            <td><a href="#">{{ object.nrSocio }}</a></td>
-            <td><a href="#">{{ object.nrTarjeta }}</a></td>
-          </tr>
-        </tbody>
-        {% endfor %}
-      </table>
+  <div class="content-section" style="padding:20px;">
+    <div id="form_card" class="card-panel col s12">
 
-      <br></br>
-      <div class="form-group">
-        <button class="btn btn-outline-info" type="submit">Sign Up</button>
-      </div>
-    </form>
+
+      <form method="POST">
+        {% csrf_token %}
+        <div class="form-group"style="padding-top:10px">
+          <label for="cantidad">Cantidad de Personas: </label>
+          <input type="text" id="cantidad" name="cantidad"><br><br>
+          <a>
+            <button class="btn btn-outline-info" type="submit" name="direccion" value="ENTRADA">Entrada</button>
+          </a>
+          <a>
+            <button class="btn btn-outline-info" type="submit" name="direccion"value="SALIDA" >Salida</button>
+          </a>
+        </div>
+      </form>
+
+    </div>
   </div>
 {% endblock %}

@@ -12,7 +12,6 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 
 from pathlib import Path
 import os
-
 import pytz
 from django.utils import timezone
 
@@ -48,6 +47,7 @@ INSTALLED_APPS = [
     'registroTenis.apps.RegistrotenisConfig',
     'usuario.apps.UsuarioConfig',
     'usuariosistema.apps.UsuariosistemaConfig',
+    'draganddrop.apps.DragAndDropConfig',
 
     # Third party apps
     'crispy_forms',
@@ -136,9 +136,9 @@ TIME_ZONE = 'America/Argentina/Buenos_Aires'
 
 USE_I18N = True
 
-USE_L10N = True
+USE_L10N = False
 
-USE_TZ = True
+USE_TZ = False
 
 timezone.activate(pytz.timezone(TIME_ZONE))
 
@@ -149,3 +149,6 @@ STATIC_URL = '/static/'
 
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'usuariosistema:home'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+MEDIA_URL = '/media/'
