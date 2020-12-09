@@ -1,4 +1,4 @@
-{% extends "usuariosistema/base.html" %}
+{% extends "base.html" %}
 {% block content %}
 
   <div class="hero-image">
@@ -7,7 +7,6 @@
       <p style="font-size: 20px;">Sistema de Control</p>
     </div>
   </div> 
-
 
   <div class="container" style="padding: 20px;">
     <div class="row justify-content-center">
@@ -19,7 +18,10 @@
                 <h2>Subir</h2>
                 {% csrf_token %}
                 <input type="file" name="document">
-                <button type="submit">Subir archivo</button>
+                <br><br>
+                <div class="form-group" style="padding-top:10px">
+                  <button class="btn btn-outline-info" type="submit">Subir Archivo</button>
+                </div>
               </div>
             {% if url %}
               <p>Archivo subido: <a href="{{ url }}">{{ url }}</a></p>

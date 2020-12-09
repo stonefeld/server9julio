@@ -1,7 +1,11 @@
-{% extends "usuariosistema/base.html" %}
+{% extends "base.html" %}
+
 {% block content %}
-<form method="POST" style="padding-top:80px"> {% csrf_token %}
-    {{ form.as_p }}
-    <input type='submit' value='Save'/>
+
+<form method="POST" style="padding-top:80px">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <input type='submit' value='Save'/>
 </form>
+
 {% endblock content%}

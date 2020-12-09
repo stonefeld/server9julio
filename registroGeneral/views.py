@@ -1,6 +1,6 @@
 import os
 
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
 from django.contrib import messages
 from django.db.models import Q
@@ -38,14 +38,20 @@ def registro(request):
 def registro_socio(request):
     if request.method == 'POST':
         pks = request.POST.getlist('seleccion')
+        direccion = request.POST.getlist('direccion')
+        dire = str(direccion[0])
         for pk in pks:
-            persona = Persona.objects.get(id=pk)
-            if persona.general:
-                entrada = EntradaGeneral(lugar='GENERAL', persona=persona)
-                entrada.save()
+            try:
+                persona = Persona.objects.get(id=pk)
+                if persona.general:
+                    entrada = EntradaGeneral(lugar='GENERAL', persona=persona, direccion=dire)
+                    entrada.save()
 
-            else:
-                messages.error(request, f'El usuario ' +  persona.nombre_apellido + ' no tiene acceso.')
+                else:
+                    messages.error(request, f'El usuario ' +  persona.nombre_apellido + ' no tiene acceso.')
+
+            except:
+                return HttpResponse('Error')
 
         if len(pks) > 1:
             messages.success(request, f'Usuarios registrados con éxito.')
@@ -60,7 +66,7 @@ def registro_socio(request):
 
     elif request.method == 'GET':
         persona = Persona.objects.all()
-        busqueda = request.GET.get("buscar")
+        busqueda = request.GET.get('buscar')
 
         if busqueda:
             persona = Persona.objects.filter(
@@ -70,23 +76,32 @@ def registro_socio(request):
                 Q(dni__icontains = busqueda)
             ).distinct()
 
-        table = EntradaGeneralTable(persona.filter(general=True))
+        table = EntradaGeneralTable(persona.filter(~Q(nombre_apellido='NOSOCIO'), general=True))
         RequestConfig(request).configure(table)
-
-    return render(request, 'registroGeneral/registro_manual_socio.html', { 'table': table })
+        return render(request, 'registroGeneral/registro_manual_socio.html', { 'table': table })
 
 @login_required
 def registro_nosocio(request):
     if request.method == 'POST':
-        form = RegistroEntradaGeneralForms(request.POST)
-        if form.is_valid():
-            form.save()
-            messages.success(request, f'Usuario registrado. Puede pasar')
-            return redirect('usuariosistema:home')
+        cantidad = request.POST.getlist('cantidad')
+        direccion = request.POST.getlist('direccion')
+
+        try:
+            cantidad = int(cantidad[0])
+            dire = str(direccion[0])
+            for i in range(cantidad):
+                entrada = EntradaGeneral(
+                    lugar='GENERAL',
+                    persona=Persona.objects.get(nombre_apellido='NOSOCIO'),
+                    direccion=dire
+                )
+                entrada.save()
+
+        except:
+            return HttpResponse('error')
+
+        return redirect('usuariosistema:home')
 
     else:
-        form = RegistroEntradaGeneralForms()
-        obj = Persona.objects.all()
-
-    return render(request, 'registroGeneral/registro_manual_nosocio.html', { 'form': form, 'obj': obj })
+        return render(request, 'registroGeneral/registro_manual_nosocio.html', context={})
 

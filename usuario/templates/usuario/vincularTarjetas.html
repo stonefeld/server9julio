@@ -1,4 +1,4 @@
-{% extends "usuariosistema/base.html" %}
+{% extends "base.html" %}
 
 {% load crispy_forms_tags %}
 {% load render_table from django_tables2 %}
@@ -28,10 +28,10 @@
 
       <form method="POST">
         {% csrf_token %}
-        {% render_table table %}
         <div class="form-group" style="padding-top:10px">
           <button class="btn btn-outline-info" type="submit">Vincular</button>
         </div>
+        {% render_table table %}
       </form>
 
     </div>

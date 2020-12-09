@@ -42,12 +42,13 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     # Own
+    'draganddrop.apps.DragAndDropConfig',
+    'estacionamiento.apps.EstacionamientoConfig',
     'registroGeneral.apps.RegistrogeneralConfig',
     'registroPileta.apps.RegistropiletaConfig',
     'registroTenis.apps.RegistrotenisConfig',
     'usuario.apps.UsuarioConfig',
     'usuariosistema.apps.UsuariosistemaConfig',
-    'draganddrop.apps.DragAndDropConfig',
 
     # Third party apps
     'crispy_forms',
@@ -136,9 +137,9 @@ TIME_ZONE = 'America/Argentina/Buenos_Aires'
 
 USE_I18N = True
 
-USE_L10N = False
+USE_L10N = True
 
-USE_TZ = False
+USE_TZ = True
 
 timezone.activate(pytz.timezone(TIME_ZONE))
 
