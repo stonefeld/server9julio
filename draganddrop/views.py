@@ -10,6 +10,9 @@ from os import path
 def upload(request):
     context = {}
     if request.method == 'POST':
+        Dmax = request.POST.getlist('deuda')[0]
+        deuda = Deuda(deuda = Dmax)
+        deuda.save()
         if path.exists('./media/saldos.csv'):
             remove('./media/saldos.csv')
         uploaded_file = request.FILES['document']
@@ -21,6 +24,5 @@ def upload(request):
         context = {
             'deuda': Deuda.objects.all().last()
         }
-        print(context)
         
     return render(request, 'draganddrop/upload.html', context)

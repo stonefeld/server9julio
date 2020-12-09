@@ -1,0 +1,126 @@
+[33mcommit 76fbb2faf807769895ade7b2bf3c5803e1214502[m[33m ([m[1;36mHEAD -> [m[1;32mtrabajoLucas[m[33m, [m[1;31morigin/trabajoLucas[m[33m)[m
+Author: Lucas Affre <lucasaffre@gmail.com>
+Date:   Thu Dec 3 11:39:35 2020 -0300
+
+    Registro NoSocio
+
+[33mcommit 5f0ccc1561ecb9287ade45d0d6832476bf89778b[m
+Author: Lucas Affre <lucasaffre@gmail.com>
+Date:   Fri Nov 27 12:14:38 2020 -0300
+
+    Cambio Direccion
+
+[33mcommit 001e5067f669faae76642db59d51cfb39ed40e9c[m
+Author: Lucas Affre <lucasaffre@gmail.com>
+Date:   Thu Nov 26 12:16:46 2020 -0300
+
+    Drag-Drop
+
+[33mcommit adb5ab3187b3a61f9c62b62ed171856e88788046[m
+Author: Lucas Affre <lucasaffre@gmail.com>
+Date:   Wed Nov 18 11:29:53 2020 -0300
+
+    MergeTheoPosta
+
+[33mcommit 633de20b55cecd65a669fcd9bd30f3bf8c134548[m
+Author: Lucas Affre <lucasaffre@gmail.com>
+Date:   Wed Nov 18 09:44:03 2020 -0300
+
+    MergeTheo
+
+[33mcommit 6815bde959a5f5137af2793f59ca91c974d72b3d[m
+Author: Lucas Affre <lucasaffre@gmail.com>
+Date:   Wed Nov 18 09:16:37 2020 -0300
+
+    Vincular Tarjetas
+
+[33mcommit af6e6d4d94478bb17be8413e539799cd6da24ad8[m
+Author: Lucas Affre <lucasaffre@gmail.com>
+Date:   Mon Nov 16 10:50:05 2020 -0300
+
+    CronJob DB
+
+[33mcommit b6c5677132e6bf250d44f0db40414f9c30014aac[m
+Author: Lucas Affre <lucasaffre@gmail.com>
+Date:   Fri Nov 13 09:50:24 2020 -0300
+
+    CSV to DB
+
+[33mcommit 1486e2265cc711946694f5c2dcc67a164eacbecc[m
+Author: Lucas Affre <lucasaffre@gmail.com>
+Date:   Thu Nov 12 09:38:48 2020 -0300
+
+    settings
+
+[33mcommit 756185c78bc32f0ef9bb30dce300dabf88d18ab1[m
+Author: Lucas Affre <lucasaffre@gmail.com>
+Date:   Mon Nov 9 15:25:31 2020 -0300
+
+    Tabla Ingresos
+
+[33mcommit f7341dfcb5104c95f49f8162c2fa2ff0a4bdbfbb[m
+Author: Lucas Affre <lucasaffre@gmail.com>
+Date:   Mon Nov 9 10:38:17 2020 -0300
+
+    MergeTheo
+
+[33mcommit 8f198c3b9c9c691af41a05fdac43d840bcf2d11f[m
+Merge: 06d57c1 961cc2b
+Author: Lucas Affre <lucasaffre@gmail.com>
+Date:   Mon Nov 9 10:07:59 2020 -0300
+
+    Merge remote-tracking branch 'origin/trabajoTheo' into trabajoLucas
+
+[33mcommit 06d57c1efb165a511d5938dd850cea60d8024f5a[m
+Author: Lucas Affre <lucasaffre@gmail.com>
+Date:   Mon Nov 9 09:56:27 2020 -0300
+
+    Estacionamiento
+
+[33mcommit bfbe472e3942e616fbe420e524885f9cf0048974[m
+Author: Lucas Affre <lucasaffre@gmail.com>
+Date:   Fri Nov 6 10:54:03 2020 -0300
+
+    Entradas Theo urls
+
+[33mcommit 164db9c00f208f3e8e2e651a920b53bba0fd641c[m
+Author: Lucas Affre <lucasaffre@gmail.com>
+Date:   Fri Nov 6 10:52:55 2020 -0300
+
+    Entradas Theo
+
+[33mcommit 961cc2b42e9b42e58f4caeb0476027884e4be388[m
+Author: TheoStanfield <theo.stanfield@gmail.com>
+Date:   Fri Nov 6 10:51:39 2020 -0300
+
+    login-logout-register andando
+
+[33mcommit bf151538643bc090780b6daafcaf1220a1c57c7d[m
+Author: Lucas Affre <lucasaffre@gmail.com>
+Date:   Fri Nov 6 09:45:35 2020 -0300
+
+    Comunicación Dispositivos Finales
+
+[33mcommit 3933558adce0aed5e3ed8ac6ec0019814d038673[m
+Author: Lucas Affre <lucasaffre@gmail.com>
+Date:   Thu Nov 5 12:23:20 2020 -0300
+
+    Comunicación Dispositivos
+
+[33mcommit 02d2417ed851cd513df5ffd4e04221d41ebbf6fb[m
+Author: Lucas Affre <lucasaffre@gmail.com>
+Date:   Thu Nov 5 10:23:32 2020 -0300
+
+    Entradas
+
+[33mcommit a456e312d0d1ef28d3cdea4140cd29328b58920f[m
+Author: Lucas Affre <lucasaffre@gmail.com>
+Date:   Wed Nov 4 11:11:54 2020 -0300
+
+    LocalDB
+
+[33mcommit df45c0800aa7606bb102a6c3c3e2788f2d2629a8[m[33m ([m[1;31morigin/master[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmaster[m[33m)[m
+Author: TheoStanfield <theo.stanfield@gmail.com>
+Date:   Fri Oct 16 10:17:30 2020 -0300
+
+    project created

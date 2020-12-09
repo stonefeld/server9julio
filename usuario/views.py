@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, JsonResponse
-from .models import Persona
+from .models import Persona,Deuda
 from registroGeneral.models import EntradaGeneral 
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
@@ -64,7 +64,8 @@ def tablaIngresos(request):
 
 @login_required
 def cargarDB(request):
-    deudaMax = 300
+    deudaMax = Deuda.objects.all().last().deuda
+    print(deudaMax)
     listaUsuarios = [] #lista de usuarios actualizados
     location = './media/saldos.csv'
     try:
@@ -86,7 +87,7 @@ def cargarDB(request):
         df = df.drop(row)
     df = df.dropna()
     for ind in df.index :
-        if float((df['Deuda'][ind]).replace(',',''))>deudaMax:#si deuda es mayor a deudaMax .replace(',','')
+        if float((df['Deuda'][ind]).replace(',',''))>deudaMax:   #si deuda es mayor a deudaMax .replace(',','')
             try:
                 usuario = Persona.objects.get(nrSocio = int(df['NrSocio'][ind])) #cambiar la entrada a false
                 listaUsuarios.append(usuario.id)
