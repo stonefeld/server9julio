@@ -15,7 +15,6 @@ def upload(request):
         try:
             deudaMax = request.POST.getlist('deuda')[0]
             deuda = Deuda(deuda=deudaMax)
-            deuda.save()
 
             if path.exists('./media/saldos.csv'):
                 remove('./media/saldos.csv')
@@ -26,6 +25,7 @@ def upload(request):
                 fs = FileSystemStorage()
                 name = fs.save('saldos.csv', uploaded_file)
                 context['url'] = fs.url(name)
+                deuda.save()
 
                 return redirect('usuario:cargarDB')
 
