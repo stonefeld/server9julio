@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.contrib import messages
@@ -192,3 +192,4 @@ def cargarDB(request):
         noSocio.save()
 
     return redirect('usuariosistema:home')
+

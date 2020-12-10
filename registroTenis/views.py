@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
 
-from usuario.models import Persona
+from .models import EntradaTenis, Persona
 
 def respuesta(request):
     if request.method == 'GET':
@@ -10,7 +10,7 @@ def respuesta(request):
         try:
             user = Persona.objects.get(nrTarjeta=nrTarjeta)
             if(user.general == True):
-                entrada = Entrada(lugar='TENIS', persona=user)
+                entrada = EntradaTenis(lugar='TENIS', persona=user)
                 entrada.save()
                 rta = '1'
             else:

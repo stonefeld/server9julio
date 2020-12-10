@@ -1,14 +1,16 @@
+from os import remove
+from os import path
+
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.views.generic import TemplateView, ListView, CreateView
 from django.core.files.storage import FileSystemStorage
 from django.urls import reverse_lazy
-
-from os import remove
-from os import path
+from django.contrib.auth.decorators import login_required
 
 from usuario.models import Deuda
 
+@login_required
 def upload(request):
     context = {}
     if request.method == 'POST':
