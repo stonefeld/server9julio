@@ -29,9 +29,27 @@ def vincular(request, id):
 @login_required
 def nrTarjeta(request):
     if request.method == 'POST':
-        pks = request.POST.getlist('seleccion')
-        persona = Persona.objects.get(id=pks[0])
-        return redirect(persona.get_absolute_url())
+        try:
+            pks = request.POST.getlist('seleccion')
+            persona = Persona.objects.get(id=pks[0])
+            return redirect(persona.get_absolute_url())
+
+        except:
+            persona = Persona.objects.all()
+            busqueda = request.GET.get('buscar')
+
+            if busqueda:
+                persona = Persona.objects.filter(
+                    Q(nrSocio__icontains = busqueda) |
+                    Q(nombre_apellido__icontains = busqueda) |
+                    Q(nrTarjeta__icontains = busqueda) |
+                    Q(dni__icontains = busqueda)
+                ).distinct()
+
+            table = EntradaGeneralTable(persona.filter(~Q(nombre_apellido='NOSOCIO'), general=True))
+            RequestConfig(request).configure(table)
+            messages.warning(request, f'Debe seleccionar un usuario')
+            return render(request, 'usuario/vincularTarjetas.html', { 'table': table })
 
     elif request.method == 'GET':
         persona = Persona.objects.all()
@@ -47,6 +65,7 @@ def nrTarjeta(request):
 
         table = EntradaGeneralTable(persona.filter(~Q(nombre_apellido='NOSOCIO'), general=True))
         RequestConfig(request).configure(table)
+        messages.info(request, f'Seleccione un usuario a la vez')
         return render(request, 'usuario/vincularTarjetas.html', { 'table': table })
 
 @login_required

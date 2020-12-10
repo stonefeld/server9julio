@@ -2,14 +2,11 @@
 
 {% load crispy_forms_tags %}
 
-{% block content %}
-  <div class="hero-image">
-    <div class="hero-text">
-      <h1>Registrese Acá</h1>
-      <p style="font-size: 20px;">Sistema de Control</p>
-    </div>
-  </div>
+{% block subtitle %}
+  <h1>Registrese Acá</h1>
+{% endblock subtitle %}
 
+{% block content %}
   <div class="content-section" style="padding:20px">
     <form method="POST">
     {% csrf_token %}
@@ -22,7 +19,7 @@
     </form>
     <div class="border-top pt-3">
       <small class="text-muted">
-        Si ya tiene un usuario registrado<a class="ml-2" href="{% url 'login' %}">inicie sesión acá</a>
+        <p>Si ya tiene un usuario registrado<a class="ml-2" href="{% url 'login' %}">inicie sesión acá</a></p>
       </small>
     </div>
   </div>

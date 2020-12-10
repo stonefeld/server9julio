@@ -38,31 +38,49 @@ def registro(request):
 def registro_socio(request):
     if request.method == 'POST':
         pks = request.POST.getlist('seleccion')
-        direccion = request.POST.getlist('direccion')
-        dire = str(direccion[0])
-        for pk in pks:
-            try:
-                persona = Persona.objects.get(id=pk)
-                if persona.general:
-                    entrada = EntradaGeneral(lugar='GENERAL', persona=persona, direccion=dire)
-                    entrada.save()
+        if len(pks) > 0:
+            direccion = request.POST.getlist('direccion')
+            dire = str(direccion[0])
+            for pk in pks:
+                try:
+                    persona = Persona.objects.get(id=pk)
+                    if persona.general:
+                        entrada = EntradaGeneral(lugar='GENERAL', persona=persona, direccion=dire)
+                        entrada.save()
 
-                else:
-                    messages.error(request, f'El usuario ' +  persona.nombre_apellido + ' no tiene acceso.')
+                    else:
+                        messages.warning(request, f'El usuario ' +  persona.nombre_apellido + ' no tiene acceso.')
 
-            except:
-                return HttpResponse('Error')
+                except:
+                    return HttpResponse('Error')
 
-        if len(pks) > 1:
-            messages.success(request, f'Usuarios registrados con éxito.')
+            if len(pks) > 1:
+                messages.success(request, f'Usuarios registrados con éxito.')
+
+            else:
+                messages.success(request, f'Usuario registrado con éxito.')
+
+            cant = len(pks)
+            ip = 'localhost'
+            os.system('python3 ./scripts/client.py abrir_tiempo ' + str(cant) + ' ' + ip)
+            return redirect('usuariosistema:home')
 
         else:
-            messages.success(request, f'Usuario registrado con éxito.')
+            persona = Persona.objects.all()
+            busqueda = request.GET.get('buscar')
 
-        cant = len(pks)
-        ip = 'localhost'
-        os.system('python3 ./scripts/client.py abrir_tiempo ' + str(cant) + ' ' + ip)
-        return redirect('usuariosistema:home')
+            if busqueda:
+                persona = Persona.objects.filter(
+                    Q(nrSocio__icontains = busqueda) |
+                    Q(nombre_apellido__icontains = busqueda) |
+                    Q(nrTarjeta__icontains = busqueda) |
+                    Q(dni__icontains = busqueda)
+                ).distinct()
+
+            table = EntradaGeneralTable(persona.filter(~Q(nombre_apellido='NOSOCIO'), general=True))
+            RequestConfig(request).configure(table)
+            messages.warning(request, f'Debe seleccionar un usuario')
+            return render(request, 'registroGeneral/registro_manual_socio.html', { 'table': table })
 
     elif request.method == 'GET':
         persona = Persona.objects.all()

@@ -1,13 +1,10 @@
 {% extends "base.html" %}
 
-{% block content %}
-  <div class="hero-image">
-    <div class="hero-text">
-      <h1>Has cerrado sesión</h1>
-      <p style="font-size: 20px;">Sistema de Control</p>
-    </div>
-  </div>
+{% block subtitle %}
+  <h1>Has Cerrado Sesión</h1>
+{% endblock subtitle %}
 
+{% block content %}
   <div class="border-top pt-3" style="padding:20px">
     <small class="text-muted">
       <a href="{% url 'login' %}">Iniciar sesión nuevamente</a>

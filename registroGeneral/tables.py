@@ -9,6 +9,6 @@ class EntradaGeneralTable(tables.Table):
         model = Persona
         template_name = 'table_template.html'
         fields = ['nrSocio', 'nombre_apellido', 'nrTarjeta', 'dni']
-        order_by = 'nrSocio'
+        order_by = 'nombre_apellido'
         orderable = True
 
