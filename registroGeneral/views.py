@@ -116,7 +116,8 @@ def registro_nosocio(request):
                 entrada.save()
 
         except:
-            return HttpResponse('error')
+            messages.warning(request, f'Debe seleccionar la cantidad de personas')
+            return render(request, 'registroGeneral/registro_manual_nosocio.html', context={})
 
         return redirect('usuariosistema:home')
 

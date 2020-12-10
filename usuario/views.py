@@ -8,8 +8,9 @@ from django_tables2 import SingleTableView, RequestConfig
 
 import pandas as pd
 
-from .models import Persona
+from .models import Persona, Deuda
 from .forms import PersonaForm
+from .tables import HistorialTable
 from registroGeneral.models import EntradaGeneral
 from registroGeneral.tables import EntradaGeneralTable
 
@@ -49,6 +50,7 @@ def nrTarjeta(request):
             table = EntradaGeneralTable(persona.filter(~Q(nombre_apellido='NOSOCIO'), general=True))
             RequestConfig(request).configure(table)
             messages.warning(request, f'Debe seleccionar un usuario')
+
             return render(request, 'usuario/vincularTarjetas.html', { 'table': table })
 
     elif request.method == 'GET':
@@ -66,6 +68,7 @@ def nrTarjeta(request):
         table = EntradaGeneralTable(persona.filter(~Q(nombre_apellido='NOSOCIO'), general=True))
         RequestConfig(request).configure(table)
         messages.info(request, f'Seleccione un usuario a la vez')
+
         return render(request, 'usuario/vincularTarjetas.html', { 'table': table })
 
 @login_required
@@ -82,11 +85,14 @@ def tablaIngresos(request):
                 Q(persona__dni__icontains = busqueda)
             ).distinct()
 
-        return render(request, 'usuario/tablaIngresos.html', { 'entradas': entradas })
+        table = HistorialTable(entradas)
+        RequestConfig(request).configure(table)
+
+        return render(request, 'usuario/tablaIngresos.html', { 'table': table })
 
 @login_required
 def cargarDB(request):
-    deudaMax = 300
+    deudaMax = Deuda.objects.all().last().deuda
     location = './media/saldos.csv'
 
     try:

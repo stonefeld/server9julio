@@ -7,22 +7,44 @@ from django.urls import reverse_lazy
 from os import remove
 from os import path
 
+from usuario.models import Deuda
+
 def upload(request):
     context = {}
     if request.method == 'POST':
-        if path.exists('./media/saldos.csv'):
-            remove('./media/saldos.csv')
-
         try:
-            uploaded_file = request.FILES['file']
-            fs = FileSystemStorage()
-            name = fs.save('saldos.csv', uploaded_file)
-            context['url'] = fs.url(name)
+            deudaMax = request.POST.getlist('deuda')[0]
+            deuda = Deuda(deuda=deudaMax)
+            deuda.save()
 
-            return redirect('usuario:cargarDB')
+            if path.exists('./media/saldos.csv'):
+                remove('./media/saldos.csv')
+
+            try:
+
+                uploaded_file = request.FILES['file']
+                fs = FileSystemStorage()
+                name = fs.save('saldos.csv', uploaded_file)
+                context['url'] = fs.url(name)
+
+                return redirect('usuario:cargarDB')
+
+            except:
+                context = {
+                    'deuda': str(Deuda.objects.all().last().deuda)
+                }
+                messages.warning(request, f'Debe subir un archivo')
 
         except:
-            messages.warning(request, f'Debe subir un archivo')
+            context = {
+                'deuda': str(Deuda.objects.all().last().deuda)
+            }
+            messages.warning(request, f'Debe especificar una deuda máxima')
+
+    else:
+        context = {
+            'deuda': str(Deuda.objects.all().last().deuda)
+        }
 
     return render(request, 'draganddrop/upload.html', context)
 

@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+{% load render_table from django_tables2 %}
+
 {% block subtitle %}
   <h1>Historial</h1>
 {% endblock subtitle %}
@@ -16,26 +18,9 @@
         </div>
       </div>
     </form>
-  
-    <table class="table" style="margin-top: 20px;">
-      <thead>
-        <tr>
-            <th>Usuario</th>
-            <th>Lugar</th>
-            <th>Hora</th>
-            <th>Dirección</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for item in entradas %}
-        <tr> 
-            <td>{{ item.persona }}</td>
-            <td>{{ item.lugar }}</td>
-            <td>{{ item.tiempo }}</td>
-            <td>{{ item.direccion }}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+
+    <div style="padding:20px">
+      {% render_table table %}
+    </div>
   </div>
 {% endblock content%}
