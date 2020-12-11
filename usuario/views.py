@@ -1,8 +1,11 @@
+import os
+
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.contrib import messages
+from django.conf import settings
 
 from django_tables2 import SingleTableView, RequestConfig
 
@@ -93,7 +96,8 @@ def tablaIngresos(request):
 @login_required
 def cargarDB(request):
     deudaMax = Deuda.objects.all().last().deuda
-    location = './media/saldos.csv'
+    media_root = settings.MEDIA_ROOT
+    location = os.path.join(media_root, 'saldos.csv')
 
     try:
         df = pd.read_csv(
@@ -104,7 +108,8 @@ def cargarDB(request):
         )
 
     except :
-        return HttpResponse('Error en la lectura del archivo')
+        messages.warning(request, f'Ha habido un error al leer el archivo')
+        return redirect('draganddrop:upload')
 
     df.drop('b', inplace=True, axis=1)
     df.drop('d', inplace=True, axis=1)
@@ -124,7 +129,8 @@ def cargarDB(request):
     })
 
     if df['NrSocio'][5] != 'Composición de Saldos':
-        return HttpResponse('error archivo incorrecto')
+        messages.warning(request, f'El archivo subido es incorrecto')
+        return redirect('draganddrop:upload')
 
     for row in range(10):
         df = df.drop(row)
@@ -191,5 +197,6 @@ def cargarDB(request):
         noSocio = Persona(nrSocio=0, nombre_apellido='NOSOCIO', general=True, deuda=0.0)
         noSocio.save()
 
+    messages.success(request, f'Datos cargados con éxito')
     return redirect('usuariosistema:home')
 
