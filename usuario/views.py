@@ -1,8 +1,10 @@
 import os
+from threading import Thread
 
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
+from django.db import connection
 from django.db.models import Q
 from django.contrib import messages
 from django.conf import settings
@@ -16,6 +18,14 @@ from .forms import PersonaForm
 from .tables import HistorialTable
 from registroGeneral.models import EntradaGeneral
 from registroGeneral.tables import EntradaGeneralTable
+
+def postpone(function):
+    def decorator(*args, **kwargs):
+        t = Thread(target=function, args=args, kwargs=kwargs)
+        t.daemon = True
+        t.start()
+
+    return decorator
 
 @login_required
 def vincular(request, id):
@@ -95,7 +105,6 @@ def tablaIngresos(request):
 
 @login_required
 def cargarDB(request):
-    deudaMax = Deuda.objects.all().last().deuda
     media_root = settings.MEDIA_ROOT
     location = os.path.join(media_root, 'saldos.csv')
 
@@ -137,8 +146,15 @@ def cargarDB(request):
 
     df = df.dropna()
 
+    cargarDBAsync(df)
+
+    messages.success(request, f'La carga de datos a iniciado con éxito')
+    return redirect('usuariosistema:home')
+
+@postpone
+def cargarDBAsync(df):
+    deudaMax = Deuda.objects.all().last().deuda
     listaUsuarios = []
-    noise = 1
 
     for ind in df.index:
         if 'PROVISORIO' not in str(df['Socio'][ind]):
@@ -197,6 +213,5 @@ def cargarDB(request):
         noSocio = Persona(nrSocio=0, nombre_apellido='NOSOCIO', general=True, deuda=0.0)
         noSocio.save()
 
-    messages.success(request, f'Datos cargados con éxito')
-    return redirect('usuariosistema:home')
+    connection.close()
 

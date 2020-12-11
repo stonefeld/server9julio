@@ -1,4 +1,5 @@
 import os
+from threading import Thread
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
@@ -11,6 +12,14 @@ from django_tables2 import SingleTableView, RequestConfig
 from .models import EntradaGeneral, Persona
 from .forms import RegistroEntradaGeneralForms
 from .tables import EntradaGeneralTable
+
+def postpone(function):
+    def decorator(*args, **kwargs):
+        t = Thread(target=function, args=args, kwargs=kwargs)
+        t.daemon = True
+        t.start()
+
+    return decorator
 
 def respuesta(request):
     if request.method == 'GET':
@@ -61,7 +70,7 @@ def registro_socio(request):
                 messages.success(request, f'Usuario registrado con éxito.')
 
             cant = len(pks)
-            os.system('python3 ./scripts/client.py abrir_tiempo ' + str(cant))
+            socket_arduino(cant)
             return redirect('usuariosistema:home')
 
         else:
@@ -119,9 +128,13 @@ def registro_nosocio(request):
             return render(request, 'registroGeneral/registro_manual_nosocio.html', context={})
 
 
-        os.system('python3 ./scripts/client.py abrir_tiempo ' + str(cantidad))
+        socket_arduino(cantidad)
         return redirect('usuariosistema:home')
 
     else:
         return render(request, 'registroGeneral/registro_manual_nosocio.html', context={})
+
+@postpone
+def socket_arduino(cantidad):
+    os.system('python3 ./scripts/client.py abrir_tiempo ' + str(cantidad))
 
