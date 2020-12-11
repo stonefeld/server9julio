@@ -148,7 +148,7 @@ def cargarDB(request):
 
     cargarDBAsync(df)
 
-    messages.success(request, f'La carga de datos a iniciado con éxito')
+    messages.success(request, f'La carga de datos ha iniciado con éxito')
     return redirect('usuariosistema:home')
 
 @postpone
