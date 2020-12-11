@@ -61,8 +61,7 @@ def registro_socio(request):
                 messages.success(request, f'Usuario registrado con éxito.')
 
             cant = len(pks)
-            ip = 'localhost'
-            os.system('python3 ./scripts/client.py abrir_tiempo ' + str(cant) + ' ' + ip)
+            os.system('python3 ./scripts/client.py abrir_tiempo ' + str(cant))
             return redirect('usuariosistema:home')
 
         else:
@@ -119,6 +118,8 @@ def registro_nosocio(request):
             messages.warning(request, f'Debe seleccionar la cantidad de personas')
             return render(request, 'registroGeneral/registro_manual_nosocio.html', context={})
 
+
+        os.system('python3 ./scripts/client.py abrir_tiempo ' + str(cantidad))
         return redirect('usuariosistema:home')
 
     else:
