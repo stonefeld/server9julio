@@ -92,6 +92,7 @@ def tablaIngresos(request):
 
 @login_required
 def cargarDB(request):
+    redirect('usuariosistema:home')
     deudaMax = Deuda.objects.all().last().deuda
     location = './media/saldos.csv'
 
@@ -104,7 +105,8 @@ def cargarDB(request):
         )
 
     except :
-        return HttpResponse('Error en la lectura del archivo')
+        messages.warning(request, f'Ha habido un error al leer el archivo')
+        return redirect('draganddrop:upload')
 
     df.drop('b', inplace=True, axis=1)
     df.drop('d', inplace=True, axis=1)
@@ -124,7 +126,8 @@ def cargarDB(request):
     })
 
     if df['NrSocio'][5] != 'Composición de Saldos':
-        return HttpResponse('error archivo incorrecto')
+        messages.warning(request, f'El archivo subido es incorrecto')
+        return redirect('draganddrop:upload')
 
     for row in range(10):
         df = df.drop(row)
