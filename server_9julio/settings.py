@@ -32,7 +32,7 @@ SECRET_KEY = config['SECRET_KEY']
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['172.20.1.119']
+ALLOWED_HOSTS = ['']
 
 
 # Application definition
@@ -104,7 +104,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': '9Julio_db',
-        'USER': 'root',
+        'USER': 'admin',
         'PASSWORD': '',
         'HOST': '127.0.0.1',
         'PORT': 3306,
