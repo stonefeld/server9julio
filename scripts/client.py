@@ -6,7 +6,7 @@ argv.remove(argv[0])
 
 accion = argv[0]
 cantidad = int(argv[1])
-ip = 'localhost'
+ip = ''
 
 for i in range(cantidad):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
