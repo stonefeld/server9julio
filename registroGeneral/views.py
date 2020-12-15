@@ -6,6 +6,7 @@ from django.http import HttpResponse
 from django.contrib import messages
 from django.db.models import Q
 from django.contrib.auth.decorators import login_required
+from django.conf import settings
 
 from django_tables2 import SingleTableView, RequestConfig
 
@@ -136,5 +137,6 @@ def registro_nosocio(request):
 
 @postpone
 def socket_arduino(cantidad):
-    os.system('python3 ./scripts/client.py abrir_tiempo ' + str(cantidad))
-
+    base_dir = settings.BASE_DIR
+    script_loc = os.path.join(base_dir, 'scripts/client.py')
+    os.system('python3 ' + script_loc + ' abrir_tiempo ' + str(cantidad))
