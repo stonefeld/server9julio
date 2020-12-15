@@ -29,13 +29,13 @@ def respuesta(request):
             if(user.general == True):
                 entrada = EntradaGeneral(lugar='GENERAL', persona=user)
                 entrada.save()
-                rta = '1'
+                rta = '#1'
 
             else:
-                rta = '0'
+                rta = '#0'
 
         except:
-            rta = '-1'
+            rta = '#2'
 
         return HttpResponse(rta)
 
