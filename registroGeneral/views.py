@@ -25,10 +25,16 @@ def postpone(function):
 def respuesta(request):
     if request.method == 'GET':
         nrTarjeta = request.GET.get('nrTarjeta', '')
+        direccion = request.GET.get('direccion','')
         try:
-            user = Persona.objects.get(nrTarjeta=nrTarjeta)
+            user = Persona.objects.get(nrTarjeta=int(nrTarjeta))
             if(user.general == True):
-                entrada = EntradaGeneral(lugar='GENERAL', persona=user)
+                if int(direccion) == 1:
+                    entrada = EntradaGeneral(lugar='GENERAL', persona=user, direccion='SALIDA')
+
+                else:
+                    entrada = EntradaGeneral(lugar='GENERAL', persona=user, direccion='ENTRADA')
+
                 entrada.save()
                 rta = '#1'
 
