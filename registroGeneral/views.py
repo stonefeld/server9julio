@@ -1,4 +1,4 @@
-import os
+import os, csv
 from threading import Thread
 
 from django.shortcuts import render, redirect, get_object_or_404
@@ -7,6 +7,7 @@ from django.contrib import messages
 from django.db.models import Q
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
+from django.utils.timezone import localtime
 
 from django_tables2 import SingleTableView, RequestConfig
 
@@ -141,8 +142,25 @@ def registro_nosocio(request):
     else:
         return render(request, 'registroGeneral/registro_manual_nosocio.html', context={})
 
+@login_required
+def downloadHistory(request):
+    response = HttpResponse(content_type='text/csv')
+    writer = csv.writer(response)
+    writer.writerow(['Persona', 'Lugar', 'Fecha y Hora', 'Dirección'])
+
+    for entrada in EntradaGeneral.objects.all().values_list('persona', 'lugar', 'tiempo', 'direccion'):
+        entrada_list = list(entrada)
+        entrada_list[0] = Persona.objects.get(id=entrada_list[0]).nombre_apellido
+        entrada_list[2] = localtime(entrada_list[2])
+        writer.writerow(entrada_list)
+
+    response['Content-Disposition'] = 'attachment; filename="historial.csv"'
+
+    return response
+
 @postpone
 def socket_arduino(cantidad):
     base_dir = settings.BASE_DIR
     script_loc = os.path.join(base_dir, 'scripts/client.py')
     os.system('python3 ' + script_loc + ' abrir_tiempo ' + str(cantidad))
+
