@@ -38,7 +38,7 @@ def vincular(request, id):
         return redirect('usuariosistema:home')
 
     else:
-        return render(request,'usuario/vinculacion.html', {'form': form })
+        return render(request,'usuario/vinculacion.html', { 'form': form })
 
 @login_required
 def nrTarjeta(request):
@@ -60,7 +60,7 @@ def nrTarjeta(request):
                     Q(dni__icontains = busqueda)
                 ).distinct()
 
-            table = EntradaGeneralTable(persona.filter(~Q(nombre_apellido='NOSOCIO'), general=True))
+            table = EntradaGeneralTable(persona.filter(~Q(nombre_apellido='NOSOCIO')))
             RequestConfig(request).configure(table)
             messages.warning(request, f'Debe seleccionar un usuario')
 
@@ -78,7 +78,7 @@ def nrTarjeta(request):
                 Q(dni__icontains = busqueda)
             ).distinct()
 
-        table = EntradaGeneralTable(persona.filter(~Q(nombre_apellido='NOSOCIO'), general=True))
+        table = EntradaGeneralTable(persona.filter(~Q(nombre_apellido='NOSOCIO')))
         RequestConfig(request).configure(table)
         messages.info(request, f'Seleccione un usuario a la vez')
 
@@ -157,46 +157,45 @@ def cargarDBAsync(df):
     listaUsuarios = []
 
     for ind in df.index:
-        if 'PROVISORIO' not in str(df['Socio'][ind]):
-            if float((df['Deuda'][ind]).replace(',', '')) > deudaMax:
-                try:
-                    usuario = Persona.objects.get(nrSocio=int(df['NrSocio'][ind]))
-                    listaUsuarios.append(usuario.id)
-                    if usuario.general == True:
-                        usuario.general = False
-                        usuario.deuda = float((df['Deuda'][ind]).replace(',', ''))
-                        usuario.save()
-
-                except:
-                    usuario = Persona(
-                        nombre_apellido=df['Socio'][ind],
-                        nrSocio=int(df['NrSocio'][ind]),
-                        general=False,
-                        deuda=float((df['Deuda'][ind]).replace(',',''))
-                    )
+        if float((df['Deuda'][ind]).replace(',', '')) > deudaMax:
+            try:
+                usuario = Persona.objects.get(nrSocio=int(df['NrSocio'][ind]))
+                listaUsuarios.append(usuario.id)
+                if usuario.general == True:
+                    usuario.general = False
+                    usuario.deuda = float((df['Deuda'][ind]).replace(',', ''))
                     usuario.save()
-                    usuario = Persona.objects.get(nrSocio=int(df['NrSocio'][ind]))
-                    listaUsuarios.append(usuario.id)
 
-            else:
-                try:
-                    usuario = Persona.objects.get(nrSocio=int(df['NrSocio'][ind]))
-                    listaUsuarios.append(usuario.id)
-                    if usuario.general == False:
-                        usuario.general = True
-                        usuario.deuda = float((df['Deuda'][ind]).replace(',', ''))
-                        usuario.save()
+            except:
+                usuario = Persona(
+                    nombre_apellido=df['Socio'][ind],
+                    nrSocio=int(df['NrSocio'][ind]),
+                    general=False,
+                    deuda=float((df['Deuda'][ind]).replace(',',''))
+                )
+                usuario.save()
+                usuario = Persona.objects.get(nrSocio=int(df['NrSocio'][ind]))
+                listaUsuarios.append(usuario.id)
 
-                except:
-                    usuario = Persona(
-                        nombre_apellido=df['Socio'][ind],
-                        nrSocio=int(df['NrSocio'][ind]),
-                        general=True,
-                        deuda=float((df['Deuda'][ind]).replace(',', ''))
-                    )
+        else:
+            try:
+                usuario = Persona.objects.get(nrSocio=int(df['NrSocio'][ind]))
+                listaUsuarios.append(usuario.id)
+                if usuario.general == False:
+                    usuario.general = True
+                    usuario.deuda = float((df['Deuda'][ind]).replace(',', ''))
                     usuario.save()
-                    usuario = Persona.objects.get(nrSocio=int(df['NrSocio'][ind]))
-                    listaUsuarios.append(usuario.id)
+
+            except:
+                usuario = Persona(
+                    nombre_apellido=df['Socio'][ind],
+                    nrSocio=int(df['NrSocio'][ind]),
+                    general=True,
+                    deuda=float((df['Deuda'][ind]).replace(',', ''))
+                )
+                usuario.save()
+                usuario = Persona.objects.get(nrSocio=int(df['NrSocio'][ind]))
+                listaUsuarios.append(usuario.id)
 
     personas = Persona.objects.all()
     for persona in personas:

@@ -64,18 +64,21 @@ def registro_socio(request):
                     if persona.general:
                         entrada = EntradaGeneral(lugar='GENERAL', persona=persona, direccion=dire)
                         entrada.save()
+                        no_pasa = False
 
                     else:
                         messages.warning(request, f'El usuario ' +  persona.nombre_apellido + ' no tiene acceso.')
+                        no_pasa = True
 
                 except:
                     return HttpResponse('Error')
 
-            if len(pks) > 1:
-                messages.success(request, f'Usuarios registrados con éxito.')
+            if not no_pasa:
+                if len(pks) > 1:
+                    messages.success(request, f'Entradas registradas con éxito.')
 
-            else:
-                messages.success(request, f'Usuario registrado con éxito.')
+                else:
+                    messages.success(request, f'Entrada registrada con éxito.')
 
             cant = len(pks)
             socket_arduino(cant)
@@ -93,7 +96,7 @@ def registro_socio(request):
                     Q(dni__icontains = busqueda)
                 ).distinct()
 
-            table = EntradaGeneralTable(persona.filter(~Q(nombre_apellido='NOSOCIO'), general=True))
+            table = EntradaGeneralTable(persona.filter(~Q(nombre_apellido='NOSOCIO')))
             RequestConfig(request).configure(table)
             messages.warning(request, f'Debe seleccionar un usuario')
             return render(request, 'registroGeneral/registro_manual_socio.html', { 'table': table })
@@ -110,7 +113,7 @@ def registro_socio(request):
                 Q(dni__icontains = busqueda)
             ).distinct()
 
-        table = EntradaGeneralTable(persona.filter(~Q(nombre_apellido='NOSOCIO'), general=True))
+        table = EntradaGeneralTable(persona.filter(~Q(nombre_apellido='NOSOCIO')))
         RequestConfig(request).configure(table)
         return render(request, 'registroGeneral/registro_manual_socio.html', { 'table': table })
 
