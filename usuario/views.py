@@ -65,7 +65,6 @@ def tablaIngresos(request):
 @login_required
 def cargarDB(request):
     deudaMax = Deuda.objects.all().last().deuda
-    print(deudaMax)
     listaUsuarios = [] #lista de usuarios actualizados
     location = './media/saldos.csv'
     try:
