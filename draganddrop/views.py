@@ -7,6 +7,7 @@ from django.views.generic import TemplateView, ListView, CreateView
 from django.core.files.storage import FileSystemStorage
 from django.urls import reverse_lazy
 from django.contrib.auth.decorators import login_required
+from django.conf import settings
 
 from usuario.models import Deuda
 
@@ -18,11 +19,13 @@ def upload(request):
             deudaMax = request.POST.getlist('deuda')[0]
             deuda = Deuda(deuda=deudaMax)
 
-            if path.exists('./media/saldos.csv'):
-                remove('./media/saldos.csv')
+            media_root = settings.MEDIA_ROOT
+            location = path.join(media_root, 'saldos.csv')
+
+            if path.exists(location):
+                remove(location)
 
             try:
-
                 uploaded_file = request.FILES['file']
                 fs = FileSystemStorage()
                 name = fs.save('saldos.csv', uploaded_file)

@@ -31,10 +31,10 @@ def respuesta(request):
             user = Persona.objects.get(nrTarjeta=int(nrTarjeta))
             if(user.general == True):
                 if int(direccion) == 1:
-                    entrada = EntradaGeneral(lugar='GENERAL', persona=user, direccion='SALIDA')
+                    entrada = EntradaGeneral(lugar='GENERAL', persona=user, direccion='SALIDA', autorizado=True)
 
                 else:
-                    entrada = EntradaGeneral(lugar='GENERAL', persona=user, direccion='ENTRADA')
+                    entrada = EntradaGeneral(lugar='GENERAL', persona=user, direccion='ENTRADA', autorizado=True)
 
                 entrada.save()
                 rta = '#1'
@@ -62,23 +62,26 @@ def registro_socio(request):
                 try:
                     persona = Persona.objects.get(id=pk)
                     if persona.general:
-                        entrada = EntradaGeneral(lugar='GENERAL', persona=persona, direccion=dire)
+                        entrada = EntradaGeneral(lugar='GENERAL', persona=persona, direccion=dire, autorizado=True)
                         entrada.save()
                         no_pasa = False
 
                     else:
-                        messages.warning(request, f'El usuario ' +  persona.nombre_apellido + ' no tiene acceso.')
+                        entrada = EntradaGeneral(lugar='GENERAL', persona=persona, direccion=dire, autorizado=False)
+                        entrada.save()
                         no_pasa = True
 
                 except:
                     return HttpResponse('Error')
 
-            if not no_pasa:
-                if len(pks) > 1:
-                    messages.success(request, f'Entradas registradas con éxito.')
+            if len(pks) > 1:
+                messages.success(request, f'Entradas registradas con éxito.')
 
-                else:
-                    messages.success(request, f'Entrada registrada con éxito.')
+            else:
+                messages.success(request, f'Entrada registrada con éxito.')
+
+            if no_pasa:
+                messages.warning(request, f'Algunas entradas fueron registradas incluso sin estar autorizadas.')
 
             cant = len(pks)
             socket_arduino(cant)
@@ -130,7 +133,8 @@ def registro_nosocio(request):
                 entrada = EntradaGeneral(
                     lugar='GENERAL',
                     persona=Persona.objects.get(nombre_apellido='NOSOCIO'),
-                    direccion=dire
+                    direccion=dire,
+                    autorizado=True
                 )
                 entrada.save()
 
