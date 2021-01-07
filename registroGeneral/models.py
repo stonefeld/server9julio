@@ -8,6 +8,7 @@ class EntradaGeneral(models.Model):
     lugar = models.CharField(max_length=30, verbose_name='Lugar')
     tiempo = models.DateTimeField(default=now, verbose_name='Fecha y Hora')
     direccion = models.CharField(max_length=30, default='ENTRADA', verbose_name='Dirección')
+    autorizado = models.BooleanField(default=False, verbose_name='Autorización')
 
     def __str__(self):
         return str(localtime(self.tiempo)) + " - " + str(self.persona)

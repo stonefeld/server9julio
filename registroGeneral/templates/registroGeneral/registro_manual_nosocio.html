@@ -8,19 +8,27 @@
 {% endblock subtitle %}
 
 {% block content %}
-  <div class="content-section" style="padding:20px;">
-    <div id="form_card" class="card-panel col s12">
-
-      <form method="POST">
-        {% csrf_token %}
-        <div class="form-group"style="padding-top:10px">
-          <label for="cantidad">Cantidad de Personas: </label>
-          <input type="text" id="cantidad" name="cantidad"><br><br>
-          <button class="btn btn-outline-info" type="submit" name="direccion" value="ENTRADA">Entrada</button>
-          <button class="btn btn-outline-info" type="submit" name="direccion"value="SALIDA" >Salida</button>
+  <div class="container" style="padding:20px">
+    <div class="row justify-content-center">
+      <div class="content-section" style="padding:20px;">
+        <div id="form_card" class="card-panel col s12">
+  
+          <form method="POST">
+            {% csrf_token %}
+            <div class="form-group"style="padding-top:10px">
+              <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                  <span class="input-group-text">Cantidad de Personas</span>
+                </div>
+                <input class="form-control" type="number" id="cantidad" name="cantidad" min="0"/>
+              </div>
+              <button class="btn btn-outline-info" type="submit" name="direccion" value="ENTRADA">Entrada</button>
+              <button class="btn btn-outline-info" type="submit" name="direccion"value="SALIDA" >Salida</button>
+            </div>
+          </form>
+  
         </div>
-      </form>
-
+      </div>
     </div>
   </div>
 {% endblock %}
