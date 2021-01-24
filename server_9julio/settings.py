@@ -43,17 +43,16 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     # Own
-    'draganddrop.apps.DragAndDropConfig',
-    'estacionamiento.apps.EstacionamientoConfig',
-    'registroGeneral.apps.RegistrogeneralConfig',
-    'registroPileta.apps.RegistropiletaConfig',
-    'registroTenis.apps.RegistrotenisConfig',
-    'usuario.apps.UsuarioConfig',
-    'usuariosistema.apps.UsuariosistemaConfig',
+    'draganddrop',
+    'estacionamiento',
+    'registroGeneral',
+    'registroPileta',
+    'registroTenis',
+    'usuario',
+    'usuariosistema',
 
     # Third party apps
     'crispy_forms',
-    'django_crontab',
     'django_tables2',
 
 ]
