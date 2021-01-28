@@ -1,8 +1,13 @@
+import os
+from threading import Thread
+
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
+from django.db import connection
 from django.db.models import Q
 from django.contrib import messages
+from django.conf import settings
 
 from django_tables2 import SingleTableView, RequestConfig
 
@@ -13,6 +18,14 @@ from .forms import PersonaForm
 from .tables import HistorialTable
 from registroGeneral.models import EntradaGeneral
 from registroGeneral.tables import EntradaGeneralTable
+
+def postpone(function):
+    def decorator(*args, **kwargs):
+        t = Thread(target=function, args=args, kwargs=kwargs)
+        t.daemon = True
+        t.start()
+
+    return decorator
 
 @login_required
 def vincular(request, id):
@@ -25,7 +38,7 @@ def vincular(request, id):
         return redirect('usuariosistema:home')
 
     else:
-        return render(request,'usuario/vinculacion.html', {'form': form })
+        return render(request,'usuario/vinculacion.html', { 'form': form })
 
 @login_required
 def nrTarjeta(request):
@@ -47,7 +60,7 @@ def nrTarjeta(request):
                     Q(dni__icontains = busqueda)
                 ).distinct()
 
-            table = EntradaGeneralTable(persona.filter(~Q(nombre_apellido='NOSOCIO'), general=True))
+            table = EntradaGeneralTable(persona.filter(~Q(nombre_apellido='NOSOCIO')))
             RequestConfig(request).configure(table)
             messages.warning(request, f'Debe seleccionar un usuario')
 
@@ -65,7 +78,7 @@ def nrTarjeta(request):
                 Q(dni__icontains = busqueda)
             ).distinct()
 
-        table = EntradaGeneralTable(persona.filter(~Q(nombre_apellido='NOSOCIO'), general=True))
+        table = EntradaGeneralTable(persona.filter(~Q(nombre_apellido='NOSOCIO')))
         RequestConfig(request).configure(table)
         messages.info(request, f'Seleccione un usuario a la vez')
 
@@ -92,9 +105,8 @@ def tablaIngresos(request):
 
 @login_required
 def cargarDB(request):
-    redirect('usuariosistema:home')
-    deudaMax = Deuda.objects.all().last().deuda
-    location = './media/saldos.csv'
+    media_root = settings.MEDIA_ROOT
+    location = os.path.join(media_root, 'saldos.csv')
 
     try:
         df = pd.read_csv(
@@ -134,50 +146,56 @@ def cargarDB(request):
 
     df = df.dropna()
 
+    cargarDBAsync(df)
+
+    messages.success(request, f'La carga de datos ha iniciado con éxito')
+    return redirect('usuariosistema:home')
+
+@postpone
+def cargarDBAsync(df):
+    deudaMax = Deuda.objects.all().last().deuda
     listaUsuarios = []
-    noise = 1
 
     for ind in df.index:
-        if 'PROVISORIO' not in str(df['Socio'][ind]):
-            if float((df['Deuda'][ind]).replace(',', '')) > deudaMax:
-                try:
-                    usuario = Persona.objects.get(nrSocio=int(df['NrSocio'][ind]))
-                    listaUsuarios.append(usuario.id)
-                    if usuario.general == True:
-                        usuario.general = False
-                        usuario.deuda = float((df['Deuda'][ind]).replace(',', ''))
-                        usuario.save()
-
-                except:
-                    usuario = Persona(
-                        nombre_apellido=df['Socio'][ind],
-                        nrSocio=int(df['NrSocio'][ind]),
-                        general=False,
-                        deuda=float((df['Deuda'][ind]).replace(',',''))
-                    )
+        if float((df['Deuda'][ind]).replace(',', '')) > deudaMax:
+            try:
+                usuario = Persona.objects.get(nrSocio=int(df['NrSocio'][ind]))
+                listaUsuarios.append(usuario.id)
+                if usuario.general == True:
+                    usuario.general = False
+                    usuario.deuda = float((df['Deuda'][ind]).replace(',', ''))
                     usuario.save()
-                    usuario = Persona.objects.get(nrSocio=int(df['NrSocio'][ind]))
-                    listaUsuarios.append(usuario.id)
 
-            else:
-                try:
-                    usuario = Persona.objects.get(nrSocio=int(df['NrSocio'][ind]))
-                    listaUsuarios.append(usuario.id)
-                    if usuario.general == False:
-                        usuario.general = True
-                        usuario.deuda = float((df['Deuda'][ind]).replace(',', ''))
-                        usuario.save()
+            except:
+                usuario = Persona(
+                    nombre_apellido=df['Socio'][ind],
+                    nrSocio=int(df['NrSocio'][ind]),
+                    general=False,
+                    deuda=float((df['Deuda'][ind]).replace(',',''))
+                )
+                usuario.save()
+                usuario = Persona.objects.get(nrSocio=int(df['NrSocio'][ind]))
+                listaUsuarios.append(usuario.id)
 
-                except:
-                    usuario = Persona(
-                        nombre_apellido=df['Socio'][ind],
-                        nrSocio=int(df['NrSocio'][ind]),
-                        general=True,
-                        deuda=float((df['Deuda'][ind]).replace(',', ''))
-                    )
+        else:
+            try:
+                usuario = Persona.objects.get(nrSocio=int(df['NrSocio'][ind]))
+                listaUsuarios.append(usuario.id)
+                if usuario.general == False:
+                    usuario.general = True
+                    usuario.deuda = float((df['Deuda'][ind]).replace(',', ''))
                     usuario.save()
-                    usuario = Persona.objects.get(nrSocio=int(df['NrSocio'][ind]))
-                    listaUsuarios.append(usuario.id)
+
+            except:
+                usuario = Persona(
+                    nombre_apellido=df['Socio'][ind],
+                    nrSocio=int(df['NrSocio'][ind]),
+                    general=True,
+                    deuda=float((df['Deuda'][ind]).replace(',', ''))
+                )
+                usuario.save()
+                usuario = Persona.objects.get(nrSocio=int(df['NrSocio'][ind]))
+                listaUsuarios.append(usuario.id)
 
     personas = Persona.objects.all()
     for persona in personas:
@@ -194,5 +212,5 @@ def cargarDB(request):
         noSocio = Persona(nrSocio=0, nombre_apellido='NOSOCIO', general=True, deuda=0.0)
         noSocio.save()
 
-    return redirect('usuariosistema:home')
+    connection.close()
 

@@ -8,7 +8,7 @@ class EntradaGeneralTable(tables.Table):
     class Meta:
         model = Persona
         template_name = 'table_template.html'
-        fields = ['nrSocio', 'nombre_apellido', 'nrTarjeta', 'dni']
+        fields = ['nrSocio', 'nombre_apellido', 'nrTarjeta', 'dni', 'general', 'deuda']
         order_by = 'nombre_apellido'
         orderable = True
 

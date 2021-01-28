@@ -11,7 +11,8 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
 from pathlib import Path
-import os
+import os, json
+
 import pytz
 from django.utils import timezone
 
@@ -23,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'kn#&zyz)osnma08shx#ud2233sb30umxlewarc$rv95$c0-an@'
+SECRET_KEY = 'abcdefghijklmnopqrstuvwxyz1234567890'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -42,17 +43,16 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     # Own
-    'draganddrop.apps.DragAndDropConfig',
-    'estacionamiento.apps.EstacionamientoConfig',
-    'registroGeneral.apps.RegistrogeneralConfig',
-    'registroPileta.apps.RegistropiletaConfig',
-    'registroTenis.apps.RegistrotenisConfig',
-    'usuario.apps.UsuarioConfig',
-    'usuariosistema.apps.UsuariosistemaConfig',
+    'draganddrop',
+    'estacionamiento',
+    'registroGeneral',
+    'registroPileta',
+    'registroTenis',
+    'usuario',
+    'usuariosistema',
 
     # Third party apps
     'crispy_forms',
-    'django_crontab', #pip install django-crontab #python manage.py crontab add
     'django_tables2',
 
 ]
@@ -100,7 +100,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': '9Julio_db',
-        'USER': 'root',
+        'USER': 'admin',
         'PASSWORD': '',
         'HOST': '127.0.0.1',
         'PORT': 3306,
@@ -147,9 +147,12 @@ timezone.activate(pytz.timezone(TIME_ZONE))
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'usuariosistema:home'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+CRISPY_TEMPLATE_PACK = 'bootstrap4'

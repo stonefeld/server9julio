@@ -8,7 +8,7 @@
 
 {% block content %}
   <div class="wrapper" style="padding-left:80px; padding-right:80px;">
-    <form method="get">
+    <form method="GET">
       <div class="input-group mx-auto" style="margin-top: 50px;">
         <input type="text"  placeholder="Buscar..." name="buscar" value="">
         <div>
@@ -18,6 +18,12 @@
         </div>
       </div>
     </form>
+
+    <div class="form-group" style="padding-top:10px">
+      <a style='text-decoration:none' href={% url 'registroGeneral:descargar-historial' %}>
+        <button class="btn btn-outline-info btn-block" type="submit">Descargar historial</button>
+      </a>
+    </div>
 
     <div style="padding:20px">
       {% render_table table %}
