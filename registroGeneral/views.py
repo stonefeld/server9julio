@@ -1,12 +1,13 @@
-import os, csv
+import csv
+import os
 from threading import Thread
 
-from django.shortcuts import render, redirect, get_object_or_404
-from django.http import HttpResponse
-from django.contrib import messages
-from django.db.models import Q
-from django.contrib.auth.decorators import login_required
 from django.conf import settings
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.db.models import Q
+from django.http import HttpResponse
+from django.shortcuts import render, redirect
 from django.utils.timezone import localtime
 
 from django_tables2 import SingleTableView, RequestConfig
@@ -26,10 +27,10 @@ def postpone(function):
 def respuesta(request):
     if request.method == 'GET':
         nrTarjeta = request.GET.get('nrTarjeta', '')
-        direccion = request.GET.get('direccion','')
+        direccion = request.GET.get('direccion', '')
         try:
             user = Persona.objects.get(nrTarjeta=int(nrTarjeta))
-            if(user.general == True):
+            if user.general == True:
                 if int(direccion) == 1:
                     entrada = EntradaGeneral(lugar='GENERAL', persona=user, direccion='SALIDA', autorizado=True)
 
@@ -49,7 +50,7 @@ def respuesta(request):
 
 @login_required
 def registro(request):
-    return render(request, 'registroGeneral/registro_manual_seleccion.html', context={})
+    return render(request, 'registroGeneral/registro_manual_seleccion.html', { 'title': 'Acceso manual' })
 
 @login_required
 def registro_socio(request):
@@ -75,13 +76,13 @@ def registro_socio(request):
                     return HttpResponse('Error')
 
             if len(pks) > 1:
-                messages.success(request, f'Entradas registradas con éxito.')
+                messages.success(request, 'Entradas registradas con éxito.')
 
             else:
-                messages.success(request, f'Entrada registrada con éxito.')
+                messages.success(request, 'Entrada registrada con éxito.')
 
             if no_pasa:
-                messages.warning(request, f'Algunas entradas fueron registradas incluso sin estar autorizadas.')
+                messages.warning(request, 'Algunas entradas fueron registradas sin estar autorizadas.')
 
             cant = len(pks)
             socket_arduino(cant)
@@ -101,8 +102,8 @@ def registro_socio(request):
 
             table = EntradaGeneralTable(persona.filter(~Q(nombre_apellido='NOSOCIO')))
             RequestConfig(request).configure(table)
-            messages.warning(request, f'Debe seleccionar un usuario')
-            return render(request, 'registroGeneral/registro_manual_socio.html', { 'table': table })
+            messages.warning(request, 'Debe seleccionar un usuario')
+            return render(request, 'registroGeneral/registro_manual_socio.html', { 'table': table, 'title': 'Acceso socio' })
 
     elif request.method == 'GET':
         persona = Persona.objects.all()
@@ -118,7 +119,7 @@ def registro_socio(request):
 
         table = EntradaGeneralTable(persona.filter(~Q(nombre_apellido='NOSOCIO')))
         RequestConfig(request).configure(table)
-        return render(request, 'registroGeneral/registro_manual_socio.html', { 'table': table })
+        return render(request, 'registroGeneral/registro_manual_socio.html', { 'table': table, 'title': 'Acceso socio' })
 
 @login_required
 def registro_nosocio(request):
@@ -139,23 +140,23 @@ def registro_nosocio(request):
                 entrada.save()
 
         except:
-            messages.warning(request, f'Debe seleccionar la cantidad de personas')
-            return render(request, 'registroGeneral/registro_manual_nosocio.html', context={})
+            messages.warning(request, 'Debe seleccionar la cantidad de personas')
+            return render(request, 'registroGeneral/registro_manual_nosocio.html', { 'title': 'Acceso no socio' })
 
 
         socket_arduino(cantidad)
         return redirect('usuariosistema:home')
 
-    else:
-        return render(request, 'registroGeneral/registro_manual_nosocio.html', context={})
+    elif request.method == 'GET':
+        return render(request, 'registroGeneral/registro_manual_nosocio.html', { 'title': 'Acceso no socio' })
 
 @login_required
 def downloadHistory(request):
     response = HttpResponse(content_type='text/csv')
     writer = csv.writer(response)
-    writer.writerow(['Persona', 'Lugar', 'Fecha y Hora', 'Dirección'])
+    writer.writerow(['Persona', 'Lugar', 'Fecha y Hora', 'Dirección', 'Autorización'])
 
-    for entrada in EntradaGeneral.objects.all().values_list('persona', 'lugar', 'tiempo', 'direccion'):
+    for entrada in EntradaGeneral.objects.all().values_list('persona', 'lugar', 'tiempo', 'direccion', 'autorizado'):
         entrada_list = list(entrada)
         entrada_list[0] = Persona.objects.get(id=entrada_list[0]).nombre_apellido
         entrada_list[2] = localtime(entrada_list[2])
@@ -169,5 +170,5 @@ def downloadHistory(request):
 def socket_arduino(cantidad):
     base_dir = settings.BASE_DIR
     script_loc = os.path.join(base_dir, 'scripts/client.py')
-    os.system('python3 ' + script_loc + ' abrir_tiempo ' + str(cantidad))
+    os.system(f'python3 {script_loc} abrir_tiempo {cantidad}')
 

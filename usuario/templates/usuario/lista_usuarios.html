@@ -23,13 +23,8 @@
         </div>
       </form>
 
-      <form method="POST">
-        {% csrf_token %}
-        <div class="form-group" style="padding-top:10px">
-          <button class="btn btn-outline-info btn-block" type="submit">Vincular</button>
-        </div>
-        {% render_table table %}
-      </form>
+      {% csrf_token %}
+      {% render_table table %}
 
     </div>
   </div>

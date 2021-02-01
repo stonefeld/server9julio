@@ -7,20 +7,21 @@
 {% endblock subtitle %}
 
 {% block content %}
-  <div class="content-section" style="padding:20px">
-    <form method="POST">
-    {% csrf_token %}
-      <fieldset class="form-group">
-        {{ form|crispy }}
-      </fieldset>
-      <div class="form-group">
-        <button class="btn btn-outline-info" type="submit">Iniciar sesión</button>
+  <div class="container" style="padding: 20px;">
+    <div class="row justify-content-center">
+      <div class="col-lg-10 col-md-12">
+        <div class="card mb-4">
+          <div class="card-body">
+            <form class="form-container" method="POST">
+              <div class="form-group">
+                {% csrf_token %}
+                {{ form | crispy }}
+                <button class="btn btn-outline-info" type="submit">Iniciar sesión</button>
+              </div>
+            </form>
+          </div>
+        </div>
       </div>
-    </form>
-    <div class="border-top pt-3">
-      <small class="text-muted">
-        Si necesita un usuario para el sistema<a class="ml-2" href="{% url 'usuariosistema:registro' %}">registrese acá</a>
-      </small>
     </div>
   </div>
 {% endblock %}

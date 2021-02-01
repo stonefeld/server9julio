@@ -42,25 +42,18 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    # Own
+    # Own applications
     'draganddrop',
-    'estacionamiento',
     'registroGeneral',
     'registroPileta',
     'registroTenis',
     'usuario',
     'usuariosistema',
 
-    # Third party apps
+    # Third party application
     'crispy_forms',
-    'django_tables2',
-
+    'django_tables2'
 ]
-
-CRONJOBS = [
-    ('20 4 * * *', 'usuario.cron.my_scheduled_job')
-]
-
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -149,10 +142,11 @@ timezone.activate(pytz.timezone(TIME_ZONE))
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
-LOGIN_URL = 'login'
+LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = 'usuariosistema:home'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
+

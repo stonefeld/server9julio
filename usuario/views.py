@@ -1,13 +1,13 @@
 import os
 from threading import Thread
 
-from django.shortcuts import render, redirect
-from django.http import HttpResponse
+from django.conf import settings
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import connection
 from django.db.models import Q
-from django.contrib import messages
-from django.conf import settings
+from django.http import HttpResponse
+from django.shortcuts import render, redirect
 
 from django_tables2 import SingleTableView, RequestConfig
 
@@ -15,9 +15,9 @@ import pandas as pd
 
 from .models import Persona, Deuda
 from .forms import PersonaForm
-from .tables import HistorialTable
+from .tables import PersonaTable
 from registroGeneral.models import EntradaGeneral
-from registroGeneral.tables import EntradaGeneralTable
+from registroGeneral.tables import HistorialTable
 
 def postpone(function):
     def decorator(*args, **kwargs):
@@ -28,45 +28,8 @@ def postpone(function):
     return decorator
 
 @login_required
-def vincular(request, id):
-    obj = Persona.objects.get(id=id)
-    form = PersonaForm(request.POST or None , instance=obj)
-    if form.is_valid():
-        form.save()
-
-    if request.method == 'POST':
-        return redirect('usuariosistema:home')
-
-    else:
-        return render(request,'usuario/vinculacion.html', { 'form': form })
-
-@login_required
-def nrTarjeta(request):
-    if request.method == 'POST':
-        try:
-            pks = request.POST.getlist('seleccion')
-            persona = Persona.objects.get(id=pks[0])
-            return redirect(persona.get_absolute_url())
-
-        except:
-            persona = Persona.objects.all()
-            busqueda = request.GET.get('buscar')
-
-            if busqueda:
-                persona = Persona.objects.filter(
-                    Q(nrSocio__icontains = busqueda) |
-                    Q(nombre_apellido__icontains = busqueda) |
-                    Q(nrTarjeta__icontains = busqueda) |
-                    Q(dni__icontains = busqueda)
-                ).distinct()
-
-            table = EntradaGeneralTable(persona.filter(~Q(nombre_apellido='NOSOCIO')))
-            RequestConfig(request).configure(table)
-            messages.warning(request, f'Debe seleccionar un usuario')
-
-            return render(request, 'usuario/vincularTarjetas.html', { 'table': table })
-
-    elif request.method == 'GET':
+def listaUsuarios(request):
+    if request.method == 'GET':
         persona = Persona.objects.all()
         busqueda = request.GET.get('buscar')
 
@@ -78,14 +41,26 @@ def nrTarjeta(request):
                 Q(dni__icontains = busqueda)
             ).distinct()
 
-        table = EntradaGeneralTable(persona.filter(~Q(nombre_apellido='NOSOCIO')))
+        table = PersonaTable(persona.filter(~Q(nombre_apellido='NOSOCIO')))
         RequestConfig(request).configure(table)
-        messages.info(request, f'Seleccione un usuario a la vez')
 
-        return render(request, 'usuario/vincularTarjetas.html', { 'table': table })
+        return render(request, 'usuario/lista_usuarios.html', { 'table': table, 'title': 'Lista de usuarios' })
 
 @login_required
-def tablaIngresos(request):
+def editarUsuario(request, id):
+    obj = Persona.objects.get(id=id)
+    form = PersonaForm(request.POST or None , instance=obj)
+    if form.is_valid():
+        form.save()
+
+    if request.method == 'POST':
+        return redirect('usuariosistema:home')
+
+    else:
+        return render(request,'usuario/editar_usuario.html', { 'form': form, 'title': 'Editar usuario' })
+
+@login_required
+def historial(request):
     if request.method == 'GET':
         entradas = EntradaGeneral.objects.all()
         busqueda = request.GET.get('buscar')
@@ -101,7 +76,7 @@ def tablaIngresos(request):
         table = HistorialTable(entradas)
         RequestConfig(request).configure(table)
 
-        return render(request, 'usuario/tablaIngresos.html', { 'table': table })
+        return render(request, 'usuario/historial.html', { 'table': table, 'title': 'Historial' })
 
 @login_required
 def cargarDB(request):
@@ -117,14 +92,14 @@ def cargarDB(request):
         )
 
     except :
-        messages.warning(request, f'Ha habido un error al leer el archivo')
+        messages.warning(request, 'Ha habido un error al leer el archivo')
         return redirect('draganddrop:upload')
 
     df.drop('b', inplace=True, axis=1)
     df.drop('d', inplace=True, axis=1)
 
     for column in list('ghijklmnopqrstuv'):
-        df.drop('%c'% (column), inplace=True, axis=1)
+        df.drop(f'{column}', inplace=True, axis=1)
 
     for ind in df.index:
         if pd.isna(df['f'][ind]) == False:
@@ -138,7 +113,7 @@ def cargarDB(request):
     })
 
     if df['NrSocio'][5] != 'Composición de Saldos':
-        messages.warning(request, f'El archivo subido es incorrecto')
+        messages.warning(request, 'El archivo subido es incorrecto')
         return redirect('draganddrop:upload')
 
     for row in range(10):
@@ -148,7 +123,7 @@ def cargarDB(request):
 
     cargarDBAsync(df)
 
-    messages.success(request, f'La carga de datos ha iniciado con éxito')
+    messages.success(request, 'La carga de datos ha iniciado con éxito')
     return redirect('usuariosistema:home')
 
 @postpone
@@ -168,7 +143,7 @@ def cargarDBAsync(df):
 
             except:
                 usuario = Persona(
-                    nombre_apellido=df['Socio'][ind],
+                    nombre_apellido=str(df['Socio'][ind]).strip(),
                     nrSocio=int(df['NrSocio'][ind]),
                     general=False,
                     deuda=float((df['Deuda'][ind]).replace(',',''))
@@ -188,7 +163,7 @@ def cargarDBAsync(df):
 
             except:
                 usuario = Persona(
-                    nombre_apellido=df['Socio'][ind],
+                    nombre_apellido=str(df['Socio'][ind]).strip(),
                     nrSocio=int(df['NrSocio'][ind]),
                     general=True,
                     deuda=float((df['Deuda'][ind]).replace(',', ''))

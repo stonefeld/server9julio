@@ -7,11 +7,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-    <link rel="shortcut icon" type="image/png" href="{% static 'usuariosistema/favicon.ico' %}"/>
-
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 
+    <link rel="shortcut icon" type="image/png" href="{% static 'usuariosistema/favicon.ico' %}"/>
     <link rel="stylesheet" title="text/css" href="{% static 'usuariosistema/main.css' %}">
 
     <script src="https://code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n" crossorigin="anonymous"></script>
@@ -36,7 +35,7 @@
           <div class="collapse navbar-collapse" id="navbarToggle">
             <div class="navbar-nav mr-auto">
               <a class="nav-item nav-link" style="padding:10px" href="{% url 'usuariosistema:home' %}">Inicio</a>
-              <a class="nav-item nav-link" style="padding:10px" href="{% url 'usuario:entrada-respuesta' %}">Historial</a>
+              <a class="nav-item nav-link" style="padding:10px" href="{% url 'usuario:historial' %}">Historial</a>
               <a class="nav-item nav-link" style="padding:10px" href="{% url 'registroGeneral:registro' %}">Acceso Manual</a>
               <a class="nav-item nav-link" style="padding:10px" href="{% url 'usuario:tarjeta' %}">Vincular Tarjetas</a>
               <a class="nav-item nav-link" style="padding:10px" href="{% url 'draganddrop:upload' %}">Subir Archivo</a>
@@ -44,7 +43,7 @@
 
             <div class="navbar-nav">
               {% if user.is_authenticated %}
-                <a class="nav-item nav-link" href="{% url 'logout' %}">Cerrar sesión</a>
+                <a class="nav-item nav-link" href="{% url 'login' %}">Cerrar sesión</a>
               {% else %}
                 <a class="nav-item nav-link" href="{% url 'login' %}">Iniciar sesión</a>
                 <a class="nav-item nav-link" href="{% url 'usuariosistema:registro' %}">Registrarse</a>

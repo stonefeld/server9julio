@@ -18,5 +18,5 @@ class Persona(models.Model):
         return f"/usuario/tarjetas/{self.id}/"
 
 class Deuda(models.Model):
-    deuda = models.FloatField()
+    deuda = models.FloatField(default=300)
 

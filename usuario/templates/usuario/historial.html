@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% load render_table from django_tables2 %}
+
+{% block subtitle %}
+  <h1>Historial</h1>
+{% endblock subtitle %}
+
+{% block content %}
+  <div class="content-section" style="padding:20px;">
+    <div id="form_card" class="card-panel col s12">
+
+      <form method="GET">
+        <div class="input-group mx-auto" style="margin-top: 25px;">
+          <input type="text" placeholder="Buscar..." name="buscar" value=""/>
+          <div>
+            <button class="btn btn-secondary" type="submit" style="margin-left: 20px;">
+              <i>Buscar</i>
+            </button>
+          </div>
+        </div>
+      </form>
+
+      <div class="form-group" style="padding-top:20px">
+        <a style='text-decoration:none' href={% url 'registroGeneral:descargar-historial' %}>
+          <button class="btn btn-outline-info btn-block" type="submit">Descargar historial</button>
+        </a>
+      </div>
+
+      <div style="padding:10px">
+        {% render_table table %}
+      </div>
+
+    </div>
+  </div>
+{% endblock content%}

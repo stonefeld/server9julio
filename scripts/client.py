@@ -9,7 +9,7 @@ ip = '192.168.0.181'
 
 for i in range(cantidad):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    print('Conectando a la ip: " + ip + " en el puerto: 5050')
+    print(f'Conectando a la ip: {ip} en el puerto: 5050')
     server_address = (ip, 5050)
     s.connect(server_address)
     try:
@@ -22,18 +22,8 @@ for i in range(cantidad):
         else:
             message = b'#C'
 
-        print('Enviando ' + str(message))
+        print(f'Enviando {str(message)}')
         s.sendall(message)
-
-        #amount_received = 0
-        #amount_expected = len(message)
-
-        #while amount_received < amount_expected:
-        #    data = s.recv(16)
-        #    amount_received += len(data)
-        #    print('Recibido: ' + str(data))
-
-        #print('Conteo de datos finales: ' + str(amount_received))
 
     finally:
         print('Cerrando conexión')
