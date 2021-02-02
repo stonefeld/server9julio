@@ -13,6 +13,18 @@ class EntradaGeneralTable(tables.Table):
         order_by = 'nombre_apellido'
         orderable = True
 
+class EntradaGeneralNoAutorizadaTable(tables.Table):
+    class Meta:
+        model = Persona
+        template_name = 'table_template.html'
+        fields = ['nrSocio', 'nombre_apellido', 'nrTarjeta', 'dni', 'deuda']
+        order_by = 'nombre_apellido'
+        orderable = True
+        row_attrs = {
+            'name': 'pks',
+            'value': lambda record: record.id,
+        }
+
 class HistorialTable(tables.Table):
     class Meta:
         model = EntradaGeneral
@@ -20,4 +32,5 @@ class HistorialTable(tables.Table):
         fields = ['persona', 'lugar', 'tiempo', 'direccion', 'autorizado']
         order_by = '-tiempo'
         orderable = True
+        empty_text = 'No hay ninguna entrada registrada'
 

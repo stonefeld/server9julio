@@ -14,7 +14,8 @@ from django_tables2 import SingleTableView, RequestConfig
 
 from .models import EntradaGeneral, Persona
 from .forms import RegistroEntradaGeneralForms
-from .tables import EntradaGeneralTable
+from .tables import EntradaGeneralTable, EntradaGeneralNoAutorizadaTable
+from usuario.tables import PersonaTable
 
 def postpone(function):
     def decorator(*args, **kwargs):
@@ -55,55 +56,96 @@ def registro(request):
 @login_required
 def registro_socio(request):
     if request.method == 'POST':
-        pks = request.POST.getlist('seleccion')
-        if len(pks) > 0:
-            direccion = request.POST.getlist('direccion')
-            dire = str(direccion[0])
-            for pk in pks:
-                try:
-                    persona = Persona.objects.get(id=pk)
-                    if persona.general:
-                        entrada = EntradaGeneral(lugar='GENERAL', persona=persona, direccion=dire, autorizado=True)
-                        entrada.save()
-                        no_pasa = False
+        direccion = request.POST.get('direccion')
+        aceptar = request.POST.get('aceptar')
+        rechazar = request.POST.get('rechazar')
+
+        if direccion and not aceptar and not rechazar:
+            persona_no_autorizada = []
+            pks_no_autorizadas = ''
+            pks = request.POST.getlist('seleccion')
+
+            if len(pks) > 0:
+                no_pasa = False
+                for pk in pks:
+                    try:
+                        persona = Persona.objects.get(id=pk)
+                        if persona.general:
+                            entrada = EntradaGeneral(lugar='GENERAL', persona=persona, direccion=direccion, autorizado=True)
+                            entrada.save()
+
+                        else:
+                            entrada = EntradaGeneral(lugar='GENERAL', persona=persona, direccion=direccion, autorizado=False)
+                            persona_no_autorizada.append(persona)
+                            pks_no_autorizadas += f'{pk},'
+                            no_pasa = True
+
+                    except:
+                        return HttpResponse('Error')
+
+                if not no_pasa:
+                    if len(pks) > 1:
+                        messages.success(request, 'Entradas registradas con éxito')
 
                     else:
-                        entrada = EntradaGeneral(lugar='GENERAL', persona=persona, direccion=dire, autorizado=False)
-                        entrada.save()
-                        no_pasa = True
+                        messages.success(request, 'Entrada registrada con éxito')
 
-                except:
-                    return HttpResponse('Error')
+                else:
+                    table = EntradaGeneralNoAutorizadaTable(persona_no_autorizada)
+                    RequestConfig(request).configure(table)
+                    messages.warning(request, 'Los siguientes usuarios no están autoriazdos')
+                    context = {
+                        'table': table,
+                        'title': 'Usuarios no autorizados',
+                        'no_autorizado': True,
+                        'direccion': f'{direccion},{pks_no_autorizadas}'
+                    }
+                    return render(request, 'registroGeneral/registro_manual_socio.html', context)
 
-            if len(pks) > 1:
-                messages.success(request, 'Entradas registradas con éxito.')
+                cant = len(pks)
+                socket_arduino(cant)
+                return redirect('usuariosistema:home')
 
             else:
-                messages.success(request, 'Entrada registrada con éxito.')
+                persona = Persona.objects.all()
+                busqueda = request.GET.get('buscar')
 
-            if no_pasa:
-                messages.warning(request, 'Algunas entradas fueron registradas sin estar autorizadas.')
+                if busqueda:
+                    persona = Persona.objects.filter(
+                        Q(nrSocio__icontains = busqueda) |
+                        Q(nombre_apellido__icontains = busqueda) |
+                        Q(nrTarjeta__icontains = busqueda) |
+                        Q(dni__icontains = busqueda)
+                    ).distinct()
 
-            cant = len(pks)
-            socket_arduino(cant)
+                table = EntradaGeneralTable(persona.filter(~Q(nombre_apellido='NOSOCIO')))
+                RequestConfig(request).configure(table)
+                messages.warning(request, 'Debe seleccionar un usuario')
+                context = {
+                    'table': table,
+                    'title': 'Acceso socio',
+                    'no_autorizado': False
+                }
+                return render(request, 'registroGeneral/registro_manual_socio.html', context)
+
+        elif not direccion and aceptar and not rechazar:
+            pks = str(aceptar).split(',')
+            pks.remove(pks[-1])
+
+            direccion = pks[0]
+            pks.remove(pks[0])
+
+            for pk in pks:
+                persona = Persona.objects.get(id=pk)
+                entrada = EntradaGeneral(persona=persona, lugar='GENERAL', direccion=direccion, autorizado=False)
+                entrada.save()
+
+            messages.warning(request, 'Algunas entradas fueron registradas sin estar autorizadas')
             return redirect('usuariosistema:home')
 
         else:
-            persona = Persona.objects.all()
-            busqueda = request.GET.get('buscar')
-
-            if busqueda:
-                persona = Persona.objects.filter(
-                    Q(nrSocio__icontains = busqueda) |
-                    Q(nombre_apellido__icontains = busqueda) |
-                    Q(nrTarjeta__icontains = busqueda) |
-                    Q(dni__icontains = busqueda)
-                ).distinct()
-
-            table = EntradaGeneralTable(persona.filter(~Q(nombre_apellido='NOSOCIO')))
-            RequestConfig(request).configure(table)
-            messages.warning(request, 'Debe seleccionar un usuario')
-            return render(request, 'registroGeneral/registro_manual_socio.html', { 'table': table, 'title': 'Acceso socio' })
+            messages.warning(request, 'Algunas entradas no fueron registradas por no estar autorizadas')
+            return redirect('usuariosistema:home')
 
     elif request.method == 'GET':
         persona = Persona.objects.all()
@@ -119,7 +161,7 @@ def registro_socio(request):
 
         table = EntradaGeneralTable(persona.filter(~Q(nombre_apellido='NOSOCIO')))
         RequestConfig(request).configure(table)
-        return render(request, 'registroGeneral/registro_manual_socio.html', { 'table': table, 'title': 'Acceso socio' })
+        return render(request, 'registroGeneral/registro_manual_socio.html', { 'table': table, 'title': 'Acceso socio', 'no_autorizado': False })
 
 @login_required
 def registro_nosocio(request):
