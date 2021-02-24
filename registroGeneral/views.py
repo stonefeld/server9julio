@@ -93,6 +93,7 @@ def registro_socio(request):
                 else:
                     table = EntradaGeneralNoAutorizadaTable(persona_no_autorizada)
                     RequestConfig(request).configure(table)
+
                     messages.warning(request, 'Los siguientes usuarios no están autoriazdos')
                     context = {
                         'table': table,
@@ -120,6 +121,7 @@ def registro_socio(request):
 
                 table = EntradaGeneralTable(persona.filter(~Q(nombre_apellido='NOSOCIO')))
                 RequestConfig(request).configure(table)
+
                 messages.warning(request, 'Debe seleccionar un usuario')
                 context = {
                     'table': table,
@@ -213,4 +215,3 @@ def socket_arduino(cantidad):
     base_dir = settings.BASE_DIR
     script_loc = os.path.join(base_dir, 'scripts/client.py')
     os.system(f'python3 {script_loc} abrir_tiempo {cantidad}')
-

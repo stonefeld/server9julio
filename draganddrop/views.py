@@ -13,7 +13,7 @@ def upload(request):
     context = {}
     if request.method == 'POST':
         try:
-            deudaMax = request.POST.getlist('deuda')[0]
+            deudaMax = request.POST.get('deuda')
             deuda = Deuda(deuda=deudaMax)
 
             media_root = settings.MEDIA_ROOT
