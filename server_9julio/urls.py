@@ -32,7 +32,8 @@ urlpatterns = [
 
     path('general/', include('registroGeneral.urls')),
     path('tenis/', include('registroTenis.urls')),
-    path('pileta/', include('registroPileta.urls')),
+    path('pileta/',include('registroPileta.urls')),
+    path('estacionamiento/',include('estacionamiento.urls')),
 ]
 
 if settings.DEBUG:

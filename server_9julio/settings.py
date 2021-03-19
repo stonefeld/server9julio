@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'registroTenis',
     'usuario',
     'usuariosistema',
+    'estacionamiento',
 
     # Third party application
     'crispy_forms',
@@ -93,7 +94,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': '9Julio_db',
-        'USER': 'admin',
+        'USER': 'root',
         'PASSWORD': '',
         'HOST': '127.0.0.1',
         'PORT': 3306,
