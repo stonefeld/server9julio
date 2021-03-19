@@ -1,6 +1,6 @@
 from django import forms
-from .models import  Persona
-from registroGeneral.models import  EntradaGeneral
+from .models import Persona
+from registroGeneral.models import EntradaGeneral
 
 
 class PersonaForm(forms.ModelForm):
@@ -13,6 +13,7 @@ class PersonaForm(forms.ModelForm):
             'nrTarjeta',
         ]
 
+
 class RegistroUsuario(forms.ModelForm):
     lugar = forms.CharField()
     tiempo = forms.DateTimeField()
@@ -20,4 +21,3 @@ class RegistroUsuario(forms.ModelForm):
     class Meta:
         model = EntradaGeneral
         fields = ['persona', 'lugar', 'tiempo']
-

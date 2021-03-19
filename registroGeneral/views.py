@@ -10,12 +10,11 @@ from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.utils.timezone import localtime
 
-from django_tables2 import SingleTableView, RequestConfig
+from django_tables2 import RequestConfig
 
 from .models import EntradaGeneral, Persona
-from .forms import RegistroEntradaGeneralForms
 from .tables import EntradaGeneralTable, EntradaGeneralNoAutorizadaTable
-from usuario.tables import PersonaTable
+
 
 def postpone(function):
     def decorator(*args, **kwargs):
@@ -25,18 +24,25 @@ def postpone(function):
 
     return decorator
 
+
 def respuesta(request):
     if request.method == 'GET':
         nrTarjeta = request.GET.get('nrTarjeta', '')
         direccion = request.GET.get('direccion', '')
         try:
             user = Persona.objects.get(nrTarjeta=int(nrTarjeta))
-            if user.general == True:
+            if user.general:
                 if int(direccion) == 1:
-                    entrada = EntradaGeneral(lugar='GENERAL', persona=user, direccion='SALIDA', autorizado=True)
+                    entrada = EntradaGeneral(
+                        lugar='GENERAL', persona=user,
+                        direccion='SALIDA', autorizado=True
+                    )
 
                 else:
-                    entrada = EntradaGeneral(lugar='GENERAL', persona=user, direccion='ENTRADA', autorizado=True)
+                    entrada = EntradaGeneral(
+                        lugar='GENERAL', persona=user,
+                        direccion='ENTRADA', autorizado=True
+                    )
 
                 entrada.save()
                 rta = '#1'
@@ -49,9 +55,15 @@ def respuesta(request):
 
         return HttpResponse(rta)
 
+
 @login_required
 def registro(request):
-    return render(request, 'registroGeneral/registro_manual_seleccion.html', { 'title': 'Acceso manual' })
+    return render(
+        request,
+        'registroGeneral/registro_manual_seleccion.html',
+        {'title': 'Acceso manual'}
+    )
+
 
 @login_required
 def registro_socio(request):
