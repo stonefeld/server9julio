@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% load crispy_forms_tags %}
+
+{% block subtitle %}
+  <h1>Acceso Manual</h1>
+{% endblock subtitle %}
+
+{% block content %}
+  <div class="content-section">
+    <div id="form_card" class="card-panel col s12">
+
+      <div class="form-group" style="padding:20px;">
+        <a style="text-decoration:none" href={% url "registroGeneral:registro-socio" %}>
+          <button class="btn btn-outline-info btn-lg" type="submit">Socio</button>
+        </a>
+        <a style="text-decoration:none" href={% url "registroGeneral:registro-nosocio" %}>
+          <button class="btn btn-outline-info btn-lg" type="submit">No socio</button>
+        </a>
+      </div>
+
+    </div>
+  </div>
+{% endblock %}

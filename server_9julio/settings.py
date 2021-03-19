@@ -21,7 +21,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'kn#&zyz)osnma08shx#ud2233sb30umxlewarc$rv95$c0-an@'
+SECRET_KEY = 'abcdefghijklmnopqrstuvwxyz1234567890'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -44,15 +44,18 @@ INSTALLED_APPS = [
     'registroTenis.apps.RegistrotenisConfig',
     'draganddrop.apps.DragAndDropConfig',
 
-    # Own
-    'usuariosistema.apps.UsuariosistemaConfig',
-    'usuario.apps.UsuarioConfig',
+    # Own applications
+    'draganddrop',
+    'registroGeneral',
+    'registroPileta',
+    'registroTenis',
+    'usuario',
+    'usuariosistema',
 
-    # Third party apps
+    # Third party application
     'crispy_forms',
+    'django_tables2'
 ]
-
-
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -69,7 +72,7 @@ ROOT_URLCONF = 'server_9julio.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -91,8 +94,8 @@ WSGI_APPLICATION = 'server_9julio.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'django',
-        'USER': 'root',
+        'NAME': '9Julio_db',
+        'USER': 'admin',
         'PASSWORD': '',
         'HOST': '127.0.0.1',
         'PORT': 3306,
@@ -133,15 +136,18 @@ USE_L10N = True
 
 USE_TZ = True
 
+timezone.activate(pytz.timezone(TIME_ZONE))
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
-LOGIN_URL = 'login'
+LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = 'usuariosistema:home'
 
+MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-MEDIA_URL = '/media/'
+CRISPY_TEMPLATE_PACK = 'bootstrap4'

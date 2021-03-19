@@ -1,22 +1,27 @@
-{% extends "usuariosistema/base.html" %}
+{% extends "base.html" %}
 
 {% load crispy_forms_tags %}
+
+{% block subtitle %}
+  <h1>Inicio de sesión</h1>
+{% endblock subtitle %}
+
 {% block content %}
-    <div class="content-section">
-        <form method="POST">
-            {% csrf_token %}
-            <fieldset class="form-group">
-                <legend class="border-bottom mb-4">Log In</legend>
-                {{ form|crispy }}
-            </fieldset>
-            <div class="form-group">
-                <button class="btn btn-outline-info" type="submit">Login</button>
-            </div>
-        </form>
-        <div class="border-top pt-3">
-            <small class="text-muted">
-                Need an account? <a class="ml-2" href="{% url 'usuariosistema:registro' %}">Sign Up Now</a>
-            </small>
+  <div class="container" style="padding: 20px;">
+    <div class="row justify-content-center">
+      <div class="col-lg-10 col-md-12">
+        <div class="card mb-4">
+          <div class="card-body">
+            <form class="form-container" method="POST">
+              <div class="form-group">
+                {% csrf_token %}
+                {{ form | crispy }}
+                <button class="btn btn-outline-info" type="submit">Iniciar sesión</button>
+              </div>
+            </form>
+          </div>
         </div>
+      </div>
     </div>
+  </div>
 {% endblock %}
