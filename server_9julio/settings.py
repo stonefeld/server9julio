@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'registroTenis',
     'usuario',
     'usuariosistema',
+    'estacionamiento',
 
     # Third party application
     'crispy_forms',
