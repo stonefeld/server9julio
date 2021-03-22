@@ -16,7 +16,7 @@
             <div class="input-group mx-auto">
               <input type="text" placeholder="Buscar..." name="buscar" value=""/>
               <div>
-                <button class="btn btn-secondary" type="submit" style="margin-left: 20px;">
+                <button class="btn btn-secondary" type="submit" style="margin-left:20px;">
                   <i>Buscar</i>
                 </button>
               </div>
@@ -25,19 +25,13 @@
         </div>
 
         <div class="p-2">
-          <a href="{% url 'estacionamiento:historial' %}">
-            <button class="btn btn-outline-info" type="submit" style="float:right">Estacionamiento</button>
+          <a href="{% url 'usuario:historial' %}">
+            <button class="btn btn-outline-info" type="submit" style="float:right">Molinetes</button>
           </a>
         </div>
       </div>
 
-      <div class="form-group" style="padding-top:20px">
-        <a style='text-decoration:none' href={% url 'registroGeneral:descargar-historial' %}>
-          <button class="btn btn-outline-info btn-block" type="submit">Descargar historial</button>
-        </a>
-      </div>
-
-      <div style="padding:10px">
+      <div style="padding-top:40px; padding-left:10px; padding-right:10px; padding-bottom:10px">
         {% render_table table %}
       </div>
 

@@ -10,4 +10,3 @@ urlpatterns = [
     path('registro/nosocio', views.registro_nosocio, name='registro-nosocio'),
     path('descargar', views.downloadHistory, name='descargar-historial'),
 ]
-

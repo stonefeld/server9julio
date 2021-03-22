@@ -46,7 +46,7 @@ def listaUsuarios(request):
         RequestConfig(request).configure(table)
 
         return render(request, 'usuario/lista_usuarios.html',
-                      {'table': table, 'title': 'Lista de usuarios'})
+                      {'table': table, 'title': 'Lista de socios'})
 
 
 @login_required
@@ -57,11 +57,12 @@ def editarUsuario(request, id):
         form.save()
 
     if request.method == 'POST':
-        return redirect('usuariosistema:home')
+        messages.success(request, 'Los datos del socio fueron guardados con éxito')
+        return redirect('usuario:lista')
 
     else:
         return render(request, 'usuario/editar_usuario.html',
-                      {'form': form, 'title': 'Editar usuario'})
+                      {'form': form, 'title': 'Editar socio'})
 
 
 @login_required

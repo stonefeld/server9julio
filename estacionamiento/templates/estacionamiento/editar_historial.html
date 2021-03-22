@@ -41,8 +41,11 @@
                   </div>
                 </div>
                 <div class="row">
-                  <div class="col-6">
+                  <div class="col-6" style="padding:40px">
                     {{ form.autorizado|as_crispy_field }}
+                  </div>
+                  <div class="col-6">
+                    {{ form.tipo|as_crispy_field }}
                   </div>
                 </div>
                 <div class="form-group" style="padding-top:10px">
@@ -50,6 +53,9 @@
                 </div>
               </div>
             </form>
+            <a href="{% url 'estacionamiento:historial' %}">
+              <button class="btn btn-outline-info">Cancelar</button>
+            </a>
           </div>
         </div>
       </div>

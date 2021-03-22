@@ -5,6 +5,6 @@ app_name= 'usuario'
 urlpatterns = [
     path('', views.historial, name='historial'),
     path('cargar/', views.cargarDB, name='cargarDB'),
-    path('tarjetas/', views.listaUsuarios, name='tarjeta'),
-    path('tarjetas/<int:id>/', views.editarUsuario, name='vincular')
+    path('lista/', views.listaUsuarios, name='lista'),
+    path('lista/<int:id>/', views.editarUsuario, name='detalle')
 ]

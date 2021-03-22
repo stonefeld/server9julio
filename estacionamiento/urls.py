@@ -6,8 +6,8 @@ urlpatterns = [
     path('', views.respuesta, name='registro'),
     path('historial/',
          views.historial_estacionamiento,
-         name='historial-estacionamiento'),
+         name='historial'),
     path('historial/<int:id>/',
          views.detalle_estacionamiento,
-         name='detalle-estacionamiento')
+         name='detalle')
 ]

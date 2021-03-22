@@ -15,7 +15,7 @@ class Persona(models.Model):
         return str(self.nombre_apellido)
 
     def get_absolute_url(self):
-        return f'/usuario/tarjetas/{self.id}/'
+        return f'/usuario/lista/{self.id}/'
 
 
 class Deuda(models.Model):

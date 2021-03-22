@@ -2,6 +2,7 @@ from threading import Thread
 import os
 
 from django.conf import settings
+from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
 
@@ -151,13 +152,20 @@ def respuesta(request):
 def historial_estacionamiento(request):
     if request.method == 'GET':
         estacionamiento = RegistroEstacionamiento.objects.all()
+        busqueda = request.GET.get('buscar')
+
+        if busqueda:
+            estacionamiento = RegistroEstacionamiento.objects.filter(
+                Q(identificador__icontains=busqueda)
+            ).distinct()
+
         table = HistorialEstacionamientoTable(estacionamiento)
         RequestConfig(request).configure(table)
 
         return render(
             request,
-            'registroGeneral/registro_manual_socio.html',
-            {'table': table}
+            'estacionamiento/historial.html',
+            {'table': table, 'title': 'Historial'}
         )
 
 

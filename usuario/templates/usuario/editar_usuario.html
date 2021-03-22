@@ -3,7 +3,7 @@
 {% load crispy_forms_tags %}
 
 {% block subtitle %}
-  <h1>Vincular Tarjetas</h1>
+  <h1>Editar Socio</h1>
 {% endblock subtitle %}
 
 {% block content %}
@@ -37,6 +37,9 @@
                 </div>
               </div>
             </form>
+            <a href="{% url 'usuario:lista' %}">
+              <button class="btn btn-outline-info">Cancelar</button>
+            </a>
           </div>
         </div>
       </div>
