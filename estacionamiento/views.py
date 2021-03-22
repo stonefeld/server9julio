@@ -3,7 +3,7 @@ import os
 
 from django.conf import settings
 from django.http import HttpResponse
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 
 from django_tables2 import RequestConfig
 
@@ -11,6 +11,7 @@ from .models import (
     RegistroEstacionamiento, Proveedor,
     CicloCaja, CicloMensual, Persona
 )
+from .forms import EstacionamientoForm
 from .tables import HistorialEstacionamientoTable
 
 
@@ -158,3 +159,17 @@ def historial_estacionamiento(request):
             'registroGeneral/registro_manual_socio.html',
             {'table': table}
         )
+
+
+def detalle_estacionamiento(request, id):
+    obj = RegistroEstacionamiento.objects.get(id=id)
+    form = EstacionamientoForm(request.POST or None, instance=obj)
+    if form.is_valid():
+        form.save()
+
+    if request.method == 'POST':
+        return redirect('estacionamiento:historial')
+
+    else:
+        return render(request, 'estacionamiento/editar_historial.html',
+                      {'form': form, 'title': 'Detalle historial'})

@@ -38,6 +38,9 @@ class RegistroEstacionamiento(models.Model):
         else:
             return "Error Fatal"
 
+    def get_absolute_url(self):
+        return f'/estacionamiento/historial/{self.id}/'
+
 
 class Cobros(models.Model):
     precio = models.FloatField(verbose_name='precio')
