@@ -6,10 +6,9 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import connection
 from django.db.models import Q
-from django.http import HttpResponse
 from django.shortcuts import render, redirect
 
-from django_tables2 import SingleTableView, RequestConfig
+from django_tables2 import RequestConfig
 
 import pandas as pd
 
@@ -19,6 +18,7 @@ from .tables import PersonaTable
 from registroGeneral.models import EntradaGeneral
 from registroGeneral.tables import HistorialTable
 
+
 def postpone(function):
     def decorator(*args, **kwargs):
         t = Thread(target=function, args=args, kwargs=kwargs)
@@ -26,6 +26,7 @@ def postpone(function):
         t.start()
 
     return decorator
+
 
 @login_required
 def listaUsuarios(request):
@@ -35,21 +36,23 @@ def listaUsuarios(request):
 
         if busqueda:
             persona = Persona.objects.filter(
-                Q(nrSocio__icontains = busqueda) |
-                Q(nombre_apellido__icontains = busqueda) |
-                Q(nrTarjeta__icontains = busqueda) |
-                Q(dni__icontains = busqueda)
+                Q(nrSocio__icontains=busqueda) |
+                Q(nombre_apellido__icontains=busqueda) |
+                Q(nrTarjeta__icontains=busqueda) |
+                Q(dni__icontains=busqueda)
             ).distinct()
 
         table = PersonaTable(persona.filter(~Q(nombre_apellido='NOSOCIO')))
         RequestConfig(request).configure(table)
 
-        return render(request, 'usuario/lista_usuarios.html', { 'table': table, 'title': 'Lista de usuarios' })
+        return render(request, 'usuario/lista_usuarios.html',
+                      {'table': table, 'title': 'Lista de usuarios'})
+
 
 @login_required
 def editarUsuario(request, id):
     obj = Persona.objects.get(id=id)
-    form = PersonaForm(request.POST or None , instance=obj)
+    form = PersonaForm(request.POST or None, instance=obj)
     if form.is_valid():
         form.save()
 
@@ -57,7 +60,9 @@ def editarUsuario(request, id):
         return redirect('usuariosistema:home')
 
     else:
-        return render(request,'usuario/editar_usuario.html', { 'form': form, 'title': 'Editar usuario' })
+        return render(request, 'usuario/editar_usuario.html',
+                      {'form': form, 'title': 'Editar usuario'})
+
 
 @login_required
 def historial(request):
@@ -67,16 +72,18 @@ def historial(request):
 
         if busqueda:
             entradas = EntradaGeneral.objects.filter(
-                Q(lugar__icontains = busqueda) |
-                Q(tiempo__icontains = busqueda) |
-                Q(persona__nombre_apellido__icontains = busqueda) |
-                Q(persona__dni__icontains = busqueda)
+                Q(lugar__icontains=busqueda) |
+                Q(tiempo__icontains=busqueda) |
+                Q(persona__nombre_apellido__icontains=busqueda) |
+                Q(persona__dni__icontains=busqueda)
             ).distinct()
 
         table = HistorialTable(entradas)
         RequestConfig(request).configure(table)
 
-        return render(request, 'usuario/historial.html', { 'table': table, 'title': 'Historial' })
+        return render(request, 'usuario/historial.html',
+                      {'table': table, 'title': 'Historial'})
+
 
 @login_required
 def cargarDB(request):
@@ -91,7 +98,7 @@ def cargarDB(request):
             names=list('abcdefghijklmnopqrstuv')
         )
 
-    except :
+    except:
         messages.warning(request, 'Ha habido un error al leer el archivo')
         return redirect('draganddrop:upload')
 
@@ -102,7 +109,7 @@ def cargarDB(request):
         df.drop(f'{column}', inplace=True, axis=1)
 
     for ind in df.index:
-        if pd.isna(df['f'][ind]) == False:
+        if pd.isna(df['f'][ind]):
             df['e'][ind] = df['f'][ind]
 
     df.drop('f', inplace=True, axis=1)
@@ -126,6 +133,7 @@ def cargarDB(request):
     messages.success(request, 'La carga de datos ha iniciado con éxito')
     return redirect('usuariosistema:home')
 
+
 @postpone
 def cargarDBAsync(df):
     deudaMax = Deuda.objects.all().last().deuda
@@ -136,7 +144,7 @@ def cargarDBAsync(df):
             try:
                 usuario = Persona.objects.get(nrSocio=int(df['NrSocio'][ind]))
                 listaUsuarios.append(usuario.id)
-                if usuario.general == True:
+                if usuario.general:
                     usuario.general = False
                     usuario.deuda = float((df['Deuda'][ind]).replace(',', ''))
                     usuario.save()
@@ -146,7 +154,7 @@ def cargarDBAsync(df):
                     nombre_apellido=str(df['Socio'][ind]).strip(),
                     nrSocio=int(df['NrSocio'][ind]),
                     general=False,
-                    deuda=float((df['Deuda'][ind]).replace(',',''))
+                    deuda=float((df['Deuda'][ind]).replace(',', ''))
                 )
                 usuario.save()
                 usuario = Persona.objects.get(nrSocio=int(df['NrSocio'][ind]))
@@ -156,7 +164,7 @@ def cargarDBAsync(df):
             try:
                 usuario = Persona.objects.get(nrSocio=int(df['NrSocio'][ind]))
                 listaUsuarios.append(usuario.id)
-                if usuario.general == False:
+                if not usuario.general:
                     usuario.general = True
                     usuario.deuda = float((df['Deuda'][ind]).replace(',', ''))
                     usuario.save()
@@ -184,8 +192,8 @@ def cargarDBAsync(df):
         noSocio.save()
 
     except:
-        noSocio = Persona(nrSocio=0, nombre_apellido='NOSOCIO', general=True, deuda=0.0)
+        noSocio = Persona(nrSocio=0, nombre_apellido='NOSOCIO',
+                          general=True, deuda=0.0)
         noSocio.save()
 
     connection.close()
-
