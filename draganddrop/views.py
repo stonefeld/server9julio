@@ -8,6 +8,7 @@ from django.shortcuts import render, redirect
 
 from usuario.models import Deuda
 
+
 @login_required
 def upload(request):
     context = {}
@@ -57,4 +58,3 @@ def upload(request):
             }
 
     return render(request, 'draganddrop/upload.html', context)
-

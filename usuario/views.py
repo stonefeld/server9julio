@@ -60,7 +60,7 @@ def editarUsuario(request, id):
         return redirect('usuariosistema:home')
 
     else:
-        return render(request,'usuario/editar_usuario.html',
+        return render(request, 'usuario/editar_usuario.html',
                       {'form': form, 'title': 'Editar usuario'})
 
 

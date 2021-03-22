@@ -177,6 +177,7 @@ def registro_socio(request):
         RequestConfig(request).configure(table)
         return render(request, 'registroGeneral/registro_manual_socio.html', { 'table': table, 'title': 'Acceso socio', 'no_autorizado': False })
 
+
 @login_required
 def registro_nosocio(request):
     if request.method == 'POST':
@@ -199,12 +200,12 @@ def registro_nosocio(request):
             messages.warning(request, 'Debe seleccionar la cantidad de personas')
             return render(request, 'registroGeneral/registro_manual_nosocio.html', { 'title': 'Acceso no socio' })
 
-
         socket_arduino(cantidad)
         return redirect('usuariosistema:home')
 
     elif request.method == 'GET':
         return render(request, 'registroGeneral/registro_manual_nosocio.html', { 'title': 'Acceso no socio' })
+
 
 @login_required
 def downloadHistory(request):
@@ -221,6 +222,7 @@ def downloadHistory(request):
     response['Content-Disposition'] = 'attachment; filename="historial.csv"'
 
     return response
+
 
 @postpone
 def socket_arduino(cantidad):
