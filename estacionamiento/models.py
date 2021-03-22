@@ -9,15 +9,16 @@ class Proveedor(models.Model):
 
 class RegistroEstacionamiento(models.Model):
     tipo = models.CharField(max_length=30, verbose_name='Tipo')
-    persona = models.ForeignKey(Persona, on_delete=models.CASCADE, verbose_name='Persona',null=True)
-    noSocio = models.IntegerField(null=True, verbose_name='DNI')
-    proveedor = models.ForeignKey(Proveedor, on_delete=models.CASCADE, verbose_name='Proveedor',null=True)
+    persona = models.ForeignKey(Persona, on_delete=models.CASCADE, verbose_name='Persona',null=True,blank=True)
+    noSocio = models.IntegerField(blank=True ,null=True, verbose_name='DNI')
+    proveedor = models.ForeignKey(Proveedor, on_delete=models.CASCADE, verbose_name='Proveedor',null=True,blank=True)
     lugar = models.CharField(max_length=30, verbose_name='Lugar')
     tiempo = models.DateTimeField(default=now, verbose_name='Fecha y Hora')
     direccion = models.CharField(max_length=30, default='ENTRADA', verbose_name='Dirección')
     autorizado = models.BooleanField(default=False, verbose_name='Autorización')
     cicloCaja = models.IntegerField(null=True, verbose_name='cicloCaja')
     cicloMensual = models.IntegerField(null=True, verbose_name='cicloMensual')
+    identificador = models.CharField(max_length=30, verbose_name='Identificador', default = "Error")
 
     def __str__(self):
         if self.tipo == "SOCIO" or self.tipo == "SOCIO-MOROSO" :
