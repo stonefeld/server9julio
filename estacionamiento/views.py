@@ -1,3 +1,4 @@
+from datetime import time, date
 from threading import Thread
 import os
 
@@ -51,7 +52,6 @@ def respuesta(request):
                 user = Persona.objects.get(nrTarjeta=int(dato))
                 if user.general:
                     entrada = RegistroEstacionamiento(
-                        identificador=user,
                         tipo='SOCIO',
                         lugar='ESTACIONAMIENTO',
                         persona=user,
@@ -66,7 +66,6 @@ def respuesta(request):
 
                 else:
                     entrada = RegistroEstacionamiento(
-                        identificador=user,
                         tipo='SOCIO-MOROSO',
                         lugar='ESTACIONAMIENTO',
                         persona=user,
@@ -86,7 +85,6 @@ def respuesta(request):
                 user = Persona.objects.get(dni=int(dato))
                 if user.general:
                     entrada = RegistroEstacionamiento(
-                        identificador=user,
                         tipo='SOCIO',
                         lugar='ESTACIONAMIENTO',
                         persona=user,
@@ -100,7 +98,6 @@ def respuesta(request):
 
                 else:
                     entrada = RegistroEstacionamiento(
-                        identificador=user,
                         tipo='SOCIO-MOROSO',
                         lugar='ESTACIONAMIENTO',
                         persona=user,
@@ -115,7 +112,6 @@ def respuesta(request):
 
             except:
                 entrada = RegistroEstacionamiento(
-                    identificador=int(dato),
                     tipo='NOSOCIO',
                     lugar='ESTACIONAMIENTO',
                     noSocio=int(dato),
@@ -131,7 +127,6 @@ def respuesta(request):
             try:
                 proveedor_ = Proveedor.objects.get(idProveedor=int(dato))
                 entrada = RegistroEstacionamiento(
-                    identificador=proveedor_,
                     tipo='PROVEEDOR',
                     lugar='ESTACIONAMIENTO',
                     proveedor=proveedor_,
@@ -156,6 +151,7 @@ def historial_estacionamiento(request):
         fecha = request.GET.get('fecha')
         tiempo = request.GET.get('tiempo')
 
+
         if busqueda:
             estacionamiento = estacionamiento.filter(
                 Q(identificador__icontains=busqueda),
@@ -163,18 +159,17 @@ def historial_estacionamiento(request):
 
         if fecha:
             fecha = str(fecha).split('-')
+            fecha = date(int(fecha[0]), int(fecha[1]), int(fecha[2]))
             estacionamiento = estacionamiento.filter(
-                fecha__year=fecha[0],
-                fecha__month=fecha[1],
-                fecha__day=fecha[2]
+                tiempo__date=fecha
             )
 
         if tiempo:
-            print(tiempo)
             tiempo = str(tiempo).split(':')
+            tiempo = time(int(tiempo[0]), int(tiempo[1]))
             estacionamiento = estacionamiento.filter(
-                tiempo__hour=tiempo[0],
-                tiempo__minute=tiempo[1]
+                tiempo__hour=tiempo.hour,
+                tiempo__minute=tiempo.minute
             )
 
         table = HistorialEstacionamientoTable(estacionamiento)
