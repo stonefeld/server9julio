@@ -119,7 +119,6 @@ def cargarDB(request):
         'c': 'Socio',
         'e': 'Deuda'
     })
-
     if df['NrSocio'][5] != 'Composición de Saldos':
         messages.warning(request, 'El archivo subido es incorrecto')
         return redirect('draganddrop:upload')
@@ -127,8 +126,9 @@ def cargarDB(request):
     for row in range(10):
         df = df.drop(row)
 
-    df = df.dropna()
-
+    df = df.dropna(thresh=2)
+    df[pd.isnull(df)] = "0.0"
+    print(df)
     cargarDBAsync(df)
 
     messages.success(request, 'La carga de datos ha iniciado con éxito')
@@ -139,15 +139,14 @@ def cargarDB(request):
 def cargarDBAsync(df):
     deudaMax = Deuda.objects.all().last().deuda
     listaUsuarios = []
-
     for ind in df.index:
-        if float((df['Deuda'][ind]).replace(',', '')) > deudaMax:
+        if float((df['Deuda'][ind])) > deudaMax: #.replace(',', '')
             try:
                 usuario = Persona.objects.get(nrSocio=int(df['NrSocio'][ind]))
                 listaUsuarios.append(usuario.id)
                 if usuario.general:
                     usuario.general = False
-                    usuario.deuda = float((df['Deuda'][ind]).replace(',', ''))
+                    usuario.deuda = float((df['Deuda'][ind]))#.replace(',', '')
                     usuario.save()
 
             except:
@@ -155,7 +154,7 @@ def cargarDBAsync(df):
                     nombre_apellido=str(df['Socio'][ind]).strip(),
                     nrSocio=int(df['NrSocio'][ind]),
                     general=False,
-                    deuda=float((df['Deuda'][ind]).replace(',', ''))
+                    deuda=float((df['Deuda'][ind]).replace(',', ''))#.replace(',', '')
                 )
                 usuario.save()
                 usuario = Persona.objects.get(nrSocio=int(df['NrSocio'][ind]))
@@ -167,7 +166,7 @@ def cargarDBAsync(df):
                 listaUsuarios.append(usuario.id)
                 if not usuario.general:
                     usuario.general = True
-                    usuario.deuda = float((df['Deuda'][ind]).replace(',', ''))
+                    usuario.deuda = float((df['Deuda'][ind]))#.replace(',', '')
                     usuario.save()
 
             except:
@@ -175,12 +174,11 @@ def cargarDBAsync(df):
                     nombre_apellido=str(df['Socio'][ind]).strip(),
                     nrSocio=int(df['NrSocio'][ind]),
                     general=True,
-                    deuda=float((df['Deuda'][ind]).replace(',', ''))
+                    deuda=float((df['Deuda'][ind]))#.replace(',', '')
                 )
                 usuario.save()
                 usuario = Persona.objects.get(nrSocio=int(df['NrSocio'][ind]))
                 listaUsuarios.append(usuario.id)
-
     personas = Persona.objects.all()
     for persona in personas:
         if persona.id not in listaUsuarios:
