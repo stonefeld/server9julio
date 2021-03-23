@@ -3,7 +3,6 @@ from django.utils.timezone import now, localtime
 
 from usuario.models import Persona
 
-
 class Proveedor(models.Model):
     idProveedor = models.CharField(max_length=30, verbose_name='idProveedor')
     nombre_proveedor = models.CharField(max_length=30, verbose_name='Proveedor')
@@ -16,7 +15,7 @@ class Proveedor(models.Model):
 
 class RegistroEstacionamiento(models.Model):
     tipo = models.CharField(max_length=30, verbose_name='Tipo')
-    identificador = models.CharField(max_length=30, verbose_name='Identificador', null=True, blank=True)
+    identificador = models.CharField(max_length=30, verbose_name='Identificador', null=True, blank=True, default="Error")
     persona = models.ForeignKey(Persona, on_delete=models.CASCADE, verbose_name='Persona', null=True, blank=True)
     noSocio = models.IntegerField(verbose_name='DNI', null=True, blank=True)
     proveedor = models.ForeignKey(Proveedor, on_delete=models.CASCADE, verbose_name='Proveedor', null=True, blank=True)
@@ -60,3 +59,4 @@ class CicloCaja(models.Model):
 
 class CicloMensual(models.Model):
     cicloMensual = models.IntegerField(verbose_name='cicloMensual')
+

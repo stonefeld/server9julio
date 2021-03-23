@@ -249,14 +249,20 @@ def historial_estacionamiento(request):
             )
 
         if tiempo:
-            print(tiempo)
             tiempo = str(tiempo).split(':')
             estacionamiento = estacionamiento.filter(
                 tiempo__hour=tiempo[0],
                 tiempo__minute=tiempo[1]
             )
+
         table = HistorialEstacionamientoTable(estacionamiento)
         RequestConfig(request).configure(table)
+
+        return render(
+            request,
+            'estacionamiento/historial.html',
+            {'table': table, 'title': 'Historial'}
+        )
 
 
 def detalle_estacionamiento(request, id):
