@@ -4,7 +4,8 @@ from .models import RegistroEstacionamiento, Proveedor, Cobros, CicloCaja, Ciclo
 import os
 from django.utils.timezone import now, localtime
 from datetime import datetime, timedelta
-
+from django.db.models import Count
+import math
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -12,7 +13,8 @@ from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.utils.timezone import localtime
-
+from .forms import EstacionamientoForm
+from .tables import HistorialEstacionamientoTable
 from django_tables2 import SingleTableView, RequestConfig
 
 def postpone(function):
@@ -28,6 +30,12 @@ def socket_arduino(cantidad):
     base_dir = settings.BASE_DIR
     script_loc = os.path.join(base_dir, 'scripts/client.py')
     os.system(f'python3 {script_loc} abrir_tiempo {cantidad}')
+
+def emision_resumen_mensual(request):
+    resumen_mensual = RegistroEstacionamiento.objects.values("persona__nombre_apellido").annotate(Cantidad_Entradas = Count("id")/2).order_by("persona__nombre_apellido").exclude(persona__isnull=True)
+    print(resumen_mensual)
+    return HttpResponse('1')
+
 
 def respuesta(request):
     if request.method == 'GET':
@@ -135,3 +143,29 @@ def respuesta(request):
                     rta = '#4' #Error Proveedor no encontrado
 
         return HttpResponse(rta)
+
+def historial_estacionamiento(request):
+    if request.method == 'GET':
+        estacionamiento = RegistroEstacionamiento.objects.all()
+        table = HistorialEstacionamientoTable(estacionamiento)
+        RequestConfig(request).configure(table)
+
+        return render(
+            request,
+            'registroGeneral/registro_manual_socio.html',
+            {'table': table}
+        )
+
+
+def detalle_estacionamiento(request, id):
+    obj = RegistroEstacionamiento.objects.get(id=id)
+    form = EstacionamientoForm(request.POST or None, instance=obj)
+    if form.is_valid():
+        form.save()
+
+    if request.method == 'POST':
+        return redirect('estacionamiento:historial')
+
+    else:
+        return render(request, 'estacionamiento/editar_historial.html',
+                      {'form': form, 'title': 'Detalle historial'})

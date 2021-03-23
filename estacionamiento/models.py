@@ -6,9 +6,12 @@ from usuario.models import Persona
 class Proveedor(models.Model):
     idProveedor = models.CharField(max_length=30, verbose_name='idProveedor')
     nombre_proveedor = models.CharField(max_length=30, verbose_name='Proveedor')
+    def __str__(self):
+        return str(self.nombre_proveedor)
 
 class RegistroEstacionamiento(models.Model):
     tipo = models.CharField(max_length=30, verbose_name='Tipo')
+    identificador = models.CharField(max_length=30, verbose_name='Identificador', default = "Error", blank=True, null=True)
     persona = models.ForeignKey(Persona, on_delete=models.CASCADE, verbose_name='Persona',null=True,blank=True)
     noSocio = models.IntegerField(blank=True ,null=True, verbose_name='DNI')
     proveedor = models.ForeignKey(Proveedor, on_delete=models.CASCADE, verbose_name='Proveedor',null=True,blank=True)
@@ -18,7 +21,7 @@ class RegistroEstacionamiento(models.Model):
     autorizado = models.BooleanField(default=False, verbose_name='Autorización')
     cicloCaja = models.IntegerField(null=True, verbose_name='cicloCaja')
     cicloMensual = models.IntegerField(null=True, verbose_name='cicloMensual')
-    identificador = models.CharField(max_length=30, verbose_name='Identificador', default = "Error")
+    
 
     def __str__(self):
         if self.tipo == "SOCIO" or self.tipo == "SOCIO-MOROSO" :
@@ -29,6 +32,9 @@ class RegistroEstacionamiento(models.Model):
             return str(localtime(self.tiempo)) + " - " + str(self.proveedor)
         else:
             return "Error Fatal"
+    
+    def get_absolute_url(self):
+        return f'/estacionamiento/historial/{self.id}/'
 
 
 class Cobros(models.Model):
