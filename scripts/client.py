@@ -1,4 +1,5 @@
-import sys, socket
+import sys
+import socket
 
 argv = sys.argv
 argv.remove(argv[0])
@@ -28,4 +29,3 @@ for i in range(cantidad):
     finally:
         print('Cerrando conexión')
         s.close()
-

@@ -1,5 +1,5 @@
 from django.db import models
-from django.utils import timezone
+
 
 class Persona(models.Model):
     nombre_apellido = models.CharField(max_length=30, verbose_name='Nombre y Apellido')
@@ -15,8 +15,8 @@ class Persona(models.Model):
         return str(self.nombre_apellido)
 
     def get_absolute_url(self):
-        return f"/usuario/tarjetas/{self.id}/"
+        return f'/usuario/lista/{self.id}/'
+
 
 class Deuda(models.Model):
     deuda = models.FloatField(default=300)
-

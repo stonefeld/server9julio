@@ -8,6 +8,7 @@ from django.shortcuts import render, redirect
 
 from usuario.models import Deuda
 
+
 @login_required
 def upload(request):
     context = {}
@@ -33,28 +34,31 @@ def upload(request):
 
             except:
                 context = {
-                    'deuda': str(Deuda.objects.all().last().deuda)
+                    'deuda': str(Deuda.objects.all().last().deuda),
+                    'title': 'Subir archivos'
                 }
                 messages.warning(request, 'Debe subir un archivo')
 
         except:
             context = {
-                'deuda': str(Deuda.objects.all().last().deuda)
+                'deuda': str(Deuda.objects.all().last().deuda),
+                'title': 'Subir archivos'
             }
             messages.warning(request, 'Debe especificar una deuda máxima')
 
     elif request.method == 'GET':
         try:
             context = {
-                'deuda': str(Deuda.objects.all().last().deuda)
+                'deuda': str(Deuda.objects.all().last().deuda),
+                'title': 'Subir archivos'
             }
 
         except:
             deuda = Deuda(deuda=300)
             deuda.save()
             context = {
-                'deuda': str(Deuda.objects.all().last().deuda)
+                'deuda': str(Deuda.objects.all().last().deuda),
+                'title': 'Subir archivos'
             }
 
     return render(request, 'draganddrop/upload.html', context)
-

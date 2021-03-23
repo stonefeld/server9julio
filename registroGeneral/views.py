@@ -10,12 +10,11 @@ from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.utils.timezone import localtime
 
-from django_tables2 import SingleTableView, RequestConfig
+from django_tables2 import RequestConfig
 
 from .models import EntradaGeneral, Persona
-from .forms import RegistroEntradaGeneralForms
 from .tables import EntradaGeneralTable, EntradaGeneralNoAutorizadaTable
-from usuario.tables import PersonaTable
+
 
 def postpone(function):
     def decorator(*args, **kwargs):
@@ -25,18 +24,25 @@ def postpone(function):
 
     return decorator
 
+
 def respuesta(request):
     if request.method == 'GET':
         nrTarjeta = request.GET.get('nrTarjeta', '')
         direccion = request.GET.get('direccion', '')
         try:
             user = Persona.objects.get(nrTarjeta=int(nrTarjeta))
-            if user.general == True:
+            if user.general:
                 if int(direccion) == 1:
-                    entrada = EntradaGeneral(lugar='GENERAL', persona=user, direccion='SALIDA', autorizado=True)
+                    entrada = EntradaGeneral(
+                        lugar='GENERAL', persona=user,
+                        direccion='SALIDA', autorizado=True
+                    )
 
                 else:
-                    entrada = EntradaGeneral(lugar='GENERAL', persona=user, direccion='ENTRADA', autorizado=True)
+                    entrada = EntradaGeneral(
+                        lugar='GENERAL', persona=user,
+                        direccion='ENTRADA', autorizado=True
+                    )
 
                 entrada.save()
                 rta = '#1'
@@ -49,9 +55,15 @@ def respuesta(request):
 
         return HttpResponse(rta)
 
+
 @login_required
 def registro(request):
-    return render(request, 'registroGeneral/registro_manual_seleccion.html', { 'title': 'Acceso manual' })
+    return render(
+        request,
+        'registroGeneral/registro_manual_seleccion.html',
+        {'title': 'Acceso manual'}
+    )
+
 
 @login_required
 def registro_socio(request):
@@ -165,6 +177,7 @@ def registro_socio(request):
         RequestConfig(request).configure(table)
         return render(request, 'registroGeneral/registro_manual_socio.html', { 'table': table, 'title': 'Acceso socio', 'no_autorizado': False })
 
+
 @login_required
 def registro_nosocio(request):
     if request.method == 'POST':
@@ -187,12 +200,12 @@ def registro_nosocio(request):
             messages.warning(request, 'Debe seleccionar la cantidad de personas')
             return render(request, 'registroGeneral/registro_manual_nosocio.html', { 'title': 'Acceso no socio' })
 
-
         socket_arduino(cantidad)
         return redirect('usuariosistema:home')
 
     elif request.method == 'GET':
         return render(request, 'registroGeneral/registro_manual_nosocio.html', { 'title': 'Acceso no socio' })
+
 
 @login_required
 def downloadHistory(request):
@@ -209,6 +222,7 @@ def downloadHistory(request):
     response['Content-Disposition'] = 'attachment; filename="historial.csv"'
 
     return response
+
 
 @postpone
 def socket_arduino(cantidad):

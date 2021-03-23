@@ -1,21 +1,26 @@
-from django.shortcuts import render
 from threading import Thread
-from .models import RegistroEstacionamiento, Proveedor, Cobros, CicloCaja, CicloMensual, Persona
 import os
 from django.utils.timezone import now, localtime
 from datetime import datetime, timedelta
 from django.db.models import Count
 import math
 from django.conf import settings
-from django.contrib import messages
-from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.http import HttpResponse
-from django.shortcuts import render, redirect
+
 from django.utils.timezone import localtime
+
+from django.shortcuts import redirect, render
+
+from django_tables2 import RequestConfig
+
+from .models import (
+    RegistroEstacionamiento, Proveedor,
+    CicloCaja, CicloMensual, Persona
+)
 from .forms import EstacionamientoForm
 from .tables import HistorialEstacionamientoTable
-from django_tables2 import SingleTableView, RequestConfig
+
 
 def postpone(function):
     def decorator(*args, **kwargs):
@@ -24,6 +29,7 @@ def postpone(function):
         t.start()
 
     return decorator
+
 
 @postpone
 def socket_arduino(cantidad):
@@ -39,23 +45,38 @@ def emision_resumen_mensual(request):
 
 def respuesta(request):
     if request.method == 'GET':
-        tipo = request.GET.get('tipo', '') #el tipo de dato que vamos a recibir (NrTarjeta=0/DNI=1/Proveedor=2)
-        dato = request.GET.get('dato', '') #el dato
-        direccion_ = request.GET.get('direccion', '') 
+        tipo = request.GET.get('tipo', '')  # el tipo de dato que vamos a recibir (NrTarjeta=0/DNI=1/Proveedor=2)
+        dato = request.GET.get('dato', '')  # el dato
+        direccion_ = request.GET.get('direccion', '')
         cicloCaja_ = CicloCaja.objects.all().last().cicloCaja
         cicloMensual_ = CicloMensual.objects.all().last().cicloMensual
+
         if int(direccion_) == 1:
             direccion_ = 'SALIDA'
             if int(tipo) == 0:
                 try:
                     user = Persona.objects.get(nrTarjeta=int(dato))
                     if user.general == True:
-                        entrada = RegistroEstacionamiento(tipo='SOCIO',lugar='ESTACIONAMIENTO', persona=user, direccion=direccion_, autorizado=True, cicloCaja=cicloCaja_, cicloMensual=cicloMensual_, identificador = user.nombre_apellido)
+                        entrada = RegistroEstacionamiento(tipo='SOCIO',
+                        lugar='ESTACIONAMIENTO',
+                        persona=user,
+                        direccion=direccion_,
+                        autorizado=True,
+                        cicloCaja=cicloCaja_,
+                        cicloMensual=cicloMensual_,
+                        identificador = user.nombre_apellido)
                         entrada.save()
                         #abrir barrera
                         rta = '#1'
                     else:
-                        entrada = RegistroEstacionamiento(tipo='SOCIO-MOROSO',lugar='ESTACIONAMIENTO', persona=user, direccion=direccion_, autorizado=False, cicloCaja=cicloCaja_, cicloMensual=cicloMensual_, identificador = user.nombre_apellido)
+                        entrada = RegistroEstacionamiento(tipo='SOCIO-MOROSO',
+                        lugar='ESTACIONAMIENTO',
+                        persona=user,
+                        direccion=direccion_,
+                        autorizado=False,
+                        cicloCaja=cicloCaja_,
+                        cicloMensual=cicloMensual_,
+                        identificador = user.nombre_apellido)
                         entrada.save()
                         rta = '#0' #Registro Socio Moroso
                 except:
@@ -64,11 +85,25 @@ def respuesta(request):
                 try:
                     user = Persona.objects.get(dni = int(dato))
                     if user.general == True:
-                        entrada = RegistroEstacionamiento(tipo='SOCIO',lugar='ESTACIONAMIENTO', persona=user, direccion=direccion_, autorizado=True, cicloCaja=cicloCaja_, cicloMensual=cicloMensual_, identificador = user.nombre_apellido)
+                        entrada = RegistroEstacionamiento(tipo='SOCIO',
+                        lugar='ESTACIONAMIENTO',
+                        persona=user,
+                        direccion=direccion_,
+                        autorizado=True,
+                        cicloCaja=cicloCaja_,
+                        cicloMensual=cicloMensual_,
+                        identificador = user.nombre_apellido)
                         entrada.save()
                         rta = '#1'
                     else:
-                        entrada = RegistroEstacionamiento(tipo='SOCIO-MOROSO',lugar='ESTACIONAMIENTO', persona=user, direccion=direccion_, autorizado=False, cicloCaja=cicloCaja_, cicloMensual=cicloMensual_, identificador = user.nombre_apellido)
+                        entrada = RegistroEstacionamiento(tipo='SOCIO-MOROSO',
+                        lugar='ESTACIONAMIENTO',
+                        persona=user,
+                        direccion=direccion_,
+                        autorizado=False,
+                        cicloCaja=cicloCaja_,
+                        cicloMensual=cicloMensual_,
+                        identificador = user.nombre_apellido)
                         entrada.save()
                         #abrir barrera
                         rta = '#0' #Registro Socio Moroso
@@ -94,7 +129,14 @@ def respuesta(request):
             else:
                 try:
                     proveedor_ = Proveedor.objects.get(idProveedor = int(dato))
-                    entrada = RegistroEstacionamiento(tipo='PROVEEDOR',lugar='ESTACIONAMIENTO', proveedor=proveedor_, direccion=direccion_, autorizado=True, cicloCaja=cicloCaja_, cicloMensual=cicloMensual_, identificador = proveedor_.nombre_proveedor)
+                    entrada = RegistroEstacionamiento(tipo='PROVEEDOR',
+                    lugar='ESTACIONAMIENTO',
+                    proveedor=proveedor_,
+                    direccion=direccion_,
+                    autorizado=True,
+                    cicloCaja=cicloCaja_,
+                    cicloMensual=cicloMensual_,
+                    identificador = proveedor_.nombre_proveedor)
                     #abrir barrera
                     rta = '#1'
                 except:
@@ -106,12 +148,26 @@ def respuesta(request):
                 try:
                     user = Persona.objects.get(nrTarjeta=int(dato))
                     if user.general == True:
-                        entrada = RegistroEstacionamiento(tipo='SOCIO',lugar='ESTACIONAMIENTO', persona=user, direccion=direccion_, autorizado=True, cicloCaja=cicloCaja_, cicloMensual=cicloMensual_, identificador = user.nombre_apellido)
+                        entrada = RegistroEstacionamiento(tipo='SOCIO',
+                        lugar='ESTACIONAMIENTO',
+                        persona=user,
+                        direccion=direccion_,
+                        autorizado=True,
+                        cicloCaja=cicloCaja_,
+                        cicloMensual=cicloMensual_,
+                        identificador = user.nombre_apellido)
                         entrada.save()
                         #abrir barrera
                         rta = '#1'
                     else:
-                        entrada = RegistroEstacionamiento(tipo='SOCIO-MOROSO',lugar='ESTACIONAMIENTO', persona=user, direccion=direccion_, autorizado=False, cicloCaja=cicloCaja_, cicloMensual=cicloMensual_, identificador = user.nombre_apellido)
+                        entrada = RegistroEstacionamiento(tipo='SOCIO-MOROSO',
+                        lugar='ESTACIONAMIENTO',
+                        persona=user,
+                        direccion=direccion_,
+                        autorizado=False,
+                        cicloCaja=cicloCaja_,
+                        cicloMensual=cicloMensual_,
+                        identificador = user.nombre_apellido)
                         entrada.save()
                         rta = '#0' #Registro Socio Moroso
 
@@ -121,22 +177,50 @@ def respuesta(request):
                 try:
                     user = Persona.objects.get(dni = int(dato))
                     if user.general == True:
-                        entrada = RegistroEstacionamiento(tipo='SOCIO',lugar='ESTACIONAMIENTO', persona=user, direccion=direccion_, autorizado=True, cicloCaja=cicloCaja_, cicloMensual=cicloMensual_, identificador = user.nombre_apellido)
+                        entrada = RegistroEstacionamiento(tipo='SOCIO',
+                        lugar='ESTACIONAMIENTO',
+                        persona=user,
+                        direccion=direccion_,
+                        autorizado=True,
+                        cicloCaja=cicloCaja_,
+                        cicloMensual=cicloMensual_,
+                        identificador = user.nombre_apellido)
                         entrada.save()
                         rta = '#1'
                     else:
-                        entrada = RegistroEstacionamiento(tipo='SOCIO-MOROSO',lugar='ESTACIONAMIENTO', persona=user, direccion=direccion_, autorizado=False, cicloCaja=cicloCaja_, cicloMensual=cicloMensual_, identificador = user.nombre_apellido)
+                        entrada = RegistroEstacionamiento(tipo='SOCIO-MOROSO',
+                        lugar='ESTACIONAMIENTO',
+                        persona=user,
+                        direccion=direccion_,
+                        autorizado=False,
+                        cicloCaja=cicloCaja_,
+                        cicloMensual=cicloMensual_,
+                        identificador = user.nombre_apellido)
                         entrada.save()
                         #abrir barrera
                         rta = '#0' #Registro Socio Moroso
                 except:
-                    entrada = RegistroEstacionamiento(tipo='NOSOCIO',lugar='ESTACIONAMIENTO', noSocio=int(dato), direccion=direccion_, autorizado=True, cicloCaja=cicloCaja_, cicloMensual=cicloMensual_, identificador = dato)
+                    entrada = RegistroEstacionamiento(tipo='NOSOCIO',
+                    lugar='ESTACIONAMIENTO',
+                    noSocio=int(dato),
+                    direccion=direccion_,
+                    autorizado=True,
+                    cicloCaja=cicloCaja_,
+                    cicloMensual=cicloMensual_,
+                    identificador = dato)
                     entrada.save()
                     rta = '#3' #NoSocio registrado
             else:
                 try:
                     proveedor_ = Proveedor.objects.get(idProveedor = int(dato))
-                    entrada = RegistroEstacionamiento(tipo='PROVEEDOR',lugar='ESTACIONAMIENTO', proveedor=proveedor_, direccion=direccion_, autorizado=True, cicloCaja=cicloCaja_, cicloMensual=cicloMensual_, identificador = proveedor_.nombre_proveedor)
+                    entrada = RegistroEstacionamiento(tipo='PROVEEDOR',
+                    lugar='ESTACIONAMIENTO',
+                    proveedor=proveedor_,
+                    direccion=direccion_,
+                    autorizado=True,
+                    cicloCaja=cicloCaja_,
+                    cicloMensual=cicloMensual_,
+                    identificador = proveedor_.nombre_proveedor)
                     #abrir barrera
                     rta = '#1'
                 except:
@@ -147,14 +231,32 @@ def respuesta(request):
 def historial_estacionamiento(request):
     if request.method == 'GET':
         estacionamiento = RegistroEstacionamiento.objects.all()
+        busqueda = request.GET.get('buscar')
+        fecha = request.GET.get('fecha')
+        tiempo = request.GET.get('tiempo')
+
+        if busqueda:
+            estacionamiento = estacionamiento.filter(
+                Q(identificador__icontains=busqueda),
+            ).distinct()
+
+        if fecha:
+            fecha = str(fecha).split('-')
+            estacionamiento = estacionamiento.filter(
+                fecha__year=fecha[0],
+                fecha__month=fecha[1],
+                fecha__day=fecha[2]
+            )
+
+        if tiempo:
+            print(tiempo)
+            tiempo = str(tiempo).split(':')
+            estacionamiento = estacionamiento.filter(
+                tiempo__hour=tiempo[0],
+                tiempo__minute=tiempo[1]
+            )
         table = HistorialEstacionamientoTable(estacionamiento)
         RequestConfig(request).configure(table)
-
-        return render(
-            request,
-            'registroGeneral/registro_manual_socio.html',
-            {'table': table}
-        )
 
 
 def detalle_estacionamiento(request, id):
