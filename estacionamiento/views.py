@@ -153,11 +153,29 @@ def historial_estacionamiento(request):
     if request.method == 'GET':
         estacionamiento = RegistroEstacionamiento.objects.all()
         busqueda = request.GET.get('buscar')
+        fecha = request.GET.get('fecha')
+        tiempo = request.GET.get('tiempo')
 
         if busqueda:
-            estacionamiento = RegistroEstacionamiento.objects.filter(
-                Q(identificador__icontains=busqueda)
+            estacionamiento = estacionamiento.filter(
+                Q(identificador__icontains=busqueda),
             ).distinct()
+
+        if fecha:
+            fecha = str(fecha).split('-')
+            estacionamiento = estacionamiento.filter(
+                fecha__year=fecha[0],
+                fecha__month=fecha[1],
+                fecha__day=fecha[2]
+            )
+
+        if tiempo:
+            print(tiempo)
+            tiempo = str(tiempo).split(':')
+            estacionamiento = estacionamiento.filter(
+                tiempo__hour=tiempo[0],
+                tiempo__minute=tiempo[1]
+            )
 
         table = HistorialEstacionamientoTable(estacionamiento)
         RequestConfig(request).configure(table)
