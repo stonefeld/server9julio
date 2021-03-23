@@ -151,7 +151,6 @@ def historial_estacionamiento(request):
         fecha = request.GET.get('fecha')
         tiempo = request.GET.get('tiempo')
 
-
         if busqueda:
             estacionamiento = estacionamiento.filter(
                 Q(identificador__icontains=busqueda),
