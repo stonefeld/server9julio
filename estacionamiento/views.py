@@ -1,5 +1,6 @@
 from threading import Thread
 import os
+import csv
 from django.utils.timezone import now, localtime
 from datetime import datetime, timedelta
 from django.db.models import Count
@@ -38,9 +39,19 @@ def socket_arduino(cantidad):
     os.system(f'python3 {script_loc} abrir_tiempo {cantidad}')
 
 def emision_resumen_mensual(request):
-    resumen_mensual = RegistroEstacionamiento.objects.values("persona__nombre_apellido").annotate(Cantidad_Entradas = Count("id")/2).order_by("persona__nombre_apellido").exclude(persona__isnull=True)
-    print(resumen_mensual)
-    return HttpResponse('1')
+    cicloMensual = CicloMensual.objects.all().last().cicloMensual
+    resumen_mensual = RegistroEstacionamiento.objects.values("persona__nombre_apellido").annotate(cantidad_Entradas = Count("id")).order_by("persona__nombre_apellido").exclude(persona__isnull=True).filter(direccion='ENTRADA', cicloMensual=cicloMensual)
+    output=[]
+    response = HttpResponse(content_type='text/csv')
+    writer = csv.writer(response)
+    output.append(['Persona','Cantidad_Entradas'])
+    for entrada in resumen_mensual:
+        output.append([entrada['persona__nombre_apellido'], entrada['cantidad_Entradas']])
+    writer.writerows(output)
+    print(output)
+    response['Content-Disposition'] = 'attachment; filename="Resumen_Mensual.csv"'
+
+    return response
 
 
 def respuesta(request):
