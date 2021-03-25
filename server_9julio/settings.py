@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'registroTenis',
     'usuario',
     'usuariosistema',
+    'menu_estacionamiento',
     
 
     # Third party apps
