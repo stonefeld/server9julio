@@ -25,7 +25,18 @@ class CicloCaja(models.Model):
     cicloMensual = models.ForeignKey(CicloMensual, on_delete=models.CASCADE, verbose_name='cicloMensual')
 
 class RegistroEstacionamiento(models.Model):
-    tipo = models.CharField(max_length=30, verbose_name='Tipo')
+    TIPO_CHOICES = (
+        ('socio', 'SOCIO'),
+        ('socio-moroso', 'SOCIO-MOROSO'),
+        ('nosocio', 'NOSOCIO'),
+        ('proveedor', 'PROVEEDOR')
+    )
+
+    DIRECCION_CHOICES = (
+        ('entrada', 'ENTRADA'),
+        ('salida', 'SALIDA')
+    )
+    tipo = models.CharField(max_length=30, verbose_name='Tipo', choices=TIPO_CHOICES, default='SOCIO')
     identificador = models.CharField(max_length=30, verbose_name='Identificador', null=True, blank=True, default="Error")
     persona = models.ForeignKey(Persona, on_delete=models.CASCADE, verbose_name='Persona', null=True, blank=True)
     noSocio = models.IntegerField(verbose_name='DNI', null=True, blank=True)
