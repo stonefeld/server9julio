@@ -12,6 +12,17 @@ class Proveedor(models.Model):
     def __str__(self):
         return str(self.nombre_proveedor)
 
+class CicloAnual(models.Model):
+    cicloAnual = models.IntegerField(verbose_name='cicloAnual')
+
+class CicloMensual(models.Model):
+    cicloMensual = models.IntegerField(verbose_name='cicloMensual')
+    cicloAnual = models.ForeignKey(CicloAnual, on_delete=models.CASCADE, verbose_name='cicloAnual')
+
+class CicloCaja(models.Model):
+    cicloCaja = models.IntegerField(verbose_name='cicloCaja')
+    recaudado = models.IntegerField(null=True, blank=True ,verbose_name='recaudado')
+    cicloMensual = models.ForeignKey(CicloMensual, on_delete=models.CASCADE, verbose_name='cicloMensual')
 
 class RegistroEstacionamiento(models.Model):
     tipo = models.CharField(max_length=30, verbose_name='Tipo')
@@ -24,8 +35,7 @@ class RegistroEstacionamiento(models.Model):
     fecha = models.DateField(default=now, verbose_name='Fecha')
     direccion = models.CharField(max_length=30, default='ENTRADA', verbose_name='Dirección')
     autorizado = models.BooleanField(default=False, verbose_name='Autorización')
-    cicloCaja = models.IntegerField(null=True, verbose_name='cicloCaja')
-    cicloMensual = models.IntegerField(null=True, verbose_name='cicloMensual')
+    cicloCaja = models.ForeignKey(CicloCaja, on_delete=models.CASCADE, verbose_name='cicloCaja')
     
 
     def __str__(self):
@@ -53,10 +63,10 @@ class Cobros(models.Model):
     registroEstacionamiento = models.ForeignKey(RegistroEstacionamiento, on_delete=models.CASCADE, verbose_name='registroEstacionamiento')
 
 
-class CicloCaja(models.Model):
-    cicloCaja = models.IntegerField(verbose_name='cicloCaja')
 
 
-class CicloMensual(models.Model):
-    cicloMensual = models.IntegerField(verbose_name='cicloMensual')
+
+
+
+
 

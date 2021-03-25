@@ -13,5 +13,4 @@ class EstacionamientoForm(forms.ModelForm):
             'direccion',
             'autorizado',
             'cicloCaja',
-            'cicloMensual'
         ]

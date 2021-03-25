@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from django.db.models import Count
 import math
 from django.conf import settings
-from django.db.models import Q
+from django.db.models import Q, Sum
 from django.http import HttpResponse
 
 from django.utils.timezone import localtime
@@ -17,10 +17,11 @@ from django_tables2 import RequestConfig
 
 from .models import (
     RegistroEstacionamiento, Proveedor,
-    CicloCaja, CicloMensual, Persona
+    CicloCaja, CicloMensual, Persona, CicloAnual, Cobros
 )
 from .forms import EstacionamientoForm
 from .tables import HistorialEstacionamientoTable
+
 
 
 def postpone(function):
@@ -38,9 +39,11 @@ def socket_arduino(cantidad):
     script_loc = os.path.join(base_dir, 'scripts/client.py')
     os.system(f'python3 {script_loc} abrir_tiempo {cantidad}')
 
-def emision_resumen_mensual(request):
-    cicloMensual = CicloMensual.objects.all().last().cicloMensual
-    resumen_mensual = RegistroEstacionamiento.objects.values("persona__nombre_apellido").annotate(cantidad_Entradas = Count("id")).order_by("persona__nombre_apellido").exclude(persona__isnull=True).filter(direccion='ENTRADA', cicloMensual=cicloMensual)
+def emision_resumen_mensual(request): #falta testing
+    if cicloCaja_.recaudado is not:
+            return "Error debe cerrar la caja primero"
+    cicloMensual_ = CicloMensual.objects.all().last()
+    resumen_mensual = RegistroEstacionamiento.objects.values("persona__nombre_apellido").annotate(cantidad_Entradas = Count("id")).order_by("persona__nombre_apellido").exclude(persona__isnull=True).filter(direccion='ENTRADA', cicloCaja__cicloMensual = cicloMensual_) #falta ciclo Mensual
     output=[]
     response = HttpResponse(content_type='text/csv')
     writer = csv.writer(response)
@@ -48,19 +51,37 @@ def emision_resumen_mensual(request):
     for entrada in resumen_mensual:
         output.append([entrada['persona__nombre_apellido'], entrada['cantidad_Entradas']])
     writer.writerows(output)
-    print(output)
     response['Content-Disposition'] = 'attachment; filename="Resumen_Mensual.csv"'
-
+    cicloAnual_ = CicloAnual.objects.all().last()
+    if (cicloMensual_.cicloMensual >= 12):
+        cicloAnual_ = CicloAnual(cicloAnual = (cicloAnual_.cicloAnual + 1))
+        cicloAnual_.save()
+        cicloAnual_ = CicloAnual.objects.all().last()
+        cicloMensual_ = CicloMensual(cicloMensual = 1, cicloAnual = cicloAnual_)
+        cicloMensual_.save()
+    else:
+        cicloMensual_ = CicloMensual(cicloMensual = (cicloMensual_.cicloMensual + 1), cicloAnual = cicloAnual_)
+        cicloMensual_.save()
+    cicloMensual_  = CicloMensual.objects.all().last()
+    cicloCaja = CicloCaja(cicloCaja = 1, cicloMensual = cicloMensual_)
     return response
 
+def cierre_caja(): #cierre de caja con contraseña?
+    cicloCaja_ = CicloCaja.objects.all().last()
+    recaudado =  Cobros.objects.filter(registroEstacionamiento__cicloCaja = cicloCaja_).aggregate(recaudacion = Sum('precio'))
+    cicloCaja_.recaudado = recaudado
+    return recaudado
 
 def respuesta(request):
     if request.method == 'GET':
         tipo = request.GET.get('tipo', '')  # el tipo de dato que vamos a recibir (NrTarjeta=0/DNI=1/Proveedor=2)
         dato = request.GET.get('dato', '')  # el dato
         direccion_ = request.GET.get('direccion', '')
-        cicloCaja_ = CicloCaja.objects.all().last().cicloCaja
-        cicloMensual_ = CicloMensual.objects.all().last().cicloMensual
+        cicloCaja_ = CicloCaja.objects.all().last()
+        if cicloCaja_.recaudado is not None:
+            NewCicloCaja = CicloCaja(cicloMensual = cicloCaja_.cicloMensual, cicloCaja = (cicloCaja_.cicloCaja + 1))
+            NewCicloCaja.save()
+            cicloCaja_ = CicloCaja.objects.all().last()
 
         if int(direccion_) == 1:
             direccion_ = 'SALIDA'
@@ -74,7 +95,6 @@ def respuesta(request):
                         direccion=direccion_,
                         autorizado=True,
                         cicloCaja=cicloCaja_,
-                        cicloMensual=cicloMensual_,
                         identificador = user.nombre_apellido)
                         entrada.save()
                         #abrir barrera
@@ -86,7 +106,6 @@ def respuesta(request):
                         direccion=direccion_,
                         autorizado=False,
                         cicloCaja=cicloCaja_,
-                        cicloMensual=cicloMensual_,
                         identificador = user.nombre_apellido)
                         entrada.save()
                         rta = '#0' #Registro Socio Moroso
@@ -102,7 +121,6 @@ def respuesta(request):
                         direccion=direccion_,
                         autorizado=True,
                         cicloCaja=cicloCaja_,
-                        cicloMensual=cicloMensual_,
                         identificador = user.nombre_apellido)
                         entrada.save()
                         rta = '#1'
@@ -113,7 +131,6 @@ def respuesta(request):
                         direccion=direccion_,
                         autorizado=False,
                         cicloCaja=cicloCaja_,
-                        cicloMensual=cicloMensual_,
                         identificador = user.nombre_apellido)
                         entrada.save()
                         #abrir barrera
@@ -146,7 +163,6 @@ def respuesta(request):
                     direccion=direccion_,
                     autorizado=True,
                     cicloCaja=cicloCaja_,
-                    cicloMensual=cicloMensual_,
                     identificador = proveedor_.nombre_proveedor)
                     #abrir barrera
                     rta = '#1'
@@ -165,7 +181,6 @@ def respuesta(request):
                         direccion=direccion_,
                         autorizado=True,
                         cicloCaja=cicloCaja_,
-                        cicloMensual=cicloMensual_,
                         identificador = user.nombre_apellido)
                         entrada.save()
                         #abrir barrera
@@ -177,7 +192,6 @@ def respuesta(request):
                         direccion=direccion_,
                         autorizado=False,
                         cicloCaja=cicloCaja_,
-                        cicloMensual=cicloMensual_,
                         identificador = user.nombre_apellido)
                         entrada.save()
                         rta = '#0' #Registro Socio Moroso
@@ -194,7 +208,6 @@ def respuesta(request):
                         direccion=direccion_,
                         autorizado=True,
                         cicloCaja=cicloCaja_,
-                        cicloMensual=cicloMensual_,
                         identificador = user.nombre_apellido)
                         entrada.save()
                         rta = '#1'
@@ -205,7 +218,6 @@ def respuesta(request):
                         direccion=direccion_,
                         autorizado=False,
                         cicloCaja=cicloCaja_,
-                        cicloMensual=cicloMensual_,
                         identificador = user.nombre_apellido)
                         entrada.save()
                         #abrir barrera
@@ -217,7 +229,6 @@ def respuesta(request):
                     direccion=direccion_,
                     autorizado=True,
                     cicloCaja=cicloCaja_,
-                    cicloMensual=cicloMensual_,
                     identificador = dato)
                     entrada.save()
                     rta = '#3' #NoSocio registrado
@@ -230,7 +241,6 @@ def respuesta(request):
                     direccion=direccion_,
                     autorizado=True,
                     cicloCaja=cicloCaja_,
-                    cicloMensual=cicloMensual_,
                     identificador = proveedor_.nombre_proveedor)
                     #abrir barrera
                     rta = '#1'
