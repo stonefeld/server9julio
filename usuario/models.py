@@ -9,7 +9,7 @@ class Persona(models.Model):
     general = models.BooleanField(default=False, verbose_name='General')
     pileta = models.BooleanField(default=False, verbose_name='Pileta')
     tenis = models.BooleanField(default=False, verbose_name='Tenis')
-    deuda = models.FloatField(null=True, verbose_name='Deuda')
+    deuda = models.FloatField(null=True, verbose_name='Deuda', default=0)
 
     def __str__(self):
         return str(self.nombre_apellido)

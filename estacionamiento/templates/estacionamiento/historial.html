@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% load render_table from django_tables2 %}
 
@@ -11,65 +12,34 @@
   <div class="content-section" style="padding:20px;">
     <div id="form_card" class="card-panel col s12">
 
-      <!-- <!-1- <div class="d-flex"> -1-> -->
-      <!--   <!-1- <div class="mr-auto p-2"> -1-> -->
-      <!--   <div class="mr-auto"> -->
-      <!--     <form method="GET"> -->
-      <!--       <div class="form-row"> -->
-      <!--         <div class="form-group col-12"> -->
-      <!--           <div class="input-group"> -->
-      <!--             <input class="form-control" type="text" placeholder="Buscar..." name="buscar" value=""/> -->
-      <!--             <button class="btn btn-secondary" type="submit" style="margin-left:20px;"> -->
-      <!--               <i>Buscar</i> -->
-      <!--             </button> -->
-      <!--           </div> -->
-      <!--         </div> -->
-      <!--       <!-1- </div> -1-> -->
+      <div class="d-flex">
+        <div class="mr-auto p-2">
+          <div class="mr-auto">
+            <form method="GET">
+              <div class="form-row">
+                <div class="form-group col-12">
+                  <div class="input-group">
+                    <input class="form-control" type="text" placeholder="Buscar..." name="buscar" value=""/>
+                    <button class="btn btn-secondary" type="submit" style="margin-left:20px;">
+                      <i>Buscar</i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
 
-      <!--       <!-1- <div class="form-row"> -1-> -->
-      <!--         <div class="form-group col-md-2 col-lg-2"> -->
-      <!--           <label for="fecha">Fecha</label> -->
-      <!--           <input type="date" class="form-control" id="fecha" name="fecha"> -->
-      <!--         </div> -->
-      <!--         <div class="form-group col-md-2 col-lg-2"> -->
-      <!--           <label for="tiempo">Hora</label> -->
-      <!--           <input type="time" class="form-control" id="tiempo" name="tiempo"> -->
-      <!--         </div> -->
-      <!--       </div> -->
+        <div class="p-2">
+          <button type="button" class="btn btn-outline-info" style="" data-toggle="modal" data-target="#exampleModal">Filtro avanzado</button>
+        </div>
 
-      <!--     </form> -->
-      <!--   </div> -->
-
-        <!-- <div class="p-2"> -->
-        <!--   <a href=""> -->
-        <!--     <button class="btn btn-outline-info" type="submit" style="float:right">Molinetes</button> -->
-        <!--   </a> -->
-        <!-- </div> -->
-      <!-- </div> -->
-
-      <!-- <form method="GET"> -->
-      <!--   <div class="form-row"> -->
-      <!--     <div class="form-group col-md-4"> -->
-      <!--       <label for="buscar">Filtrar por nombre y apellido</label> -->
-      <!--       <input type="text" class="form-control" id="buscar" name="buscar" placeholder="Buscar..."> -->
-      <!--     </div> -->
-      <!--     <div class="form-group col-md-4"> -->
-      <!--       <label for="fecha">Filtrar por fecha</label> -->
-      <!--       <input type="date" class="form-control" id="fecha" name="fecha"> -->
-      <!--     </div> -->
-      <!--     <div class="form-group col-md-4"> -->
-      <!--       <label for="tiempo">Filtrar por hora</label> -->
-      <!--       <input type="time" class="form-control" id="tiempo" name="tiempo"> -->
-      <!--     </div> -->
-      <!--     <div class="form-group col-md-4"> -->
-      <!--       <button class="btn btn-outline-info" type="submit"> -->
-      <!--         Filtrar -->
-      <!--       </button> -->
-      <!--     </div> -->
-      <!--   </div> -->
-      <!-- </form> -->
-
-      <button type="button" class="btn btn-outline-info" data-toggle="modal" data-target="#exampleModal">Filtro avanzado</button>
+        <div class="p-2">
+          <a href="{% url 'usuario:historial' %}">
+            <button class="btn btn-outline-info" type="submit" style="float:right">Molinetes</button>
+          </a>
+        </div>
+      </div>
 
       <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
@@ -85,30 +55,44 @@
                 <div class="form-row">
                   <div class="form-group col-md-12">
                     <div class="input-group">
+
                       <input type="text" class="form-control" name="buscar" placeholder="Buscar...">
                       <div class="input-group-append">
                         <span class="input-group-text">Nombre y apellido</span>
                       </div>
+
                     </div>
                   </div>
                 </div>
                 <div class="form-row">
                   <div class="form-group col-md-12">
                     <div class="input-group">
+
                       <input type="date" class="form-control" name="fecha">
                       <div class="input-group-append">
                         <span class="input-group-text">Fecha</span>
                       </div>
+
                     </div>
                   </div>
                 </div>
                 <div class="form-row">
                   <div class="form-group col-md-12">
                     <div class="input-group">
-                      <input type="time" class="form-control" value="24:00" name="tiempo">
+
+                      <input type="text" class="form-control" id="clockpicker" name="tiempo">
                       <div class="input-group-append">
                         <span class="input-group-text">Hora</span>
                       </div>
+
+                      <script type="text/javascript">
+                        var input = $('#clockpicker');
+                        input.clockpicker({
+                          autoclose: true,
+                          default: 'now'
+                        });
+                      </script>
+
                     </div>
                   </div>
                 </div>

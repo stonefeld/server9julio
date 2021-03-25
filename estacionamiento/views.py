@@ -1,3 +1,4 @@
+from datetime import time, date
 from threading import Thread
 import os
 import csv
@@ -264,17 +265,17 @@ def historial_estacionamiento(request):
 
         if fecha:
             fecha = str(fecha).split('-')
+            fecha = date(int(fecha[0]), int(fecha[1]), int(fecha[2]))
             estacionamiento = estacionamiento.filter(
-                fecha__year=fecha[0],
-                fecha__month=fecha[1],
-                fecha__day=fecha[2]
+                tiempo__date=fecha
             )
 
         if tiempo:
             tiempo = str(tiempo).split(':')
+            tiempo = time(int(tiempo[0]), int(tiempo[1]))
             estacionamiento = estacionamiento.filter(
-                tiempo__hour=tiempo[0],
-                tiempo__minute=tiempo[1]
+                tiempo__hour=tiempo.hour,
+                tiempo__minute=tiempo.minute
             )
 
         table = HistorialEstacionamientoTable(estacionamiento)

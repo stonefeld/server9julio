@@ -1,5 +1,5 @@
 from django.db import models
-from django.utils.timezone import now, localtime
+from django.utils.timezone import now
 
 from usuario.models import Persona
 
@@ -31,36 +31,38 @@ class RegistroEstacionamiento(models.Model):
     noSocio = models.IntegerField(verbose_name='DNI', null=True, blank=True)
     proveedor = models.ForeignKey(Proveedor, on_delete=models.CASCADE, verbose_name='Proveedor', null=True, blank=True)
     lugar = models.CharField(max_length=30, verbose_name='Lugar')
-    tiempo = models.TimeField(default=now, verbose_name='Hora')
-    fecha = models.DateField(default=now, verbose_name='Fecha')
-    direccion = models.CharField(max_length=30, default='ENTRADA', verbose_name='Dirección')
+    tiempo = models.DateTimeField(default=now, verbose_name='Fecha y Hora')
+    direccion = models.CharField(max_length=30, choices=DIRECCION_CHOICES, verbose_name='Dirección', default='ENTRADA')
     autorizado = models.BooleanField(default=False, verbose_name='Autorización')
     cicloCaja = models.ForeignKey(CicloCaja, on_delete=models.CASCADE, verbose_name='cicloCaja')
     
 
     def __str__(self):
-        if self.tipo == "SOCIO" or self.tipo == "SOCIO-MOROSO":
-            return str(localtime(self.tiempo)) + " - " + str(self.persona)
-
-        elif self.tipo == "NOSOCIO":
-            return str(localtime(self.tiempo)) + " - " + str(self.noSocio)
-
-        elif self.tipo == "PROVEEDOR":
-            return str(localtime(self.tiempo)) + " - " + str(self.proveedor)
-
-        else:
-            return "Error Fatal"
-    
-    def get_absolute_url(self):
-        return f'/estacionamiento/historial/{self.id}/'
+        return f'{self.tiempo} - {self.identificador}'
 
     def get_absolute_url(self):
         return f'/estacionamiento/historial/{self.id}/'
+
+    def save(self, *args, **kwargs):
+        if self.tipo == 'socio' or self.tipo == 'socio-moroso':
+            self.identificador = self.persona.nombre_apellido
+
+        elif self.tipo == 'nosocio':
+            self.identificador = self.noSocio
+
+        elif self.tipo == 'proveedor':
+            self.identificador = self.proveedor
+
+        super().save(*args, **kwargs)
 
 
 class Cobros(models.Model):
     precio = models.FloatField(verbose_name='precio')
-    registroEstacionamiento = models.ForeignKey(RegistroEstacionamiento, on_delete=models.CASCADE, verbose_name='registroEstacionamiento')
+    registroEstacionamiento = models.ForeignKey(
+        RegistroEstacionamiento,
+        on_delete=models.CASCADE,
+        verbose_name='registroEstacionamiento'
+    )
 
 
 

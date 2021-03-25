@@ -107,10 +107,10 @@ def cargarDB(request):
     df.drop('d', inplace=True, axis=1)
 
     for column in list('ghijklmnopqrstuv'):
-        df.drop(f'{column}', inplace=True, axis=1)
+        df.drop(str(column), inplace=True, axis=1)
 
     for ind in df.index:
-        if pd.isna(df['f'][ind]):
+        if not pd.isna(df['f'][ind]):
             df['e'][ind] = df['f'][ind]
 
     df.drop('f', inplace=True, axis=1)
@@ -127,8 +127,8 @@ def cargarDB(request):
         df = df.drop(row)
 
     df = df.dropna(thresh=2)
-    df[pd.isnull(df)] = "0.0"
-    print(df)
+    df['Deuda'] = df['Deuda'].fillna(0)
+
     cargarDBAsync(df)
 
     messages.success(request, 'La carga de datos ha iniciado con éxito')
