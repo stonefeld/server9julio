@@ -40,7 +40,8 @@ def socket_arduino(cantidad):
     os.system(f'python3 {script_loc} abrir_tiempo {cantidad}')
 
 def emision_resumen_mensual(request): #falta testing
-    if cicloCaja_.recaudado is not:
+    cicloCaja_ = CicloCaja.objects.all().last()
+    if cicloCaja_.recaudado is None:
             return "Error debe cerrar la caja primero"
     cicloMensual_ = CicloMensual.objects.all().last()
     resumen_mensual = RegistroEstacionamiento.objects.values("persona__nombre_apellido").annotate(cantidad_Entradas = Count("id")).order_by("persona__nombre_apellido").exclude(persona__isnull=True).filter(direccion='ENTRADA', cicloCaja__cicloMensual = cicloMensual_) #falta ciclo Mensual
@@ -66,7 +67,7 @@ def emision_resumen_mensual(request): #falta testing
     cicloCaja = CicloCaja(cicloCaja = 1, cicloMensual = cicloMensual_)
     return response
 
-def cierre_caja(): #cierre de caja con contraseña?
+def cierre_caja(request): #cierre de caja con contraseña? / Falta testing
     cicloCaja_ = CicloCaja.objects.all().last()
     recaudado =  Cobros.objects.filter(registroEstacionamiento__cicloCaja = cicloCaja_).aggregate(recaudacion = Sum('precio'))
     cicloCaja_.recaudado = recaudado
