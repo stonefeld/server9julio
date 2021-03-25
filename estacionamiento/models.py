@@ -58,7 +58,11 @@ class RegistroEstacionamiento(models.Model):
 
 class Cobros(models.Model):
     precio = models.FloatField(verbose_name='precio')
-    registroEstacionamiento = models.ForeignKey(RegistroEstacionamiento, on_delete=models.CASCADE, verbose_name='registroEstacionamiento')
+    registroEstacionamiento = models.ForeignKey(
+        RegistroEstacionamiento,
+        on_delete=models.CASCADE,
+        verbose_name='registroEstacionamiento'
+    )
 
 
 class CicloCaja(models.Model):
