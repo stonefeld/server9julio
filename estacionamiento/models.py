@@ -20,6 +20,11 @@ class RegistroEstacionamiento(models.Model):
         ('proveedor', 'PROVEEDOR')
     )
 
+    DIRECCION_CHOICES = (
+        ('entrada', 'ENTRADA'),
+        ('salida', 'SALIDA')
+    )
+
     tipo = models.CharField(max_length=30, verbose_name='Tipo', choices=TIPO_CHOICES, default='SOCIO')
     identificador = models.CharField(max_length=30, verbose_name='Identificador', null=True, blank=True)
     persona = models.ForeignKey(Persona, on_delete=models.CASCADE, verbose_name='Persona', null=True, blank=True)
@@ -27,7 +32,7 @@ class RegistroEstacionamiento(models.Model):
     proveedor = models.ForeignKey(Proveedor, on_delete=models.CASCADE, verbose_name='Proveedor', null=True, blank=True)
     lugar = models.CharField(max_length=30, verbose_name='Lugar')
     tiempo = models.DateTimeField(default=now, verbose_name='Fecha y Hora')
-    direccion = models.CharField(max_length=30, default='ENTRADA', verbose_name='Dirección')
+    direccion = models.CharField(max_length=30, choices=DIRECCION_CHOICES, verbose_name='Dirección', default='ENTRADA')
     autorizado = models.BooleanField(default=False, verbose_name='Autorización')
     cicloCaja = models.IntegerField(null=True, verbose_name='cicloCaja')
     cicloMensual = models.IntegerField(null=True, verbose_name='cicloMensual')
