@@ -42,37 +42,45 @@ def socket_arduino(cantidad):
 
 def emision_resumen_mensual(request): #falta testing
     cicloCaja_ = CicloCaja.objects.all().last()
-    if cicloCaja_.recaudado is None:
-            return "Error debe cerrar la caja primero"
-    cicloMensual_ = CicloMensual.objects.all().last()
-    resumen_mensual = RegistroEstacionamiento.objects.values("persona__nombre_apellido").annotate(cantidad_Entradas = Count("id")).order_by("persona__nombre_apellido").exclude(persona__isnull=True).filter(direccion='ENTRADA', cicloCaja__cicloMensual = cicloMensual_) #falta ciclo Mensual
-    output=[]
-    response = HttpResponse(content_type='text/csv')
-    writer = csv.writer(response)
-    output.append(['Persona','Cantidad_Entradas'])
-    for entrada in resumen_mensual:
-        output.append([entrada['persona__nombre_apellido'], entrada['cantidad_Entradas']])
-    writer.writerows(output)
-    response['Content-Disposition'] = 'attachment; filename="Resumen_Mensual.csv"'
-    cicloAnual_ = CicloAnual.objects.all().last()
-    if (cicloMensual_.cicloMensual >= 12):
-        cicloAnual_ = CicloAnual(cicloAnual = (cicloAnual_.cicloAnual + 1))
-        cicloAnual_.save()
+    if cicloCaja_.recaudado is not None:
+        cicloMensual_ = CicloMensual.objects.all().last()
+        resumen_mensual = RegistroEstacionamiento.objects.values("persona__nombre_apellido").annotate(cantidad_Entradas = Count("id")).order_by("persona__nombre_apellido").exclude(persona__isnull=True).filter(direccion='ENTRADA', cicloCaja__cicloMensual = cicloMensual_) #falta ciclo Mensual
+        output=[]
+        response = HttpResponse(content_type='text/csv')
+        writer = csv.writer(response)
+        output.append(['Persona','Cantidad_Entradas'])
+        for entrada in resumen_mensual:
+            output.append([entrada['persona__nombre_apellido'], entrada['cantidad_Entradas']])
+        writer.writerows(output)
+        response['Content-Disposition'] = 'attachment; filename="Resumen_Mensual.csv"'
         cicloAnual_ = CicloAnual.objects.all().last()
-        cicloMensual_ = CicloMensual(cicloMensual = 1, cicloAnual = cicloAnual_)
-        cicloMensual_.save()
+        if (cicloMensual_.cicloMensual >= 12):
+            cicloAnual_ = CicloAnual(cicloAnual = (cicloAnual_.cicloAnual + 1))
+            cicloAnual_.save()
+            cicloAnual_ = CicloAnual.objects.all().last()
+            cicloMensual_ = CicloMensual(cicloMensual = 1, cicloAnual = cicloAnual_)
+            cicloMensual_.save()
+        else:
+            cicloMensual_ = CicloMensual(cicloMensual = (cicloMensual_.cicloMensual + 1), cicloAnual = cicloAnual_)
+            cicloMensual_.save()
+        cicloMensual_  = CicloMensual.objects.all().last()
+        cicloCaja = CicloCaja(cicloCaja = 1, cicloMensual = cicloMensual_)
+        cicloCaja_.save()
+        return response
     else:
-        cicloMensual_ = CicloMensual(cicloMensual = (cicloMensual_.cicloMensual + 1), cicloAnual = cicloAnual_)
-        cicloMensual_.save()
-    cicloMensual_  = CicloMensual.objects.all().last()
-    cicloCaja = CicloCaja(cicloCaja = 1, cicloMensual = cicloMensual_)
-    return response
+        return HttpResponse("Error debe cerrar la caja primero")
 
 def cierre_caja(request): #cierre de caja con contraseña? / Falta testing
     cicloCaja_ = CicloCaja.objects.all().last()
     recaudado =  Cobros.objects.filter(registroEstacionamiento__cicloCaja = cicloCaja_).aggregate(recaudacion = Sum('precio'))
-    cicloCaja_.recaudado = recaudado
-    return recaudado
+    if recaudado['recaudacion']:
+        cicloCaja_.recaudado = recaudado['recaudacion']
+        cicloCaja_.save()
+    else:
+        cicloCaja_.recaudado = 0.0
+        cicloCaja_.save()
+        recaudado['recaudacion'] = '0.0'
+    return HttpResponse(recaudado['recaudacion'])
 
 def respuesta(request):
     if request.method == 'GET':
@@ -113,9 +121,10 @@ def respuesta(request):
                         rta = '#0' #Registro Socio Moroso
                 except:
                     rta = '#2' #el usuario No existe
-            elif int(dato) == 1:
+            elif int(tipo) == 1:
                 try:
                     user = Persona.objects.get(dni = int(dato))
+                    print("Socio")
                     if user.general == True:
                         entrada = RegistroEstacionamiento(tipo='SOCIO',
                         lugar='ESTACIONAMIENTO',
@@ -138,24 +147,43 @@ def respuesta(request):
                         #abrir barrera
                         rta = '#0' #Registro Socio Moroso
                 except:
-                    ayer = now - timedelta(days=1)
+                    today = now()
+                    ayer = today - timedelta(days=1)
                     cobro = Cobros.objects.filter(
-                        Q(registroEstacionamiento__tiempo__range = (ayer, now))
+                        Q(registroEstacionamiento__tiempo__range = (ayer, today))
                         & Q(registroEstacionamiento__noSocio__icontains = int(dato))
                         ).distinct()
-                    if is_empty(cobro) :
-                        tolerancia = now - timedelta(minutes=15)
-                        entrada = RegistroEstacionamiento.objects.filter(
-                            Q(tiempo__range = (tolerancia, now))
-                        )
-                        if not entrada:
-                            rta = '#5' #el No Socio no pagó y excedió el tiempo de tolerancia
-                        else:
-                            rta = '#1' #dentro del tiempo de tolerancia
-                    else:
+                    if cobro:
+                        entrada = RegistroEstacionamiento(tipo='NOSOCIO',
+                        lugar='ESTACIONAMIENTO',
+                        noSocio=dato,
+                        direccion=direccion_,
+                        autorizado=True,
+                        cicloCaja=cicloCaja_,
+                        identificador = dato)
+                        entrada.save()
                         rta = '#1' 
-
-                        
+                    else:
+                        tolerancia = today - timedelta(minutes=15)
+                        print(tolerancia)
+                        entrada = RegistroEstacionamiento.objects.filter(
+                            Q(tiempo__range = (tolerancia, today)),
+                            Q(noSocio__icontains = int(dato)),
+                            Q(direccion__icontains = 'ENTRADA')
+                        )
+                        if entrada:
+                            entrada = RegistroEstacionamiento(tipo='NOSOCIO',
+                            lugar='ESTACIONAMIENTO',
+                            noSocio=dato,
+                            direccion=direccion_,
+                            autorizado=True,
+                            cicloCaja=cicloCaja_,
+                            identificador = dato)
+                            entrada.save()
+                            rta = '#1' #dentro del tiempo de tolerancia
+                        else:
+                            rta = '#5' #el No Socio no pagó y excedió el tiempo de tolerancia
+               
             else:
                 try:
                     proveedor_ = Proveedor.objects.get(idProveedor = int(dato))

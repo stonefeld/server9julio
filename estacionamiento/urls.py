@@ -12,5 +12,8 @@ urlpatterns = [
          name='detalle'),
      path('emision_resumen',
           views.emision_resumen_mensual,
-          name='resumen-mensual')
+          name='resumen-mensual'),
+     path('cierre-caja', 
+          views.cierre_caja,
+          name='cierre-caja')
 ]
