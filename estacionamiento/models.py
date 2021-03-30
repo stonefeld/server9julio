@@ -75,6 +75,16 @@ class Cobros(models.Model):
         verbose_name='registroEstacionamiento'
     )
 
+class Estacionado(models.Model):
+    registroEstacionamiento = models.ForeignKey(
+        RegistroEstacionamiento,
+        on_delete=models.CASCADE,
+        verbose_name='registroEstacionamiento'
+    )
+
+
+
+
 
 
 

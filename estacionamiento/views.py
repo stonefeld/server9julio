@@ -18,7 +18,7 @@ from django_tables2 import RequestConfig
 
 from .models import (
     RegistroEstacionamiento, Proveedor,
-    CicloCaja, CicloMensual, Persona, CicloAnual, Cobros
+    CicloCaja, CicloMensual, Persona, CicloAnual, Cobros, Estacionado
 )
 from .forms import EstacionamientoForm
 from .tables import HistorialEstacionamientoTable
@@ -183,7 +183,8 @@ def respuesta(request):
                             rta = '#1' #dentro del tiempo de tolerancia
                         else:
                             rta = '#5' #el No Socio no pagó y excedió el tiempo de tolerancia
-               
+                
+  
             else:
                 try:
                     proveedor_ = Proveedor.objects.get(idProveedor = int(dato))
@@ -194,11 +195,14 @@ def respuesta(request):
                     autorizado=True,
                     cicloCaja=cicloCaja_,
                     identificador = proveedor_.nombre_proveedor)
+                    entrada.save()
                     #abrir barrera
                     rta = '#1'
                 except:
                     rta = '#4' #Error Proveedor no encontrado
-                
+
+            Estacionado.objects.filter(registroEstacionamiento__identificador = entrada.identificador).delete()
+
         else:
             direccion_ = 'ENTRADA'
             if int(tipo) == 0:
@@ -272,10 +276,14 @@ def respuesta(request):
                     autorizado=True,
                     cicloCaja=cicloCaja_,
                     identificador = proveedor_.nombre_proveedor)
+                    entrada.save()
                     #abrir barrera
                     rta = '#1'
                 except:
                     rta = '#4' #Error Proveedor no encontrado
+        
+        estacionado = Estacionado(registroEstacionamiento = entrada)
+        estacionado.save()
 
         return HttpResponse(rta)
 
