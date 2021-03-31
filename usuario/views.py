@@ -150,12 +150,18 @@ def cargarDBAsync(df):
                     usuario.save()
 
             except:
+                partes_nombre = str(df['Socio'][ind]).strip().split(' ')
+                name = ''
+                for nombre in partes_nombre:
+                    if nombre:
+                        name += f'{nombre} '
+
                 usuario = Persona(
-                        nombre_apellido=str(df['Socio'][ind]).strip(),
-                        nrSocio=int(df['NrSocio'][ind]),
-                        general=False,
-                        deuda=float(str(df['Deuda'][ind]).replace(',', ''))
-                        )
+                    nombre_apellido=name.strip(),
+                    nrSocio=int(df['NrSocio'][ind]),
+                    general=False,
+                    deuda=float(str(df['Deuda'][ind]).replace(',', ''))
+                )
                 usuario.save()
                 usuario = Persona.objects.get(nrSocio=int(df['NrSocio'][ind]))
                 listaUsuarios.append(usuario.id)
@@ -170,16 +176,22 @@ def cargarDBAsync(df):
                     usuario.save()
 
             except:
+                partes_nombre = str(df['Socio'][ind]).strip().split(' ')
+                name = ''
+                for nombre in partes_nombre:
+                    if nombre:
+                        name += f'{nombre} '
+
                 usuario = Persona(
-                        nombre_apellido=str(df['Socio'][ind]).strip(),
-                        nrSocio=int(df['NrSocio'][ind]),
-                        general=True,
-                        deuda=float(str(df['Deuda'][ind]).replace(',', ''))
-                        )
+                    nombre_apellido=name.strip(),
+                    nrSocio=int(df['NrSocio'][ind]),
+                    general=True,
+                    deuda=float(str(df['Deuda'][ind]).replace(',', ''))
+                )
                 usuario.save()
                 usuario = Persona.objects.get(nrSocio=int(df['NrSocio'][ind]))
                 listaUsuarios.append(usuario.id)
-                
+
     personas = Persona.objects.all()
     for persona in personas:
         if persona.id not in listaUsuarios:

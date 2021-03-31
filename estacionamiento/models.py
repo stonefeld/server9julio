@@ -12,15 +12,27 @@ class Proveedor(models.Model):
     def __str__(self):
         return str(self.nombre_proveedor)
 
+    class Meta:
+        verbose_name = "Proveedor"
+        verbose_name_plural = "Proveedores"
+
 
 class CicloAnual(models.Model):
     cicloAnual = models.IntegerField(verbose_name='cicloAnual')
+
+    class Meta:
+        verbose_name = "Ciclo Anual"
+        verbose_name_plural = "Ciclos Anuales"
 
 
 class CicloMensual(models.Model):
     cicloMensual = models.IntegerField(verbose_name='cicloMensual')
     cicloAnual = models.ForeignKey(
             CicloAnual, on_delete=models.CASCADE, verbose_name='cicloAnual')
+
+    class Meta:
+        verbose_name = "Ciclo Mensual"
+        verbose_name_plural = "Ciclos Mensuales"
 
 
 class CicloCaja(models.Model):
@@ -30,6 +42,10 @@ class CicloCaja(models.Model):
     cicloMensual = models.ForeignKey(
             CicloMensual, on_delete=models.CASCADE,
             verbose_name='cicloMensual')
+
+    class Meta:
+        verbose_name = "Ciclo Caja"
+        verbose_name_plural = "Ciclos Caja"
 
 
 class RegistroEstacionamiento(models.Model):
@@ -84,6 +100,10 @@ class RegistroEstacionamiento(models.Model):
             self.identificador = self.proveedor
 
         super().save(*args, **kwargs)
+
+    class Meta:
+        verbose_name = "Registro Estacionamiento"
+        verbose_name_plural = "Registros Estacionamiento"
 
 
 class Cobros(models.Model):

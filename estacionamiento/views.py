@@ -82,6 +82,7 @@ def emision_resumen_mensual(request):  # Falta testing
         cicloCaja_ = CicloCaja(cicloCaja=1, cicloMensual=cicloMensual_)
         cicloCaja_.save()
         return response
+
     else:
         return HttpResponse("Error debe cerrar la caja primero")
 
