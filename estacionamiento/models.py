@@ -90,13 +90,13 @@ class RegistroEstacionamiento(models.Model):
         return f'/estacionamiento/historial/{self.id}/'
 
     def save(self, *args, **kwargs):
-        if self.tipo == 'socio' or self.tipo == 'socio-moroso':
+        if self.tipo == 'SOCIO' or self.tipo == 'SOCIO-MOROSO':
             self.identificador = self.persona.nombre_apellido
 
-        elif self.tipo == 'nosocio':
+        elif self.tipo == 'NOSOCIO':
             self.identificador = self.noSocio
 
-        elif self.tipo == 'proveedor':
+        elif self.tipo == 'PROVEEDOR':
             self.identificador = self.proveedor
 
         super().save(*args, **kwargs)
@@ -108,12 +108,18 @@ class RegistroEstacionamiento(models.Model):
 
 class Cobros(models.Model):
     precio = models.FloatField(verbose_name='precio')
+    deuda = models.BooleanField(default = False ,verbose_name='deuda')
     registroEstacionamiento = models.ForeignKey(
             RegistroEstacionamiento, on_delete=models.CASCADE,
             verbose_name='registroEstacionamiento')
 
 
 class Estacionado(models.Model):
-    registroEstacionamiento = models.ForeignKey(
-            RegistroEstacionamiento, on_delete=models.CASCADE,
-            verbose_name='registroEstacionamiento')
+        registroEstacionamiento = models.ForeignKey(RegistroEstacionamiento, on_delete=models.CASCADE,verbose_name='registroEstacionamiento')
+        
+        def __str__(self):
+                return f'{self.tiempo} - {self.identificador}'
+        def get_absolute_url(self):
+                return f'/estacionamiento/historial/{self.id}/'
+        
+                
