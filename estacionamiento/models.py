@@ -49,13 +49,13 @@ class CicloCaja(models.Model):
 
 
 class RegistroEstacionamiento(models.Model):
-    TIPO_CHOICES = (('socio', 'SOCIO'),
-                    ('socio-moroso', 'SOCIO-MOROSO'),
-                    ('nosocio', 'NOSOCIO'),
-                    ('proveedor', 'PROVEEDOR'))
+    TIPO_CHOICES = (('SOCIO', 'SOCIO'),
+                    ('SOCIO-MOROSO', 'SOCIO-MOROSO'),
+                    ('NOSOCIO', 'NOSOCIO'),
+                    ('PROVEEDOR', 'PROVEEDOR'))
 
-    DIRECCION_CHOICES = (('entrada', 'ENTRADA'),
-                         ('salida', 'SALIDA'))
+    DIRECCION_CHOICES = (('ENTRADA', 'ENTRADA'),
+                         ('SALIDA', 'SALIDA'))
 
     tipo = models.CharField(
             max_length=30, verbose_name='Tipo',
@@ -90,13 +90,13 @@ class RegistroEstacionamiento(models.Model):
         return f'/estacionamiento/historial/{self.id}/'
 
     def save(self, *args, **kwargs):
-        if self.tipo == 'socio' or self.tipo == 'socio-moroso':
+        if self.tipo == 'SOCIO' or self.tipo == 'SOCIO-MOROSO':
             self.identificador = self.persona.nombre_apellido
 
-        elif self.tipo == 'nosocio':
+        elif self.tipo == 'NOSOCIO':
             self.identificador = self.noSocio
 
-        elif self.tipo == 'proveedor':
+        elif self.tipo == 'PROVEEDOR':
             self.identificador = self.proveedor
 
         super().save(*args, **kwargs)
