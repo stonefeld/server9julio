@@ -1,0 +1,22 @@
+{% extends "menu_estacionamiento.html" %}
+
+{% block subtitle %}
+  <h1>Tarifa</h1>
+{% endblock subtitle %}
+
+{% block content %}
+<div class="container">
+    <div class="clearfix">
+        <a class="btn btn-info left" href="{% url 'menu_estacionamiento:calendario' %}"> Calendario </a>
+        <a class="btn btn-info right mr-2" href="{% url 'menu_estacionamiento:tarifa_editar' tarifa.pk %}"> Edit Tarifa </a>
+    </div>
+    
+    <div class="clearfix">
+        <h3>Tarifa Nombre: {{ tarifa.title }}</h3>
+        <p>De <span style="color: gray;">{{ tarifa.start_time }}</span> Hasta <span style="color: gray;">{{ tarifa.end_time }}</span></p>
+        <p>Precio <span style="color: gray;">{{ tarifa.description }}</span></p>
+    </div>
+    
+</div>
+
+{% endblock %}

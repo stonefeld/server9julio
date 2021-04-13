@@ -1,3 +1,5 @@
 from django.contrib import admin
+from menu_estacionamiento.models import Tarifa_mod
 
-# Register your models here.
+admin.site.register(Tarifa_mod)
+

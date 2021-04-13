@@ -7,7 +7,7 @@
 {% block content %}
 
 <!--https://simpleisbetterthancomplex.com/tutorial/2019/01/03/how-to-use-date-picker-with-django.html-->
-
+<!--
 <div class="container" style="padding: 20px;">
     <div class="row justify-content-center">
         <div class="col-lg-10 col-md-12">
@@ -58,4 +58,12 @@
         </div>
     </div>
 </div>
+-->
+
+<div class="clearfix">
+	<a class="btn btn-info left" href="{% url 'menu_estacionamiento:calendario' %}?{{ prev_month }}"> Previous Month </a>
+	<a class="btn btn-info right" href="{% url 'menu_estacionamiento:calendario' %}?{{ next_month }}"> Next Month </a>
+    <a class="btn btn-info right" href="{% url 'menu_estacionamiento:tarifa_nueva' %}"> New Tarifa </a>
+</div>
+{{ calendario }}
 {% endblock content%}
