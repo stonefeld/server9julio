@@ -108,12 +108,18 @@ class RegistroEstacionamiento(models.Model):
 
 class Cobros(models.Model):
     precio = models.FloatField(verbose_name='precio')
+    deuda = models.BooleanField(default = False ,verbose_name='deuda')
     registroEstacionamiento = models.ForeignKey(
             RegistroEstacionamiento, on_delete=models.CASCADE,
             verbose_name='registroEstacionamiento')
 
 
 class Estacionado(models.Model):
-    registroEstacionamiento = models.ForeignKey(
-            RegistroEstacionamiento, on_delete=models.CASCADE,
-            verbose_name='registroEstacionamiento')
+        registroEstacionamiento = models.ForeignKey(RegistroEstacionamiento, on_delete=models.CASCADE,verbose_name='registroEstacionamiento')
+        
+        def __str__(self):
+                return f'{self.tiempo} - {self.identificador}'
+        def get_absolute_url(self):
+                return f'/estacionamiento/historial/{self.id}/'
+        
+                
