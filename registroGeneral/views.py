@@ -125,10 +125,10 @@ def registro_socio(request):
 
                 if busqueda:
                     persona = Persona.objects.filter(
-                        Q(nrSocio__icontains = busqueda) |
-                        Q(nombre_apellido__icontains = busqueda) |
-                        Q(nrTarjeta__icontains = busqueda) |
-                        Q(dni__icontains = busqueda)
+                        Q(nrSocio__icontains=busqueda) |
+                        Q(nombre_apellido__icontains=busqueda) |
+                        Q(nrTarjeta__icontains=busqueda) |
+                        Q(dni__icontains=busqueda)
                     ).distinct()
 
                 table = EntradaGeneralTable(persona.filter(~Q(nombre_apellido='NOSOCIO')))
@@ -167,15 +167,20 @@ def registro_socio(request):
 
         if busqueda:
             persona = Persona.objects.filter(
-                Q(nrSocio__icontains = busqueda) |
-                Q(nombre_apellido__icontains = busqueda) |
-                Q(nrTarjeta__icontains = busqueda) |
-                Q(dni__icontains = busqueda)
+                Q(nrSocio__icontains=busqueda) |
+                Q(nombre_apellido__icontains=busqueda) |
+                Q(nrTarjeta__icontains=busqueda) |
+                Q(dni__icontains=busqueda)
             ).distinct()
 
-        table = EntradaGeneralTable(persona.filter(~Q(nombre_apellido='NOSOCIO')))
+        table = EntradaGeneralTable(
+                persona.filter(~Q(nombre_apellido='NOSOCIO')))
         RequestConfig(request).configure(table)
-        return render(request, 'registroGeneral/registro_manual_socio.html', { 'table': table, 'title': 'Acceso socio', 'no_autorizado': False })
+        return render(
+            request,
+            'registroGeneral/registro_manual_socio.html',
+            {'table': table, 'title': 'Acceso socio', 'no_autorizado': False}
+        )
 
 
 @login_required
@@ -197,25 +202,38 @@ def registro_nosocio(request):
                 entrada.save()
 
         except:
-            messages.warning(request, 'Debe seleccionar la cantidad de personas')
-            return render(request, 'registroGeneral/registro_manual_nosocio.html', { 'title': 'Acceso no socio' })
+            messages.warning(request,
+                             'Debe seleccionar la cantidad de personas')
+            return render(
+                request,
+                'registroGeneral/registro_manual_nosocio.html',
+                {'title': 'Acceso no socio'}
+            )
 
         socket_arduino(cantidad)
         return redirect('usuariosistema:home')
 
     elif request.method == 'GET':
-        return render(request, 'registroGeneral/registro_manual_nosocio.html', { 'title': 'Acceso no socio' })
+        return render(
+            request,
+            'registroGeneral/registro_manual_nosocio.html',
+            {'title': 'Acceso no socio'}
+        )
 
 
 @login_required
 def downloadHistory(request):
     response = HttpResponse(content_type='text/csv')
     writer = csv.writer(response)
-    writer.writerow(['Persona', 'Lugar', 'Fecha y Hora', 'Dirección', 'Autorización'])
+    writer.writerow(['Persona', 'Lugar', 'Fecha y Hora',
+                     'Dirección', 'Autorización'])
 
-    for entrada in EntradaGeneral.objects.all().values_list('persona', 'lugar', 'tiempo', 'direccion', 'autorizado'):
+    for entrada in EntradaGeneral.objects.all().\
+            values_list('persona', 'lugar',
+                        'tiempo', 'direccion', 'autorizado'):
         entrada_list = list(entrada)
-        entrada_list[0] = Persona.objects.get(id=entrada_list[0]).nombre_apellido
+        entrada_list[0] = Persona.objects.\
+            get(id=entrada_list[0]).nombre_apellido
         entrada_list[2] = localtime(entrada_list[2])
         writer.writerow(entrada_list)
 

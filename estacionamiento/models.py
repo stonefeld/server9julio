@@ -49,13 +49,13 @@ class CicloCaja(models.Model):
 
 
 class RegistroEstacionamiento(models.Model):
-    TIPO_CHOICES = (('socio', 'SOCIO'),
-                    ('socio-moroso', 'SOCIO-MOROSO'),
-                    ('nosocio', 'NOSOCIO'),
-                    ('proveedor', 'PROVEEDOR'))
+    TIPO_CHOICES = (('SOCIO', 'SOCIO'),
+                    ('SOCIO-MOROSO', 'SOCIO-MOROSO'),
+                    ('NOSOCIO', 'NOSOCIO'),
+                    ('PROVEEDOR', 'PROVEEDOR'))
 
-    DIRECCION_CHOICES = (('entrada', 'ENTRADA'),
-                         ('salida', 'SALIDA'))
+    DIRECCION_CHOICES = (('ENTRADA', 'ENTRADA'),
+                         ('SALIDA', 'SALIDA'))
 
     tipo = models.CharField(
             max_length=30, verbose_name='Tipo',
