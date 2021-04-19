@@ -54,7 +54,7 @@ def emision_resumen_mensual(request):  # Falta testing
     if cicloCaja_.recaudado is not None:
         cicloMensual_ = CicloMensual.objects.all().last()
         resumen_mensual = RegistroEstacionamiento.objects.\
-            values("persona__nombre_apellido").\
+            values("persona__nombre_apellido","persona__nrSocio").\
             annotate(cantidad_Entradas=Count("id")).\
             order_by("persona__nombre_apellido").\
             exclude(persona__isnull=True).\
