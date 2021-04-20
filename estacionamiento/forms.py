@@ -1,5 +1,5 @@
 from django import forms
-from .models import RegistroEstacionamiento
+from .models import RegistroEstacionamiento, AperturaManual
 
 
 class EstacionamientoForm(forms.ModelForm):
@@ -13,4 +13,13 @@ class EstacionamientoForm(forms.ModelForm):
             'direccion',
             'autorizado',
             'cicloCaja',
+        ]
+
+class AperturaManualForm(forms.ModelForm):
+    class Meta:
+        model = AperturaManual
+        fields = [
+            'razon',
+            'comentario',
+            'direccion',
         ]
