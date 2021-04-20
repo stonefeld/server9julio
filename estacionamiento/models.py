@@ -5,16 +5,23 @@ from usuario.models import Persona
 
 
 class Proveedor(models.Model):
-    idProveedor = models.CharField(max_length=30, verbose_name='idProveedor')
+    idProveedor = models.CharField(max_length=30, verbose_name='ID')
     nombre_proveedor = models.CharField(
             max_length=30, verbose_name='Proveedor')
-
-    def __str__(self):
-        return str(self.nombre_proveedor)
 
     class Meta:
         verbose_name = "Proveedor"
         verbose_name_plural = "Proveedores"
+
+    def __str__(self):
+        return str(self.nombre_proveedor)
+
+    def as_dict(self):
+        return {
+            'pk': self.id,
+            'idProveedor': self.idProveedor,
+            'nombre_proveedor': self.nombre_proveedor
+        }
 
 
 class CicloAnual(models.Model):

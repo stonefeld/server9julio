@@ -18,5 +18,6 @@ urlpatterns = [
          name='resumen-mensual'),
     path('cierre-caja/',
          views.cierre_caja,
-         name='cierre-caja')
+         name='cierre-caja'),
+    path('fetch', views.fetch_proveedores, name='fetch-proveedores'),
 ]

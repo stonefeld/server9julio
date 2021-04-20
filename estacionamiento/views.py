@@ -1,14 +1,13 @@
-from datetime import date, time, timedelta
 import csv
+from datetime import date, time, timedelta
 from threading import Thread
 import os
 
-from django.utils.timezone import now
-from django.db.models import Count
 from django.conf import settings
-from django.db.models import Q, Sum
-from django.http import HttpResponse
+from django.db.models import Q, Sum, Count
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
+from django.utils.timezone import now
 
 from django_tables2 import RequestConfig
 
@@ -412,7 +411,7 @@ def respuesta(request):
 
 def historial_estacionamiento(request):
     if request.method == 'GET':
-        estacionamiento = RegistroEstacionamiento.objects.all() 
+        estacionamiento = RegistroEstacionamiento.objects.all()
         busqueda = request.GET.get('buscar')
         fecha = request.GET.get('fecha')
         tiempo = request.GET.get('tiempo')
@@ -459,10 +458,20 @@ def editar_estacionamiento(request, id):
     if form.is_valid():
         form.save()
 
+    context = {
+        'form': form,
+        'id': obj.id,
+        'title': 'Detaller historial'
+    }
+
     if request.method == 'POST':
         return redirect('estacionamiento:historial')
 
     else:
-        return render(request, 'estacionamiento/editar_historial.html',
-                      {'form': form, 'id': obj.id,
-                       'title': 'Detalle historial'})
+        return render(request, 'estacionamiento/editar_historial.html', context)
+
+
+def fetch_proveedores(request):
+    proveedores = list(Proveedor.objects.values())
+    response = JsonResponse(proveedores, safe=False)
+    return response
