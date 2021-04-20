@@ -47,6 +47,9 @@ class CicloCaja(models.Model):
         verbose_name = "Ciclo Caja"
         verbose_name_plural = "Ciclos Caja"
 
+    def __str__(self):
+        return f'Ciclo número {self.cicloCaja}'
+
 
 class RegistroEstacionamiento(models.Model):
     TIPO_CHOICES = (('SOCIO', 'SOCIO'),
@@ -87,7 +90,7 @@ class RegistroEstacionamiento(models.Model):
         return f'{self.tiempo} - {self.identificador}'
 
     def get_absolute_url(self):
-        return f'/estacionamiento/historial/{self.id}/'
+        return f'/estacionamiento/historial/{self.id}'
 
     def save(self, *args, **kwargs):
         if self.tipo == 'SOCIO' or self.tipo == 'SOCIO-MOROSO':
