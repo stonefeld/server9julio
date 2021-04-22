@@ -4,6 +4,7 @@ from threading import Thread
 import os
 
 from django.conf import settings
+from django.core.paginator import Paginator
 from django.db.models import Q, Sum, Count
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
@@ -461,7 +462,7 @@ def editar_estacionamiento(request, id):
     context = {
         'form': form,
         'id': obj.id,
-        'title': 'Detaller historial'
+        'title': 'Detalle historial'
     }
 
     if request.method == 'POST':
@@ -472,6 +473,14 @@ def editar_estacionamiento(request, id):
 
 
 def fetch_proveedores(request):
-    proveedores = list(Proveedor.objects.values())
+    page = request.GET.get('page')
+    filter_string = request.GET.get('filter-string')
+
+    proveedores = Proveedor.objects.all().filter(
+        Q(nombre_proveedor__icontains=filter_string)
+    )
+
+    paginated = Paginator(list(proveedores.values()), 20)
+    proveedores = paginated.page(page).object_list
     response = JsonResponse(proveedores, safe=False)
     return response
