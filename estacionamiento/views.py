@@ -469,7 +469,9 @@ def editar_estacionamiento(request, id):
         return redirect('estacionamiento:historial')
 
     else:
-        return render(request, 'estacionamiento/editar_historial.html', context)
+        return render(request,
+                      'estacionamiento/editar_historial.html',
+                      context)
 
 
 def fetch_proveedores(request):
@@ -482,5 +484,9 @@ def fetch_proveedores(request):
 
     paginated = Paginator(list(proveedores.values()), 20)
     proveedores = paginated.page(page).object_list
-    response = JsonResponse(proveedores, safe=False)
-    return response
+    proveedores.append({
+        'has_previous': paginated.page(page).has_previous(),
+        'has_next': paginated.page(page).has_next()
+    })
+
+    return JsonResponse(proveedores, safe=False)

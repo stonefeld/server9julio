@@ -1,7 +1,7 @@
 {% extends "menu_estacionamiento.html" %}
 
 {% load static %}
-{% load render_table from django_tables2 %}
+{% load django_tables2 %}
 
 {% block subtitle %}
   <h1>Proveedores</h1>
@@ -12,24 +12,26 @@
     <div id="form_card" class="card-panel col s12">
 
       <div class="input-group mx-auto" style="margin-bottom: 25px;">
-        <input type="text"  placeholder="Buscar..." name="buscar" id="buscar" value="" style="padding: 10px">
-        </input>
+        <input type="text"  placeholder="Buscar..." name="buscar" id="buscar" value="" style="padding: 10px"></input>
+        <button type="button" id="clear-button" class="btn btn-secondary" style="padding: 10px; margin: 0px 5px 0px 5px"><i>Borrar</i></button>
       </div>
 
+      <!-- Tabla de proveedores -->
       <table class="table">
         <thead>
           <tr>
             <th class="orderable">
-              <a href="?sort=idProveedor">ID</a>
+              <a href="" style="text-decoration: none">ID</a>
             </th>
             <th class="orderable">
-              <a href="?sort=nombre_proveedor">Proveedor</a>
+              <a href="" style="text-decoration: none">Proveedor</a>
             </th>
         </thead>
 
-        <tbody id="proveedores">
-        </tbody>
+        <tbody id="proveedores"></tbody>
       </table>
+
+      <div id="navbuttons"></div>
 
     </div>
   </div>
