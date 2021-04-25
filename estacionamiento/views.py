@@ -1,14 +1,13 @@
-from datetime import date, time, timedelta
 import csv
+from datetime import date, time, timedelta
 from threading import Thread
 import os
 
-from django.utils.timezone import now
-from django.db.models import Count
 from django.conf import settings
-from django.db.models import Q, Sum
-from django.http import HttpResponse
+from django.db.models import Q, Sum, Count
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
+from django.utils.timezone import now
 
 from django_tables2 import RequestConfig
 
@@ -49,18 +48,20 @@ def apertura_Manual(request):
 
 
 
-def pago_deuda(request,id):
+def pago_deuda(request, id):
     entradaMoroso = RegistroEstacionamiento.objects.get(id=id)
     if request.method == 'GET':
         return entradaMoroso.persona.deuda
     else:
-        cobroDeuda = Cobros(precio = entradaMoroso.persona.deuda, registroEstacionamiento = entradaMoroso, deuda = True) 
+        cobroDeuda = Cobros(precio=entradaMoroso.persona.deuda,
+                            registroEstacionamiento=entradaMoroso, deuda=True)
         socioMoroso = entradaMoroso.persona
         socioMoroso.deuda = 0.0
         socioMoroso.general = True
         socioMoroso.save()
         cobroDeuda.save()
         return redirect('estacionamiento:historial')
+
 
 def emision_resumen_mensual(request):  # Falta testing
     cicloCaja_ = CicloCaja.objects.all().last()
@@ -81,7 +82,8 @@ def emision_resumen_mensual(request):  # Falta testing
         output.append(['NrSocio', 'Persona', 'Cantidad_Entradas'])
 
         for entrada in resumen_mensual:
-            output.append([entrada['persona__nrSocio'],entrada['persona__nombre_apellido'],
+            output.append([entrada['persona__nrSocio'],
+                           entrada['persona__nombre_apellido'],
                            entrada['cantidad_Entradas']])
 
         writer.writerows(output)
@@ -152,11 +154,12 @@ def funcionCobros(registroEstacionamiento):
         )
 
         if entrada:
-            
-            rta = 0  
+
+            rta = 0
 
         else:
             rta = 1
+
 
 def funcionEliminarEstacionado(entrada):
     try:
@@ -165,6 +168,7 @@ def funcionEliminarEstacionado(entrada):
             registroEstacionamiento__identificador=entrada.identificador
         ).delete()
         return 0
+
     except:
         return 1
 
@@ -216,7 +220,7 @@ def respuesta(request):
                             rta = '#0'  # Registro Socio Moroso Cobro por NoSocio
                             funcionEliminarEstacionado(entrada)
                         else:
-                            rta = '#6' # NoSocio no pago Deuda o no Pago Entrada
+                            rta = '#6'  # NoSocio no pago Deuda o no Pago Entrada
 
                 except:
                     rta = '#2'  # El usuario No existe
@@ -252,7 +256,7 @@ def respuesta(request):
                             rta = '#0'  # Registro Socio Moroso Cobro por NoSocio
                             funcionEliminarEstacionado(entrada)
                         else:
-                            rta = '#6' # NoSocio no pago Deuda o no Pago Entrada
+                            rta = '#6'  # NoSocio no pago Deuda o no Pago Entrada
 
                 except:
                     today = now()
@@ -320,7 +324,6 @@ def respuesta(request):
 
                 except:
                     rta = '#4'  # Error Proveedor no encontrado
-   
 
         else:
             direccion_ = 'ENTRADA'
@@ -419,11 +422,9 @@ def respuesta(request):
         return HttpResponse(rta)
 
 
-
-
 def historial_estacionamiento(request):
     if request.method == 'GET':
-        estacionamiento = RegistroEstacionamiento.objects.all() 
+        estacionamiento = RegistroEstacionamiento.objects.all()
         busqueda = request.GET.get('buscar')
         fecha = request.GET.get('fecha')
         tiempo = request.GET.get('tiempo')
@@ -459,14 +460,31 @@ def historial_estacionamiento(request):
 
 
 def detalle_estacionamiento(request, id):
+    datos = RegistroEstacionamiento.objects.get(id=id)
+    return render(request, 'estacionamiento/detalle_historial.html',
+                  {'datos': datos, 'title': 'Detalle Historial'})
+
+
+def editar_estacionamiento(request, id):
     obj = RegistroEstacionamiento.objects.get(id=id)
     form = EstacionamientoForm(request.POST or None, instance=obj)
     if form.is_valid():
         form.save()
 
+    context = {
+        'form': form,
+        'id': obj.id,
+        'title': 'Detaller historial'
+    }
+
     if request.method == 'POST':
         return redirect('estacionamiento:historial')
 
     else:
-        return render(request, 'estacionamiento/editar_historial.html',
-                      {'form': form, 'title': 'Detalle historial'})
+        return render(request, 'estacionamiento/editar_historial.html', context)
+
+
+def fetch_proveedores(request):
+    proveedores = list(Proveedor.objects.values())
+    response = JsonResponse(proveedores, safe=False)
+    return response

@@ -35,16 +35,23 @@ class AperturaManual(models.Model):
         verbose_name_plural = "AperturasManuales"
 
 class Proveedor(models.Model):
-    idProveedor = models.CharField(max_length=30, verbose_name='idProveedor')
+    idProveedor = models.CharField(max_length=30, verbose_name='ID')
     nombre_proveedor = models.CharField(
             max_length=30, verbose_name='Proveedor')
-
-    def __str__(self):
-        return str(self.nombre_proveedor)
 
     class Meta:
         verbose_name = "Proveedor"
         verbose_name_plural = "Proveedores"
+
+    def __str__(self):
+        return str(self.nombre_proveedor)
+
+    def as_dict(self):
+        return {
+            'pk': self.id,
+            'idProveedor': self.idProveedor,
+            'nombre_proveedor': self.nombre_proveedor
+        }
 
 
 class CicloAnual(models.Model):
@@ -76,6 +83,9 @@ class CicloCaja(models.Model):
     class Meta:
         verbose_name = "Ciclo Caja"
         verbose_name_plural = "Ciclos Caja"
+
+    def __str__(self):
+        return f'Ciclo número {self.cicloCaja}'
 
 
 class RegistroEstacionamiento(models.Model):
@@ -122,7 +132,7 @@ class RegistroEstacionamiento(models.Model):
         return f'{self.tiempo} - {self.identificador}'
 
     def get_absolute_url(self):
-        return f'/estacionamiento/historial/{self.id}/'
+        return f'/estacionamiento/historial/{self.id}'
 
     def save(self, *args, **kwargs):
         if self.tipo == 'SOCIO' or self.tipo == 'SOCIO-MOROSO':

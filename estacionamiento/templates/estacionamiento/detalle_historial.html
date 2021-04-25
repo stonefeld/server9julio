@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block subtitle %}
+  <h1>Detalle estacionamiento</h1>
+{% endblock subtitle %}
+
+
+{% block content %}
+
+  <div class="container" style="padding: 20px">
+    <div class="row justify-content-center">
+      <div class="col-lg-10 col-md-12">
+        <div class="card mb-4">
+          <div class="card-body">
+
+            <div class="input-group mb-3">
+              <p class="form-control">{{ datos.identificador }}</p>
+              <div class="input-group-append">
+                {% if datos.persona %}
+                  <span class="input-group-text" id="basic-addon2">Nombre y Apellido</span>
+                {% elif datos.noSocio %}
+                  <span class="input-group-text" id="basic-addon2">DNI</span>
+                {% elif datos.proveedor %}
+                  <span class="input-group-text" id="basic-addon2">Proveedor</span>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="input-group mb-3">
+              <p class="form-control">{{ datos.tiempo }}</p>
+              <div class="input-group-append">
+                <span class="input-group-text" id="basic-addon2">Fecha y Hora</span>
+              </div>
+            </div>
+
+            <div class="input-group mb-3">
+              <p class="form-control">{{ datos.direccion }}</p>
+              <div class="input-group-append">
+                <span class="input-group-text" id="basic-addon2">Dirección</span>
+              </div>
+            </div>
+
+            <div class="input-group mb-3">
+              <p class="form-control">{{ datos.cicloCaja }}</p>
+              <div class="input-group-append">
+                <span class="input-group-text" id="basic-addon2">Ciclo Caja</span>
+              </div>
+            </div>
+
+            <div class="input-group mb-3">
+              {% if datos.autorizado %}
+                <p class="form-control">Si</p>
+              {% else %}
+                <p class="form-control">No</p>
+              {% endif %}
+              <div class="input-group-append">
+                <span class="input-group-text" id="basic-addon2">Autorización</span>
+              </div>
+            </div>
+
+            <div>
+              <a href="{% url 'estacionamiento:historial' %}" style="text-decoration:none">
+                <button class="btn btn-outline-info">Cancelar</button>
+              </a>
+              <a href="{% url 'estacionamiento:editar' datos.id %}" style="text-decoration:none">
+                <button class="btn btn-outline-info">Editar</button>
+              </a>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+{% endblock content %}
