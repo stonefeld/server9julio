@@ -1,4 +1,5 @@
 {% extends "menu_estacionamiento.html" %}
+{% load static %}
 
 {% block subtitle %}
   <h1>Calendario</h1>
@@ -6,6 +7,374 @@
 
 {% block content %}
 
-<!--https://simpleisbetterthancomplex.com/tutorial/2019/01/03/how-to-use-date-picker-with-django.html-->
+{% endblock content %}
 
-{% endblock content%}
+{% block js %}
+
+<div class="container" style="padding: 20px;">
+  <div class="card mb-4">
+    <div class="card-body">
+      <h5>Tarifa Normal</h5>
+      
+      <div class="row justify-content-center" style="margin-bottom: 20px;">
+
+        <div class="col">
+          <label>Valor</label>
+          <input id="valorTarifaNormal" type="number" min="0" class="form-control" placeholder="00.00" >
+          <small class="form-text text-muted">Valor de la tarifa. Ejemplo: 200.00</small>
+        </div>
+
+        
+
+        <div class="col">
+          <label>Hora Inicio</label>
+          <div class="form-row">
+            <div class="form-group col-md-12">
+              <div class="input-group">
+  
+                <input type="text" class="form-control" id="clockpickerTarifaNormal1" name="tiempo">
+                <div class="input-group-append">
+                  <span class="input-group-text">Hora</span>
+                </div>
+  
+                <script type="text/javascript">
+                  var input = $('#clockpickerTarifaNormal1');
+                  input.clockpicker({
+                    autoclose: true,
+                    default: 'now'
+                  });
+                </script>
+  
+              </div>
+            </div>
+          </div>
+          <small class="form-text text-muted">Horario en la que iniciará la Tarifa Normal</small>
+        </div>
+
+        <div class="col">
+          <label>Hora Finalización</label>
+          <div class="form-row">
+            <div class="form-group col-md-12">
+              <div class="input-group">
+  
+                <input type="text" class="form-control" id="clockpickerTarifaNormal2" name="tiempo">
+                <div class="input-group-append">
+                  <span class="input-group-text">Hora</span>
+                </div>
+  
+                <script type="text/javascript">
+                  var input = $('#clockpickerTarifaNormal2');
+                  input.clockpicker({
+                    autoclose: true,
+                    default: 'now'
+                  });
+                </script>
+  
+              </div>
+            </div>
+          </div>
+          <small class="form-text text-muted">Horario en la que finalizará la Tarifa Normal</small>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group col-md-12">
+            
+          </div>
+        </div>
+        
+        
+
+      </div>
+
+      <div class="row justify-content-center" style="margin-bottom: 20px;">
+
+        <div class="col">
+          <label>Valor</label>
+          <input id="valorTarifaNormal2" type="number" min="0" class="form-control" placeholder="00.00" >
+          <small class="form-text text-muted">Valor de la tarifa. Ejemplo: 200.00</small>
+        </div>
+
+        
+
+        <div class="col">
+          <label>Hora Inicio</label>
+          <div class="form-row">
+            <div class="form-group col-md-12">
+              <div class="input-group">
+  
+                <input type="text" class="form-control" id="clockpickerTarifaNormal3" name="tiempo">
+                <div class="input-group-append">
+                  <span class="input-group-text">Hora</span>
+                </div>
+  
+                <script type="text/javascript">
+                  var input = $('#clockpickerTarifaNormal3');
+                  input.clockpicker({
+                    autoclose: true,
+                    default: 'now'
+                  });
+                </script>
+  
+              </div>
+            </div>
+          </div>
+          <small class="form-text text-muted">Horario en la que iniciará la Tarifa Normal</small>
+        </div>
+
+        <div class="col">
+          <label>Hora Finalización</label>
+          <div class="form-row">
+            <div class="form-group col-md-12">
+              <div class="input-group">
+  
+                <input type="text" class="form-control" id="clockpickerTarifaNormal4" name="tiempo">
+                <div class="input-group-append">
+                  <span class="input-group-text">Hora</span>
+                </div>
+  
+                <script type="text/javascript">
+                  var input = $('#clockpickerTarifaNormal4');
+                  input.clockpicker({
+                    autoclose: true,
+                    default: 'now'
+                  });
+                </script>
+  
+              </div>
+            </div>
+          </div>
+          <small class="form-text text-muted">Horario en la que finalizará la Tarifa Normal</small>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group col-md-12">
+            
+          </div>
+        </div>
+        
+        
+
+      </div>
+
+      <div class="row justify-content-center" style="margin-bottom: 20px;">
+
+        <div class="col">
+          <label>Valor</label>
+          <input id="valorTarifaNormal3" type="number" min="0" class="form-control" placeholder="00.00">
+          <small class="form-text text-muted">Valor de la tarifa. Ejemplo: 200.00</small>
+        </div>
+
+        
+
+        <div class="col">
+          <label>Hora Inicio</label>
+          <div class="form-row">
+            <div class="form-group col-md-12">
+              <div class="input-group">
+  
+                <input type="text" class="form-control" id="clockpickerTarifaNormal5" name="tiempo">
+                <div class="input-group-append">
+                  <span class="input-group-text">Hora</span>
+                </div>
+  
+                <script type="text/javascript">
+                  var input = $('#clockpickerTarifaNormal5');
+                  input.clockpicker({
+                    autoclose: true,
+                    default: 'now'
+                  });
+                </script>
+  
+              </div>
+            </div>
+          </div>
+          <small class="form-text text-muted">Horario en la que iniciará la Tarifa Normal</small>
+        </div>
+
+        <div class="col">
+          <label>Hora Finalización</label>
+          <div class="form-row">
+            <div class="form-group col-md-12">
+              <div class="input-group">
+  
+                <input type="text" class="form-control" id="clockpickerTarifaNormal6" name="tiempo">
+                <div class="input-group-append">
+                  <span class="input-group-text">Hora</span>
+                </div>
+  
+                <script type="text/javascript">
+                  var input = $('#clockpickerTarifaNormal6');
+                  input.clockpicker({
+                    autoclose: true,
+                    default: 'now'
+                  });
+                </script>
+  
+              </div>
+            </div>
+          </div>
+          <small class="form-text text-muted">Horario en la que finalizará la Tarifa Normal</small>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group col-md-12">
+            
+          </div>
+        </div>
+        
+        
+
+      </div>
+
+      <div style="margin: 50px;">
+        <button class="btn btn-danger" type="submit">Guardar</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="container" style="padding: 20px;">
+  <div class="card mb-4">
+    <div class="card-body">
+      <h5>Tarifa Especial</h5>
+      <div class="row justify-content-center">
+      
+        <div class="col">
+          <label>Valor</label>
+          <input type="number" min="0" class="form-control" placeholder="00.00" >
+          <small id="emailHelp" class="form-text text-muted">Valor de la tarifa. Ejemplo: 200.00</small>
+        </div>
+
+        <div class="col">
+          <div class="d-flex justify-content-center" style="padding-top: 30px;"> 
+            <button class="btn btn-danger" type="submit">Guardar</button>
+          </div>
+        </div>
+
+        
+      </div>
+
+      
+
+    </div>
+  </div>
+</div>
+
+<div id="containerCalendar">
+  <div id="container">
+    <div id="header">
+      <div id="monthDisplay"></div>
+      <div>
+        <button id="backButton" >Anterior</button>
+        <button id="nextButton" >Siguiente</button>
+      </div>
+    </div>    
+    <div id="weekdays">
+      <div>Lun</div>
+      <div>Mar</div>
+      <div>Mie</div>
+      <div>Jue</div>
+      <div>Vie</div>
+      <div>Sab</div>
+      <div>Dom</div>
+    </div>
+
+    <div id="calendar"></div>
+
+  </div>
+
+  <div id="newTarifaModal">
+    <h2>SELECCIÓN TARIFA ESPECIAL</h2>
+    <label>Esta a punto de agregar la fecha seleciionada a la sección de TARIFA ESPECIAL.
+    Esto provocara que el valor de la tarifa para este día cambie. ¿Está seguro de su decisión?
+    </label>
+   
+    <button id="saveButton">Guardar</button>
+    <button id="cancelButton">Cancelar</button>
+  </div>
+
+  <div id="deleteTarifaModal">
+    <h2>TARIFA ESPECIAL</h2>
+
+    <p id="fechaTarifaEspecial"></p>
+
+    <label>Esta a punto de eliminar la tarifa especial para la fecha mostrada arriba. Esto afectara
+    el precio de la tarifa para este día ¿Está seguro de su decisión?
+    </label>
+
+    <button id="deleteButton">Eliminar</button>
+    <button id="closeButton">Cancelar</button>
+
+  </div>
+
+
+</div>
+
+
+
+<div id="modalBackDrop"></div>
+
+  
+
+
+
+
+<link rel="stylesheet" title="text/css" href="{% static 'usuariosistema/menu_estacionamiento/calendario2/calendarioStyle.css' %}">
+<script type="text/javascript" src="{% static 'usuariosistema/menu_estacionamiento/calendario2/calendarioScript.js' %}"></script>
+
+
+
+
+{% endblock js %}
+
+
+  
+<!--
+    <div id="calendarioContainer">
+      
+      <div id="header">
+        <div id="monthDisplay"></div>
+        <div>
+          <button id="backButton">Atras</button>
+          <button id="nextButton">Sig</button>
+        </div>
+      </div>
+  
+      <div id="weekdays">
+        <div>Dom</div>
+        <div>Lun</div>
+        <div>Mar</div>
+        <div>Mier</div>
+        <div>Juev</div>
+        <div>Vier</div>
+        <div>Sab</div>
+  
+
+
+    <div id="newEventModal">
+      <h2>New Event</h2>
+  
+      <input id="eventTitleInput" placeholder="Event Title" />
+  
+      <button id="saveButton">Save</button>
+      <button id="cancelButton">Cancel</button>
+    </div>
+  
+    <div id="deleteEventModal">
+      <h2>Event</h2>
+  
+      <p id="eventText"></p>
+  
+      <button id="deleteButton">Delete</button>
+      <button id="closeButton">Close</button>
+
+    </div>
+
+
+  <div id="modalBackDrop"></div>
+
+
+  -->
+
+  
