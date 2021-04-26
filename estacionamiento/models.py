@@ -4,17 +4,54 @@ from django.utils.timezone import now
 from usuario.models import Persona
 
 
+class AperturaManual(models.Model):
+    
+    RAZON_CHOICES = (('FALTA REGISTRO ENTRADA', 'FALTA REGISTRO ENTRADA'),
+                         ('CONFLICTO', 'CONFLICTO'))
+    DIRECCION_CHOICES = (('ENTRADA', 'ENTRADA'),
+                         ('SALIDA', 'SALIDA'))
+    
+    razon = models.CharField(max_length=30, verbose_name='razon', choices=RAZON_CHOICES)
+    comentario = models.CharField(max_length=300, verbose_name='comentario',null=True, blank=True)
+    direccion = models.CharField(max_length=30, choices=DIRECCION_CHOICES, verbose_name='Dirección', default='ENTRADA')
+    def __str__(self):
+        return str(self.razon)
+
+    def save(self,*args, **kwargs):
+        super().save(*args, **kwargs)
+        entrada = RegistroEstacionamiento(
+            tipo='MANUAL',
+            lugar='ESTACIONAMIENTO',
+            direccion=self.direccion,
+            autorizado=False,
+            cicloCaja=CicloCaja.objects.all().last(),
+            apertuaManual=self
+        )
+        entrada.save()
+        
+
+    class Meta:
+        verbose_name = "AperturaManual"
+        verbose_name_plural = "AperturasManuales"
+
 class Proveedor(models.Model):
-    idProveedor = models.CharField(max_length=30, verbose_name='idProveedor')
+    idProveedor = models.CharField(max_length=30, verbose_name='ID')
     nombre_proveedor = models.CharField(
             max_length=30, verbose_name='Proveedor')
-
-    def __str__(self):
-        return str(self.nombre_proveedor)
 
     class Meta:
         verbose_name = "Proveedor"
         verbose_name_plural = "Proveedores"
+
+    def __str__(self):
+        return str(self.nombre_proveedor)
+
+    def as_dict(self):
+        return {
+            'pk': self.id,
+            'idProveedor': self.idProveedor,
+            'nombre_proveedor': self.nombre_proveedor
+        }
 
 
 class CicloAnual(models.Model):
@@ -47,12 +84,17 @@ class CicloCaja(models.Model):
         verbose_name = "Ciclo Caja"
         verbose_name_plural = "Ciclos Caja"
 
+    def __str__(self):
+        return f'Ciclo número {self.cicloCaja}'
+
 
 class RegistroEstacionamiento(models.Model):
     TIPO_CHOICES = (('SOCIO', 'SOCIO'),
                     ('SOCIO-MOROSO', 'SOCIO-MOROSO'),
                     ('NOSOCIO', 'NOSOCIO'),
-                    ('PROVEEDOR', 'PROVEEDOR'))
+                    ('PROVEEDOR', 'PROVEEDOR'),
+                    ('MANUAL','MANUAL'))
+
 
     DIRECCION_CHOICES = (('ENTRADA', 'ENTRADA'),
                          ('SALIDA', 'SALIDA'))
@@ -82,12 +124,15 @@ class RegistroEstacionamiento(models.Model):
             verbose_name='Autorización', default=False)
     cicloCaja = models.ForeignKey(
             CicloCaja, on_delete=models.CASCADE, verbose_name='cicloCaja')
+    apertuaManual = models.ForeignKey(
+            AperturaManual, on_delete=models.CASCADE,
+            verbose_name='AperturaManual', null=True, blank=True)
 
     def __str__(self):
         return f'{self.tiempo} - {self.identificador}'
 
     def get_absolute_url(self):
-        return f'/estacionamiento/historial/{self.id}/'
+        return f'/estacionamiento/historial/{self.id}'
 
     def save(self, *args, **kwargs):
         if self.tipo == 'SOCIO' or self.tipo == 'SOCIO-MOROSO':
@@ -97,8 +142,10 @@ class RegistroEstacionamiento(models.Model):
             self.identificador = self.noSocio
 
         elif self.tipo == 'PROVEEDOR':
-            self.identificador = self.proveedor
+            self.identificador = self.proveedor.nombre_proveedor
 
+        elif self.tipo == 'MANUAL':
+            self.identificador = self.apertuaManual.razon
         super().save(*args, **kwargs)
 
     class Meta:

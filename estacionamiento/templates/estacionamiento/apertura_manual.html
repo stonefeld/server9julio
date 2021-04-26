@@ -3,7 +3,7 @@
 {% load crispy_forms_tags %}
 
 {% block subtitle %}
-  <h1>Detalle Estacionamiento</h1>
+  <h1>Apertura Manual</h1>
 {% endblock subtitle %}
 
 {% block content %}
@@ -18,33 +18,22 @@
                 {% csrf_token %}
                 <div class="row">
                   <div class="col-6">
-                    {{ form.identificador|as_crispy_field }}
-                  </div>
-                  <div class="col-6">
-                    {{ form.lugar|as_crispy_field }}
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col-6">
-                    {{ form.tiempo|as_crispy_field }}
+                    {{ form.razon|as_crispy_field }}
                   </div>
                   <div class="col-6">
                     {{ form.direccion|as_crispy_field }}
                   </div>
                 </div>
                 <div class="row">
-                  <div class="col-6" style="padding:40px">
-                    {{ form.autorizado|as_crispy_field }}
-                  </div>
                   <div class="col-6">
-                    {{ form.tipo|as_crispy_field }}
+                    {{ form.comentario|as_crispy_field }}
                   </div>
                 </div>
                 <div class="form-group" style="padding-top:10px">
-                  <a href="{% url 'estacionamiento:detalle' id %}" style="text-decoration:none">
+                  <button class="btn btn-outline-info" type="submit">Guardar</button>
+                  <a href="{% url 'estacionamiento:historial' %}">
                     <button class="btn btn-outline-info" type="button">Cancelar</button>
                   </a>
-                  <button class="btn btn-outline-info" type="submit">Guardar</button>
                 </div>
               </div>
             </form>

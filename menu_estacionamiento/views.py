@@ -3,10 +3,10 @@ from django.shortcuts import render
 
 from estacionamiento.models import (
     RegistroEstacionamiento, Proveedor,
-    CicloCaja, CicloMensual, Persona, CicloAnual, Cobros, Estacionado
+    CicloCaja, CicloMensual, Persona, CicloAnual, Cobros, Estacionado, Proveedor
 )
-from estacionamiento.tables import EstacionadosTable
 from django_tables2 import RequestConfig
+from estacionamiento.tables import EstacionadosTable, ProveedoresTable
 
 
 
@@ -21,6 +21,8 @@ def menu_estacionamiento(request):
 
 @login_required
 def seleccionarCalendario(request):
+
+
     return render(
         request,
         template_name='menu_estacionamiento/calendario.html',
@@ -57,10 +59,8 @@ def resumenTiempoReal(request):
                 registroEstacionamiento__tiempo__hour=tiempo.hour,
                 registroEstacionamiento__tiempo__minute=tiempo.minute
             )
-
         table = EstacionadosTable(estacionamiento)
         RequestConfig(request).configure(table)
-
         return render(
             request,
             'estacionamiento/historial.html',
@@ -75,10 +75,19 @@ def resumenTiempoReal(request):
 
 @login_required
 def proveedores(request):
+    proveedores = Proveedor.objects.all()
+    table = ProveedoresTable(proveedores)
+    RequestConfig(request).configure(table)
+
+    context = {
+        'table': table,
+        'title': 'List de proveedores'
+    }
+
     return render(
         request,
         template_name='menu_estacionamiento/proveedores.html',
-        context={}
+        context=context
     )
 
 
