@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "menu_estacionamiento.html" %}
 
 {% block subtitle %}
   <h1>Detalle estacionamiento</h1>
@@ -65,6 +65,16 @@
               <a href="{% url 'estacionamiento:editar' datos.id %}" style="text-decoration:none">
                 <button class="btn btn-outline-info">Editar</button>
               </a>
+              {% if datos.tipo == 'NOSOCIO' or datos.tipo == 'SOCIO-MOROSO'%}
+                <a href="{% url 'estacionamiento:editar' datos.id %}" style="text-decoration:none">
+                <button class="btn btn-outline-info">Cobrar</button>
+                </a>
+              {% endif %}
+              {% if datos.tipo == 'SOCIO-MOROSO'%}
+                <a href="{% url 'estacionamiento:pago_deuda' datos.id %}" style="text-decoration:none">
+                <button class="btn btn-outline-info">Regularizar Deuda</button>
+                </a>
+              {% endif %}
             </div>
 
           </div>

@@ -1,9 +1,116 @@
 {% extends "menu_estacionamiento.html" %}
+{% load static %}
+
+{% load render_table from django_tables2 %}
 
 {% block subtitle %}
-  <h1>Resumen en Tiempo Real</h1>
+  <h1>Resumen Tiempo Real</h1>
 {% endblock subtitle %}
 
 {% block content %}
 
-{% endblock content %}
+  <div class="content-section" style="padding:20px;">
+    <div id="form_card" class="card-panel col s12">
+
+      <div class="d-flex">
+        <div class="mr-auto p-2">
+          <div class="mr-auto">
+            <form method="GET">
+              <div class="form-row">
+                <div class="form-group col-12">
+                  <div class="input-group">
+                    <input class="form-control" type="text" placeholder="Buscar..." name="buscar" value=""/>
+                    <button class="btn btn-secondary" type="submit" style="margin-left:20px;">
+                      <i>Buscar</i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <div class="p-2">
+          <button type="button" class="btn btn-outline-info"  data-toggle="modal" data-target="#exampleModal">Filtro avanzado</button>
+        </div>
+
+        <div class="p-2">
+          <a href="{% url 'usuario:historial' %}">
+            <button class="btn btn-outline-info" type="submit" style="float:right">Molinetes</button>
+          </a>
+        </div>
+      </div>
+
+      <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="exampleModalLabel">Filtro Avanzado</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <form method="GET">
+                <div class="form-row">
+                  <div class="form-group col-md-12">
+                    <div class="input-group">
+
+                      <input type="text" class="form-control" name="buscar" placeholder="Buscar...">
+                      <div class="input-group-append">
+                        <span class="input-group-text">Nombre y apellido</span>
+                      </div>
+
+                    </div>
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group col-md-12">
+                    <div class="input-group">
+
+                      <input type="date" class="form-control" name="fecha">
+                      <div class="input-group-append">
+                        <span class="input-group-text">Fecha</span>
+                      </div>
+
+                    </div>
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group col-md-12">
+                    <div class="input-group">
+
+                      <input type="text" class="form-control" id="clockpicker" name="tiempo">
+                      <div class="input-group-append">
+                        <span class="input-group-text">Hora</span>
+                      </div>
+
+                      <script type="text/javascript">
+                        var input = $('#clockpicker');
+                        input.clockpicker({
+                          autoclose: true,
+                          default: 'now'
+                        });
+                      </script>
+
+                    </div>
+                  </div>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                  <button type="submit" class="btn btn-primary">Filtrar</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="padding-top:40px; padding-left:10px; padding-right:10px; padding-bottom:10px">
+        {% render_table table %}
+      </div>
+
+    </div>
+  </div>
+
+{% endblock content%}

@@ -173,4 +173,4 @@ class Estacionado(models.Model):
         return f'{self.tiempo} - {self.identificador}'
 
     def get_absolute_url(self):
-        return f'/estacionamiento/historial/{self.id}/'
+        return f'/estacionamiento/historial/{self.registroEstacionamiento.id}/'

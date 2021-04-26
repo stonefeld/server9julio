@@ -68,17 +68,18 @@ def apertura_Manual(request):
 @login_required
 def pago_deuda(request, id):
     entradaMoroso = RegistroEstacionamiento.objects.get(id=id)
-    if request.method == 'GET':
-        return entradaMoroso.persona.deuda
-    else:
-        cobroDeuda = Cobros(precio=entradaMoroso.persona.deuda,
-                            registroEstacionamiento=entradaMoroso, deuda=True)
-        socioMoroso = entradaMoroso.persona
-        socioMoroso.deuda = 0.0
-        socioMoroso.general = True
-        socioMoroso.save()
-        cobroDeuda.save()
-        return redirect('estacionamiento:historial')
+    salida = str(entradaMoroso.persona.deuda) 
+    cobroDeuda = Cobros(precio=entradaMoroso.persona.deuda,
+                        registroEstacionamiento=entradaMoroso, deuda=True)
+    socioMoroso = entradaMoroso.persona
+    socioMoroso.deuda = 0.0
+    socioMoroso.general = True
+    socioMoroso.save()
+    cobroDeuda.save()
+    entradaMoroso.tipo = 'SOCIO'
+    entradaMoroso.autorizado = True
+    entradaMoroso.save()
+    return HttpResponse(salida)
 
 
 def emision_resumen_mensual(request):  # Falta testing
@@ -90,9 +91,7 @@ def emision_resumen_mensual(request):  # Falta testing
             annotate(cantidad_Entradas=Count("id")).\
             order_by("persona__nombre_apellido").\
             exclude(persona__isnull=True).\
-            filter(direccion='ENTRADA', cicloCaja__cicloMensual=cicloMensual_)
-
-        # Falta ciclo Mensual
+            filter(direccion='SALIDA', cicloCaja__cicloMensual=cicloMensual_, autorizado = True)
 
         output = []
         response = HttpResponse(content_type='text/csv')
@@ -152,7 +151,7 @@ def cierre_caja(request):  # Cierre de caja con contraseña? / Falta testing
     return HttpResponse(recaudado['recaudacion'])
 
 
-def funcionCobros(registroEstacionamiento):
+def funcionCobros(dato):
     today = now()
     ayer = today - timedelta(days=1)
     cobro = Cobros.objects.filter(
@@ -162,23 +161,27 @@ def funcionCobros(registroEstacionamiento):
     ).distinct()
 
     if cobro:
-        rta = 0
+        return False
 
     else:
-        tolerancia = today - timedelta(minutes=15)
-        print(tolerancia)
-        entrada = RegistroEstacionamiento.objects.filter(
-            Q(tiempo__range=(tolerancia, today)),
-            Q(noSocio__icontains=int(dato)),
-            Q(direccion__icontains='ENTRADA')
-        )
+        return tiempoTolerancia(dato)
 
-        if entrada:
+def tiempoTolerancia(dato):
+    tolerancia = today - timedelta(minutes=15)
+    entrada = RegistroEstacionamiento.objects.filter(
+        Q(tiempo__range=(tolerancia, today)),
+        Q(noSocio__icontains=int(dato)),
+        Q(direccion__icontains='ENTRADA')
+    )
 
-            rta = 0
+    if entrada:
+        #no excedio tiempo tolerancia
+        return False
 
-        else:
-            rta = 1
+    else:
+        #excedio tiempo tolerancia
+        return True
+
 
 
 def funcionEliminarEstacionado(entrada):
@@ -217,7 +220,7 @@ def respuesta(request):
                             lugar='ESTACIONAMIENTO',
                             persona=user,
                             direccion=direccion_,
-                            autorizado=True,
+                            autorizado=tiempoTolerancia(dato),
                             cicloCaja=cicloCaja_
                         )
                         entrada.save()
@@ -227,7 +230,7 @@ def respuesta(request):
 
                     else:
                         resultado = funcionCobros(dato)
-                        if resultado == 0:
+                        if resultado == False:
                             entrada = RegistroEstacionamiento(
                                 tipo='SOCIO-MOROSO',
                                 lugar='ESTACIONAMIENTO',
@@ -241,7 +244,6 @@ def respuesta(request):
                             funcionEliminarEstacionado(entrada)
                         else:
                             rta = '#6'  # NoSocio no pago Deuda o no Pago Entrada
-
                 except:
                     rta = '#2'  # El usuario No existe
 
@@ -254,7 +256,7 @@ def respuesta(request):
                             lugar='ESTACIONAMIENTO',
                             persona=user,
                             direccion=direccion_,
-                            autorizado=True,
+                            autorizado=tiempoTolerancia(dato),
                             cicloCaja=cicloCaja_
                         )
                         entrada.save()
@@ -263,7 +265,7 @@ def respuesta(request):
 
                     else:
                         resultado = funcionCobros(dato)
-                        if resultado == 0:
+                        if resultado == False:
                             entrada = RegistroEstacionamiento(
                                 tipo='SOCIO-MOROSO',
                                 lugar='ESTACIONAMIENTO',
@@ -279,14 +281,7 @@ def respuesta(request):
                             rta = '#6'  # NoSocio no pago Deuda o no Pago Entrada
 
                 except:
-                    today = now()
-                    ayer = today - timedelta(days=1)
-                    cobro = Cobros.objects.filter(
-                        Q(registroEstacionamiento__tiempo__range=(ayer, today)) &
-                        Q(registroEstacionamiento__noSocio__icontains=int(dato))
-                    ).distinct()
-
-                    if cobro:
+                    if tiempoTolerancia(dato) == False:
                         entrada = RegistroEstacionamiento(
                             tipo='NOSOCIO',
                             lugar='ESTACIONAMIENTO',
@@ -298,33 +293,10 @@ def respuesta(request):
                         entrada.save()
                         rta = '#1'
                         funcionEliminarEstacionado(entrada)
-
                     else:
-                        tolerancia = today - timedelta(minutes=15)
-                        print(tolerancia)
-                        entrada = RegistroEstacionamiento.objects.filter(
-                            Q(tiempo__range=(tolerancia, today)),
-                            Q(noSocio__icontains=int(dato)),
-                            Q(direccion__icontains='ENTRADA')
-                        )
-
-                        if entrada:
-                            entrada = RegistroEstacionamiento(
-                                tipo='NOSOCIO',
-                                lugar='ESTACIONAMIENTO',
-                                noSocio=dato,
-                                direccion=direccion_,
-                                autorizado=True,
-                                cicloCaja=cicloCaja_
-                            )
-                            entrada.save()
-                            rta = '#1'  # Dentro del tiempo de tolerancia
-                            funcionEliminarEstacionado(entrada)
-
-                        else:
-                            rta = '#5'
-                            # El No Socio no pagó y excedió
-                            # el tiempo de tolerancia
+                        rta = '#5'
+                        # El No Socio no pagó y excedió
+                        # el tiempo de tolerancia
 
             else:
                 try:

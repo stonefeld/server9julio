@@ -63,7 +63,7 @@ def resumenTiempoReal(request):
         RequestConfig(request).configure(table)
         return render(
             request,
-            'estacionamiento/historial.html',
+            'menu_estacionamiento/resumen_tiempo.html',
             {'table': table, 'title': 'Historial'}
         )
     return render(
