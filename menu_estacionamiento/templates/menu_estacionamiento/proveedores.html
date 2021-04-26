@@ -11,35 +11,32 @@
   <div class="content-section" style="padding:20px;">
     <div id="form_card" class="card-panel col s12">
 
-      <form method="GET">
-        <div class="input-group mx-auto" style="margin-bottom: 25px;">
-          <input type="text"  placeholder="Buscar..." name="buscar" id="buscar" value="">
-            <div>
-              <button class="btn btn-secondary" type="submit" style="margin-left: 20px;">
-                <i>Buscar</i>
-              </button>
-            </div>
-          </input>
-        </div>
-      </form>
+      <div class="input-group mx-auto" style="margin-bottom: 25px;">
+        <input type="text"  placeholder="Buscar..." name="buscar" id="buscar" value="" style="padding: 10px"></input>
+        <button type="button" id="clear-button" class="btn btn-secondary" style="padding: 10px; margin: 0px 5px 0px 5px">
+          <i>Borrar búsqueda</i>
+        </button>
+      </div>
 
+      <!-- Tabla de proveedores -->
       <table class="table">
         <thead>
           <tr>
             <th class="orderable">
-              <a href="?sort=idProveedor">ID</a>
+              <a href="" style="text-decoration: none">ID</a>
             </th>
             <th class="orderable">
-              <a href="?sort=nombre_proveedor">Proveedor</a>
+              <a href="" style="text-decoration: none">Proveedor</a>
             </th>
         </thead>
 
-        <tbody id="proveedores">
-        </tbody>
+        <tbody id="proveedores"></tbody>
       </table>
+
+      <div id="navbuttons"></div>
 
     </div>
   </div>
 
-  <script src="{% static 'usuariosistema/index.js' %}">
+  <script src="{% static 'usuariosistema/estacionamiento.js' %}">
 {% endblock content %}

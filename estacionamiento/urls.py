@@ -12,7 +12,7 @@ urlpatterns = [
          name='detalle'),
      path('apertura-manual',
           views.apertura_Manual,
-          name='apertura-manual')
+          name='apertura-manual'),
     path('historial/<int:id>/editar/',
          views.editar_estacionamiento,
          name='editar'),

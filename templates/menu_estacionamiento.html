@@ -31,6 +31,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.1.2/css/tempusdominus-bootstrap-4.min.css" integrity="sha256-XPTBwC3SBoWHSmKasAk01c08M6sIA5gF5+sRxqak2Qs=" crossorigin="anonymous" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.1.2/js/tempusdominus-bootstrap-4.min.js" integrity="sha256-z0oKYg6xiLq3yJGsp/LsY9XykbweQlHl42jHv2XTBz4=" crossorigin="anonymous"></script>
 
+    <!-- Clockpicker -->
+    <link rel="stylesheet" type="text/css" href="{% static 'usuariosistema/clockpicker/dist/bootstrap-clockpicker.min.css' %}"/>
+    <script type="text/javascript" src="{% static 'usuariosistema/clockpicker/dist/bootstrap-clockpicker.min.js' %}"></script>
+    
     {% if title %}
       <title>Server 9 de Julio | {{ title }}</title>
     {% else %}
@@ -86,6 +90,9 @@
     {% endif %}
 
     {% block content %}{% endblock content %}
+    {% block js %}
+    {% endblock js %}
+    
 
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->

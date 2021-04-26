@@ -5,19 +5,24 @@ from usuario.models import Persona
 
 
 class AperturaManual(models.Model):
-    
     RAZON_CHOICES = (('FALTA REGISTRO ENTRADA', 'FALTA REGISTRO ENTRADA'),
-                         ('CONFLICTO', 'CONFLICTO'))
+                     ('CONFLICTO', 'CONFLICTO'))
     DIRECCION_CHOICES = (('ENTRADA', 'ENTRADA'),
                          ('SALIDA', 'SALIDA'))
-    
-    razon = models.CharField(max_length=30, verbose_name='razon', choices=RAZON_CHOICES)
-    comentario = models.CharField(max_length=300, verbose_name='comentario',null=True, blank=True)
-    direccion = models.CharField(max_length=30, choices=DIRECCION_CHOICES, verbose_name='Dirección', default='ENTRADA')
+
+    razon = models.CharField(max_length=30,
+                             verbose_name='razon',
+                             choices=RAZON_CHOICES)
+    comentario = models.CharField(max_length=300,
+                                  verbose_name='comentario',
+                                  null=True, blank=True)
+    direccion = models.CharField(max_length=30, choices=DIRECCION_CHOICES,
+                                 verbose_name='Dirección', default='ENTRADA')
+
     def __str__(self):
         return str(self.razon)
 
-    def save(self,*args, **kwargs):
+    def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
         entrada = RegistroEstacionamiento(
             tipo='MANUAL',
@@ -25,10 +30,9 @@ class AperturaManual(models.Model):
             direccion=self.direccion,
             autorizado=False,
             cicloCaja=CicloCaja.objects.all().last(),
-            apertuaManual=self
+            aperturaManual=self
         )
         entrada.save()
-        
 
     class Meta:
         verbose_name = "AperturaManual"
@@ -93,8 +97,7 @@ class RegistroEstacionamiento(models.Model):
                     ('SOCIO-MOROSO', 'SOCIO-MOROSO'),
                     ('NOSOCIO', 'NOSOCIO'),
                     ('PROVEEDOR', 'PROVEEDOR'),
-                    ('MANUAL','MANUAL'))
-
+                    ('MANUAL', 'MANUAL'))
 
     DIRECCION_CHOICES = (('ENTRADA', 'ENTRADA'),
                          ('SALIDA', 'SALIDA'))
@@ -124,7 +127,7 @@ class RegistroEstacionamiento(models.Model):
             verbose_name='Autorización', default=False)
     cicloCaja = models.ForeignKey(
             CicloCaja, on_delete=models.CASCADE, verbose_name='cicloCaja')
-    apertuaManual = models.ForeignKey(
+    aperturaManual = models.ForeignKey(
             AperturaManual, on_delete=models.CASCADE,
             verbose_name='AperturaManual', null=True, blank=True)
 
@@ -145,7 +148,7 @@ class RegistroEstacionamiento(models.Model):
             self.identificador = self.proveedor.nombre_proveedor
 
         elif self.tipo == 'MANUAL':
-            self.identificador = self.apertuaManual.razon
+            self.identificador = self.aperturaManual.razon
         super().save(*args, **kwargs)
 
     class Meta:
@@ -155,18 +158,19 @@ class RegistroEstacionamiento(models.Model):
 
 class Cobros(models.Model):
     precio = models.FloatField(verbose_name='precio')
-    deuda = models.BooleanField(default = False ,verbose_name='deuda')
+    deuda = models.BooleanField(default=False, verbose_name='deuda')
     registroEstacionamiento = models.ForeignKey(
             RegistroEstacionamiento, on_delete=models.CASCADE,
             verbose_name='registroEstacionamiento')
 
 
 class Estacionado(models.Model):
-        registroEstacionamiento = models.ForeignKey(RegistroEstacionamiento, on_delete=models.CASCADE,verbose_name='registroEstacionamiento')
-        
-        def __str__(self):
-                return f'{self.tiempo} - {self.identificador}'
-        def get_absolute_url(self):
-                return f'/estacionamiento/historial/{self.id}/'
-        
-                
+    registroEstacionamiento = models.ForeignKey(
+                RegistroEstacionamiento, on_delete=models.CASCADE,
+                verbose_name='registroEstacionamiento')
+
+    def __str__(self):
+        return f'{self.tiempo} - {self.identificador}'
+
+    def get_absolute_url(self):
+        return f'/estacionamiento/historial/{self.id}/'

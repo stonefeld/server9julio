@@ -4,6 +4,8 @@ from threading import Thread
 import os
 
 from django.conf import settings
+from django.core.paginator import Paginator
+from django.contrib.auth.decorators import login_required
 from django.db.models import Q, Sum, Count
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
@@ -13,7 +15,12 @@ from django_tables2 import RequestConfig
 
 from .models import (
     RegistroEstacionamiento, Proveedor,
+<<<<<<< HEAD
     CicloCaja, CicloMensual, Persona, CicloAnual, Cobros, Estacionado, AperturaManual
+=======
+    CicloCaja, CicloMensual, Persona, CicloAnual,
+    Cobros, Estacionado, AperturaManual
+>>>>>>> trabajoTheo2
 )
 from .forms import EstacionamientoForm, AperturaManualForm
 from .tables import HistorialEstacionamientoTable
@@ -48,6 +55,21 @@ def apertura_Manual(request):
 
 
 
+@login_required
+def apertura_Manual(request):
+    form = AperturaManualForm(request.POST or None)
+    if form.is_valid():
+        form.save()
+
+    if request.method == 'POST':
+        return redirect('estacionamiento:historial')
+
+    else:
+        return render(request, 'estacionamiento/apertura_manual.html',
+                      {'form': form, 'title': 'Apertura Manual'})
+
+
+@login_required
 def pago_deuda(request, id):
     entradaMoroso = RegistroEstacionamiento.objects.get(id=id)
     if request.method == 'GET':
@@ -115,6 +137,7 @@ def emision_resumen_mensual(request):  # Falta testing
         return HttpResponse("Error debe cerrar la caja primero")
 
 
+@login_required
 def cierre_caja(request):  # Cierre de caja con contraseña? / Falta testing
     cicloCaja_ = CicloCaja.objects.all().last()
     recaudado = Cobros.objects.filter(
@@ -132,13 +155,14 @@ def cierre_caja(request):  # Cierre de caja con contraseña? / Falta testing
 
     return HttpResponse(recaudado['recaudacion'])
 
+
 def funcionCobros(registroEstacionamiento):
     today = now()
     ayer = today - timedelta(days=1)
     cobro = Cobros.objects.filter(
         Q(registroEstacionamiento__tiempo__range=(ayer, today)) &
-        Q(registroEstacionamiento__noSocio__icontains=int(dato) & 
-        Q(registroEstacionamiento__Socio__nrTarjeta__icontains = int(dato)))
+        Q(registroEstacionamiento__noSocio__icontains=int(dato) &
+        Q(registroEstacionamiento__Socio__nrTarjeta__icontains=int(dato)))
     ).distinct()
 
     if cobro:
@@ -422,6 +446,7 @@ def respuesta(request):
         return HttpResponse(rta)
 
 
+@login_required
 def historial_estacionamiento(request):
     if request.method == 'GET':
         estacionamiento = RegistroEstacionamiento.objects.all()
@@ -459,12 +484,14 @@ def historial_estacionamiento(request):
         )
 
 
+@login_required
 def detalle_estacionamiento(request, id):
     datos = RegistroEstacionamiento.objects.get(id=id)
     return render(request, 'estacionamiento/detalle_historial.html',
                   {'datos': datos, 'title': 'Detalle Historial'})
 
 
+@login_required
 def editar_estacionamiento(request, id):
     obj = RegistroEstacionamiento.objects.get(id=id)
     form = EstacionamientoForm(request.POST or None, instance=obj)
@@ -474,17 +501,31 @@ def editar_estacionamiento(request, id):
     context = {
         'form': form,
         'id': obj.id,
-        'title': 'Detaller historial'
+        'title': 'Detalle historial'
     }
 
     if request.method == 'POST':
         return redirect('estacionamiento:historial')
 
     else:
-        return render(request, 'estacionamiento/editar_historial.html', context)
+        return render(request,
+                      'estacionamiento/editar_historial.html',
+                      context)
 
 
 def fetch_proveedores(request):
-    proveedores = list(Proveedor.objects.values())
-    response = JsonResponse(proveedores, safe=False)
-    return response
+    page = request.GET.get('page')
+    filter_string = request.GET.get('filter-string')
+
+    proveedores = Proveedor.objects.all().filter(
+        Q(nombre_proveedor__icontains=filter_string)
+    )
+
+    paginated = Paginator(list(proveedores.values()), 20)
+    proveedores = paginated.page(page).object_list
+    proveedores.append({
+        'has_previous': paginated.page(page).has_previous(),
+        'has_next': paginated.page(page).has_next()
+    })
+
+    return JsonResponse(proveedores, safe=False)

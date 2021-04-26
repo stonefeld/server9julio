@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 
+{% load static %}
 {% load crispy_forms_tags %}
 {% load render_table from django_tables2 %}
 
@@ -11,21 +12,34 @@
   <div class="content-section" style="padding:20px;">
     <div id="form_card" class="card-panel col s12">
 
-      <form method="GET">
-        <div class="input-group mx-auto" style="margin-bottom: 25px;">
-          <input type="text"  placeholder="Buscar..." name="buscar" value="">
-            <div>
-              <button class="btn btn-secondary" type="submit" style="margin-left: 20px;">
-                <i>Buscar</i>
-              </button>
-            </div>
-          </input>
+      <div class="input-group mx-auto" style="margin-bottom: 25px;">
+        <input type="text" placeholder="Buscar..." name="buscar" id="buscar" value="">
+        <div>
+          <button id="clear-button" class="btn btn-secondary" type="button" style="padding: 10px; margin: 0px 5px 0px 5px">
+            <i>Borrar búsqueda</i>
+          </button>
         </div>
-      </form>
+        </input>
+      </div>
 
-      {% csrf_token %}
-      {% render_table table %}
+      <table class="table">
+        <thead>
+          <tr>
+            <th class="orderable">
+              <a href="" style="text-decoration: none">Nr. Socio</a>
+            </th>
+            <th class="orderable">
+              <a href="" style="text-decoration: none">Nombre y Apellido</a>
+            </th>
+        </thead>
+
+        <tbody id="usuarios"></tbody>
+      </table>
+
+      <div id="navbuttons"></div>
 
     </div>
   </div>
+
+  <script src="{% static 'usuariosistema/usuario.js' %}"></script>
 {% endblock %}
