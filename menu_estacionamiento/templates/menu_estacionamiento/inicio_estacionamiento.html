@@ -8,6 +8,19 @@
   <div class="content-area" style="padding-left:30px; padding-right:30px; padding-bottom:30px;" >
     <div  class="wrapper">
       <h2>Instrucciones ESTACIONAMIENTO</h2>
+      
+      <div class="form-group" style="padding:20px;">
+        <a style="text-decoration:none" href={% url 'estacionamiento:cierre-caja' %}>
+          <button class="btn btn-outline-info btn-lg" type="submit">Cierre Caja</button>
+        </a>
+        <a style="text-decoration:none" href={% url 'estacionamiento:resumen-mensual' %}>
+          <button class="btn btn-outline-info btn-lg" type="submit">Emitir Resumen Mensual</button>
+        </a>
+        <a style="text-decoration:none" href={% url 'estacionamiento:apertura-manual' %}>
+          <button class="btn btn-outline-info btn-lg" type="submit">Apertura Manual</button>
+        </a>
+      </div>
+
       <p style="font-size:18px; margin-top:20px;">
         Bienvenido al Sistema de Control de Acceso ESTACIONAMIENTO de la <strong>Sociedad Alemana de Gimnasia de Villa Ballester</strong> - 
         <strong>SAGVB</strong>.<br><br>

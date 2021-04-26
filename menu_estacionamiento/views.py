@@ -5,6 +5,7 @@ from django.db.models import Q
 from django.shortcuts import render
 
 from django_tables2 import RequestConfig
+from estacionamiento.tables import EstacionadosTable, ProveedoresTable
 
 from estacionamiento.models import Estacionado, Proveedor
 from estacionamiento.tables import EstacionadosTable, ProveedoresTable
@@ -21,6 +22,8 @@ def menu_estacionamiento(request):
 
 @login_required
 def seleccionarCalendario(request):
+
+
     return render(
         request,
         template_name='menu_estacionamiento/calendario.html',
@@ -55,10 +58,8 @@ def resumenTiempoReal(request):
                 registroEstacionamiento__tiempo__hour=tiempo.hour,
                 registroEstacionamiento__tiempo__minute=tiempo.minute
             )
-
         table = EstacionadosTable(estacionamiento)
         RequestConfig(request).configure(table)
-
         return render(
             request,
             'estacionamiento/historial.html',

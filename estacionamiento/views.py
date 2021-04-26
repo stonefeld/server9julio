@@ -14,9 +14,9 @@ from django_tables2 import RequestConfig
 
 from .models import (
     RegistroEstacionamiento, Proveedor,
-    CicloCaja, CicloMensual, Persona, CicloAnual, Cobros, Estacionado
+    CicloCaja, CicloMensual, Persona, CicloAnual, Cobros, Estacionado, AperturaManual
 )
-from .forms import EstacionamientoForm
+from .forms import EstacionamientoForm, AperturaManualForm
 from .tables import HistorialEstacionamientoTable
 
 
@@ -34,6 +34,19 @@ def socket_arduino(cantidad):
     base_dir = settings.BASE_DIR
     script_loc = os.path.join(base_dir, 'scripts/client.py')
     os.system(f'python3 {script_loc} abrir_tiempo {cantidad}')
+
+def apertura_Manual(request):
+    form = AperturaManualForm(request.POST or None)
+    if form.is_valid():
+        form.save()
+
+    if request.method == 'POST':
+        return redirect('estacionamiento:historial')
+
+    else:
+        return render(request, 'estacionamiento/apertura_manual.html',
+                      {'form': form, 'title': 'Apertura Manual'})
+
 
 
 def pago_deuda(request, id):
@@ -56,7 +69,7 @@ def emision_resumen_mensual(request):  # Falta testing
     if cicloCaja_.recaudado is not None:
         cicloMensual_ = CicloMensual.objects.all().last()
         resumen_mensual = RegistroEstacionamiento.objects.\
-            values("persona__nombre_apellido").\
+            values("persona__nombre_apellido","persona__nrSocio").\
             annotate(cantidad_Entradas=Count("id")).\
             order_by("persona__nombre_apellido").\
             exclude(persona__isnull=True).\
@@ -404,7 +417,7 @@ def respuesta(request):
 
                 except:
                     rta = '#4'  # Error Proveedor no encontrado
-
+            funcionEliminarEstacionado(entrada)
             estacionado = Estacionado(registroEstacionamiento=entrada)
             estacionado.save()
 
