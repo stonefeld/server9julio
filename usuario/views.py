@@ -4,8 +4,10 @@ from threading import Thread
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 from django.db import connection
 from django.db.models import Q
+from django.http import JsonResponse
 from django.shortcuts import render, redirect
 
 from django_tables2 import RequestConfig
@@ -209,3 +211,22 @@ def cargarDBAsync(df):
         noSocio.save()
 
     connection.close()
+
+
+def fetch_usuarios(request):
+    page = request.GET.get('page')
+    filter_string = request.GET.get('filter-string')
+
+    personas = Persona.objects.all().filter(
+        Q(nombre_apellido__icontains=filter_string) &
+        ~Q(nombre_apellido='NOSOCIO')
+    ).order_by('nombre_apellido')
+
+    paginated = Paginator(list(personas.values()), 20)
+    personas = paginated.page(page).object_list
+    personas.append({
+        'has_previous': paginated.page(page).has_previous(),
+        'has_next': paginated.page(page).has_next()
+    })
+
+    return JsonResponse(personas, safe=False)

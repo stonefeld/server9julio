@@ -120,13 +120,14 @@ def cierre_caja(request):  # Cierre de caja con contraseña? / Falta testing
 
     return HttpResponse(recaudado['recaudacion'])
 
+
 def funcionCobros(registroEstacionamiento):
     today = now()
     ayer = today - timedelta(days=1)
     cobro = Cobros.objects.filter(
         Q(registroEstacionamiento__tiempo__range=(ayer, today)) &
-        Q(registroEstacionamiento__noSocio__icontains=int(dato) & 
-        Q(registroEstacionamiento__Socio__nrTarjeta__icontains = int(dato)))
+        Q(registroEstacionamiento__noSocio__icontains=int(dato) &
+        Q(registroEstacionamiento__Socio__nrTarjeta__icontains=int(dato)))
     ).distinct()
 
     if cobro:
