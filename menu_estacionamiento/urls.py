@@ -15,4 +15,3 @@ urlpatterns = [
     path('proveedores', views.proveedores, name='proveedores'),
     path('historial', historial_estacionamiento, name='historial'),
 ]
-

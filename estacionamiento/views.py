@@ -5,6 +5,7 @@ import os
 
 from django.conf import settings
 from django.core.paginator import Paginator
+from django.contrib.auth.decorators import login_required
 from django.db.models import Q, Sum, Count
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
@@ -14,7 +15,8 @@ from django_tables2 import RequestConfig
 
 from .models import (
     RegistroEstacionamiento, Proveedor,
-    CicloCaja, CicloMensual, Persona, CicloAnual, Cobros, Estacionado, AperturaManual
+    CicloCaja, CicloMensual, Persona, CicloAnual,
+    Cobros, Estacionado, AperturaManual
 )
 from .forms import EstacionamientoForm, AperturaManualForm
 from .tables import HistorialEstacionamientoTable
@@ -35,6 +37,8 @@ def socket_arduino(cantidad):
     script_loc = os.path.join(base_dir, 'scripts/client.py')
     os.system(f'python3 {script_loc} abrir_tiempo {cantidad}')
 
+
+@login_required
 def apertura_Manual(request):
     form = AperturaManualForm(request.POST or None)
     if form.is_valid():
@@ -48,7 +52,7 @@ def apertura_Manual(request):
                       {'form': form, 'title': 'Apertura Manual'})
 
 
-
+@login_required
 def pago_deuda(request, id):
     entradaMoroso = RegistroEstacionamiento.objects.get(id=id)
     if request.method == 'GET':
@@ -116,6 +120,7 @@ def emision_resumen_mensual(request):  # Falta testing
         return HttpResponse("Error debe cerrar la caja primero")
 
 
+@login_required
 def cierre_caja(request):  # Cierre de caja con contraseña? / Falta testing
     cicloCaja_ = CicloCaja.objects.all().last()
     recaudado = Cobros.objects.filter(
@@ -424,6 +429,7 @@ def respuesta(request):
         return HttpResponse(rta)
 
 
+@login_required
 def historial_estacionamiento(request):
     if request.method == 'GET':
         estacionamiento = RegistroEstacionamiento.objects.all()
@@ -461,12 +467,14 @@ def historial_estacionamiento(request):
         )
 
 
+@login_required
 def detalle_estacionamiento(request, id):
     datos = RegistroEstacionamiento.objects.get(id=id)
     return render(request, 'estacionamiento/detalle_historial.html',
                   {'datos': datos, 'title': 'Detalle Historial'})
 
 
+@login_required
 def editar_estacionamiento(request, id):
     obj = RegistroEstacionamiento.objects.get(id=id)
     form = EstacionamientoForm(request.POST or None, instance=obj)
