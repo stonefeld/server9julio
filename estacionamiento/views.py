@@ -15,12 +15,8 @@ from django_tables2 import RequestConfig
 
 from .models import (
     RegistroEstacionamiento, Proveedor,
-<<<<<<< HEAD
-    CicloCaja, CicloMensual, Persona, CicloAnual, Cobros, Estacionado, AperturaManual
-=======
     CicloCaja, CicloMensual, Persona, CicloAnual,
     Cobros, Estacionado, AperturaManual
->>>>>>> trabajoTheo2
 )
 from .forms import EstacionamientoForm, AperturaManualForm
 from .tables import HistorialEstacionamientoTable
