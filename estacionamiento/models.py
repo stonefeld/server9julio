@@ -38,7 +38,6 @@ class AperturaManual(models.Model):
         verbose_name = "AperturaManual"
         verbose_name_plural = "AperturasManuales"
 
-
 class Proveedor(models.Model):
     idProveedor = models.CharField(max_length=30, verbose_name='ID')
     nombre_proveedor = models.CharField(
@@ -174,4 +173,4 @@ class Estacionado(models.Model):
         return f'{self.tiempo} - {self.identificador}'
 
     def get_absolute_url(self):
-        return f'/estacionamiento/historial/{self.id}/'
+        return f'/estacionamiento/historial/{self.registroEstacionamiento.id}/'

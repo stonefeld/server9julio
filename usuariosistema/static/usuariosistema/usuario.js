@@ -74,4 +74,4 @@ const prevPage = () => {
 };
 
 loadUsuarios();
-console.log("Hello World");
+

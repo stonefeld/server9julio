@@ -23,4 +23,6 @@ urlpatterns = [
          views.cierre_caja,
          name='cierre-caja'),
     path('fetch', views.fetch_proveedores, name='fetch-proveedores'),
+    path('pago_deuda/<int:id>/',
+          views.pago_deuda, name='pago_deuda'),
 ]
