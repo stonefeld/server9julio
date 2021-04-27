@@ -1,4 +1,5 @@
 from django.contrib.auth.decorators import login_required
+from django.db.models import Q
 from django.shortcuts import render
 
 from estacionamiento.models import (
@@ -7,7 +8,6 @@ from estacionamiento.models import (
 )
 from django_tables2 import RequestConfig
 from estacionamiento.tables import EstacionadosTable, ProveedoresTable
-
 
 
 @login_required
@@ -21,8 +21,6 @@ def menu_estacionamiento(request):
 
 @login_required
 def seleccionarCalendario(request):
-
-
     return render(
         request,
         template_name='menu_estacionamiento/calendario.html',
@@ -34,8 +32,6 @@ def seleccionarCalendario(request):
 def resumenTiempoReal(request):
     if request.method == 'GET':
         estacionamiento = Estacionado.objects.all()
-        
-        
         busqueda = request.GET.get('buscar')
         fecha = request.GET.get('fecha')
         tiempo = request.GET.get('tiempo')
@@ -81,7 +77,7 @@ def proveedores(request):
 
     context = {
         'table': table,
-        'title': 'List de proveedores'
+        'title': 'Lista de proveedores'
     }
 
     return render(
