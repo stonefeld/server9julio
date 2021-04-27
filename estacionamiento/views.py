@@ -15,7 +15,8 @@ from django_tables2 import RequestConfig
 from .models import (
     RegistroEstacionamiento, Proveedor,
     CicloCaja, CicloMensual, Persona, CicloAnual,
-    Cobros, Estacionado, AperturaManual
+    Cobros, Estacionado, AperturaManual, TarifaEspecial,
+    Horarios_Precio, Dia_Especial
 )
 from .forms import EstacionamientoForm, AperturaManualForm
 from .tables import HistorialEstacionamientoTable
@@ -483,3 +484,17 @@ def fetch_proveedores(request):
     })
 
     return JsonResponse(proveedores, safe=False)
+
+def fetch_Events(request):
+    eventos = Dia_Especial.objects.values("dia_Especial").all()
+    listeventos = []
+    for evento in eventos:
+        date_splitted = evento['dia_Especial'].strftime('%d/%m/%Y').split('/')
+        day = date_splitted[0].replace('0','')
+        month = date_splitted[1].replace('0','')
+        year = date_splitted[2]
+        final_date = f'{day}/{month}/{year}'
+        diction = { "date" : final_date }
+        listeventos.append(diction)
+    print(listeventos)
+    return JsonResponse(listeventos, safe=False)

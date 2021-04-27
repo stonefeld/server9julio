@@ -174,3 +174,15 @@ class Estacionado(models.Model):
 
     def get_absolute_url(self):
         return f'/estacionamiento/historial/{self.registroEstacionamiento.id}/'
+
+
+class Dia_Especial(models.Model):
+    dia_Especial = models.DateField(verbose_name="DiaEspecial")
+
+class Horarios_Precio(models.Model):
+    inicio = models.TimeField()
+    final = models.TimeField()
+    precio = models.FloatField()
+
+class TarifaEspecial(models.Model):
+    precio = models.FloatField()
