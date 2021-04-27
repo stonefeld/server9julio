@@ -57,6 +57,7 @@ def pago_deuda(request, id):
     entradaMoroso = RegistroEstacionamiento.objects.get(id=id)
     if request.method == 'GET':
         return entradaMoroso.persona.deuda
+
     else:
         cobroDeuda = Cobros(precio=entradaMoroso.persona.deuda,
                             registroEstacionamiento=entradaMoroso, deuda=True)
@@ -73,7 +74,7 @@ def emision_resumen_mensual(request):  # Falta testing
     if cicloCaja_.recaudado is not None:
         cicloMensual_ = CicloMensual.objects.all().last()
         resumen_mensual = RegistroEstacionamiento.objects.\
-            values("persona__nombre_apellido","persona__nrSocio").\
+            values("persona__nombre_apellido", "persona__nrSocio").\
             annotate(cantidad_Entradas=Count("id")).\
             order_by("persona__nombre_apellido").\
             exclude(persona__isnull=True).\
@@ -124,7 +125,7 @@ def emision_resumen_mensual(request):  # Falta testing
 def cierre_caja(request):  # Cierre de caja con contraseña? / Falta testing
     cicloCaja_ = CicloCaja.objects.all().last()
     recaudado = Cobros.objects.filter(
-        registroEstacionamiento__cicloCaja=cicloCaja_, deuda = False).\
+        registroEstacionamiento__cicloCaja=cicloCaja_, deuda=False).\
         aggregate(recaudacion=Sum('precio'))
 
     if recaudado['recaudacion']:
@@ -144,8 +145,8 @@ def funcionCobros(registroEstacionamiento):
     ayer = today - timedelta(days=1)
     cobro = Cobros.objects.filter(
         Q(registroEstacionamiento__tiempo__range=(ayer, today)) &
-        Q(registroEstacionamiento__noSocio__icontains=int(dato) &
-        Q(registroEstacionamiento__Socio__nrTarjeta__icontains=int(dato)))
+        Q(registroEstacionamiento__noSocio__icontains=int(dato)) &
+        Q(registroEstacionamiento__Socio__nrTarjeta__icontains=int(dato))
     ).distinct()
 
     if cobro:
@@ -161,7 +162,6 @@ def funcionCobros(registroEstacionamiento):
         )
 
         if entrada:
-
             rta = 0
 
         else:
@@ -496,19 +496,32 @@ def editar_estacionamiento(request, id):
                       context)
 
 
+# La unica funcion de este view es la de que el codigo de js pueda hacer un
+# a estos datos para renderizarlos en tiempo real sin tener que hacer otro
+# request.
 def fetch_proveedores(request):
-    page = request.GET.get('page')
-    filter_string = request.GET.get('filter-string')
+    # Dentro del GET recibe como datos:
+    page = request.GET.get('page')  # La pagina que quiere visualizar.
+    filter_string = request.GET.get('filter-string')  # El string de filtro.
 
+    # Filtra todos los proveedores con el string recibido por nombre de
+    # proveedor.
     proveedores = Proveedor.objects.all().filter(
         Q(nombre_proveedor__icontains=filter_string)
-    )
+    ).order_by('nombre_proveedor')
 
+    # Realiza la paginacion de los datos con un maximo de 20 proveedores por
+    # pagina y especifica la pagina que quiere visualizar.
     paginated = Paginator(list(proveedores.values()), 20)
     proveedores = paginated.page(page).object_list
+
+    # Agrega al json de respuesta los datos para que el codigo de js sepa
+    # si la pagina que esta visualizandose tiene pagina siguiente o anterior.
     proveedores.append({
         'has_previous': paginated.page(page).has_previous(),
         'has_next': paginated.page(page).has_next()
     })
 
+    # Devuelve la respuesta en forma de json especificando el 'safe=False'
+    # para evitar tener problemas de CORS.
     return JsonResponse(proveedores, safe=False)

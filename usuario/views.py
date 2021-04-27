@@ -213,20 +213,37 @@ def cargarDBAsync(df):
     connection.close()
 
 
+# La unica funcion de este view es la de que el codigo de js pueda hacer un
+# a estos datos para renderizarlos en tiempo real sin tener que hacer otro
+# request.
 def fetch_usuarios(request):
-    page = request.GET.get('page')
-    filter_string = request.GET.get('filter-string')
+    # Dentro del GET recibe como datos:
+    page = request.GET.get('page')  # La pagina que quiere visualizar.
+    filter_string = request.GET.get('filter-string')  # El string de filtro.
 
-    personas = Persona.objects.all().filter(
-        Q(nombre_apellido__icontains=filter_string) &
-        ~Q(nombre_apellido='NOSOCIO')
-    ).order_by('nombre_apellido')
+    # Separa el string para filtrar en un list con cada palabra ingresada.
+    parsed_filter = filter_string.split(' ')
 
+    # Filtra todos los socios con el string recibido por nombre de
+    # socio.
+    for filter in parsed_filter:
+        personas = Persona.objects.all().filter(
+            Q(nombre_apellido__icontains=filter) &
+            ~Q(nombre_apellido='NOSOCIO')
+        ).order_by('nombre_apellido')
+
+    # Realiza la paginacion de los datos con un maximo de 20 proveedores por
+    # pagina y especifica la pagina que quiere visualizar.
     paginated = Paginator(list(personas.values()), 20)
     personas = paginated.page(page).object_list
+
+    # Agrega al json de respuesta los datos para que el codigo de js sepa
+    # si la pagina que esta visualizandose tiene pagina siguiente o anterior.
     personas.append({
         'has_previous': paginated.page(page).has_previous(),
         'has_next': paginated.page(page).has_next()
     })
 
+    # Devuelve la respuesta en forma de json especificando el 'safe=False'
+    # para evitar tener problemas de CORS.
     return JsonResponse(personas, safe=False)
