@@ -2,7 +2,6 @@ import csv
 from datetime import date, time, timedelta
 from threading import Thread
 import os
-
 from django.conf import settings
 from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
@@ -37,19 +36,6 @@ def socket_arduino(cantidad):
     script_loc = os.path.join(base_dir, 'scripts/client.py')
     os.system(f'python3 {script_loc} abrir_tiempo {cantidad}')
 
-def apertura_Manual(request):
-    form = AperturaManualForm(request.POST or None)
-    if form.is_valid():
-        form.save()
-
-    if request.method == 'POST':
-        return redirect('estacionamiento:historial')
-
-    else:
-        return render(request, 'estacionamiento/apertura_manual.html',
-                      {'form': form, 'title': 'Apertura Manual'})
-
-
 
 @login_required
 def apertura_Manual(request):
@@ -81,7 +67,7 @@ def pago_deuda(request, id):
     entradaMoroso.save()
     return HttpResponse(salida)
 
-
+@login_required
 def emision_resumen_mensual(request):  # Falta testing
     cicloCaja_ = CicloCaja.objects.all().last()
     if cicloCaja_.recaudado is not None:
