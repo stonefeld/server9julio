@@ -125,15 +125,37 @@ function saveTarifa(){
     events.push({
       date:clicked,
     })
+    const cuerpo = {
+      fecha: clicked,
+      accion: 'add'
+    }
+    const options = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(cuerpo)
+    };
+    fetch(`/estacionamiento/fetch_Events`, options)
     localStorage.setItem('events', JSON.stringify(events))
     closeModal()
-  
-  
 
 }
 
 function deleteTarifa(){
   events = events.filter(e => e.date !== clicked)
+  const cuerpo = {
+    fecha: clicked,
+    accion: 'delete'
+  }
+  const options = {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(cuerpo)
+  };
+  fetch(`/estacionamiento/fetch_Events`, options)
   localStorage.setItem('events', JSON.stringify(events))
   closeModal()
 }

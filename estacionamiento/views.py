@@ -1,5 +1,5 @@
 import csv
-from datetime import date, time, timedelta
+from datetime import date, time, timedelta, datetime
 from threading import Thread
 import os
 from django.conf import settings
@@ -9,6 +9,8 @@ from django.db.models import Q, Sum, Count
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.utils.timezone import now
+from django.views.decorators.csrf import csrf_exempt
+import json
 
 from django_tables2 import RequestConfig
 
@@ -485,16 +487,38 @@ def fetch_proveedores(request):
 
     return JsonResponse(proveedores, safe=False)
 
+@csrf_exempt
 def fetch_Events(request):
-    eventos = Dia_Especial.objects.values("dia_Especial").all()
-    listeventos = []
-    for evento in eventos:
-        date_splitted = evento['dia_Especial'].strftime('%d/%m/%Y').split('/')
-        day = date_splitted[0].replace('0','')
-        month = date_splitted[1].replace('0','')
-        year = date_splitted[2]
-        final_date = f'{day}/{month}/{year}'
-        diction = { "date" : final_date }
-        listeventos.append(diction)
-    print(listeventos)
-    return JsonResponse(listeventos, safe=False)
+    if request.method == 'GET':   
+        eventos = Dia_Especial.objects.values("dia_Especial").all()
+        listeventos = []
+        for evento in eventos:
+            date_splitted = evento['dia_Especial'].strftime('%d/%m/%Y').split('/')
+            if date_splitted[0][0] == '0':
+                day = date_splitted[0][1]
+            else:
+                day = date_splitted[0]
+            if date_splitted[1][0] == '0':
+                month = date_splitted[1][1]
+            else:
+                month = date_splitted[1]
+
+            year = date_splitted[2]
+            final_date = f'{day}/{month}/{year}'
+            diction = { "date" : final_date }
+            listeventos.append(diction)
+        print(listeventos)
+        return JsonResponse(listeventos, safe=False)
+    else:
+        r = request.body
+        data = json.loads(r.decode())
+        fecha = datetime.strptime(data['fecha'], '%d/%m/%Y')
+        fecha = fecha.strftime('%Y-%m-%d')
+        fecha = datetime.strptime(fecha, '%Y-%m-%d')
+        if data['accion'] == "add":
+            evento = Dia_Especial(dia_Especial=fecha)
+            evento.save()
+        elif data['accion'] == 'delete':
+            Dia_Especial.objects.filter(dia_Especial=fecha).delete()
+        print(data)
+        return JsonResponse('Ok', safe=False)
