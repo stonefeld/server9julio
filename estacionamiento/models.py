@@ -38,6 +38,7 @@ class AperturaManual(models.Model):
         verbose_name = "AperturaManual"
         verbose_name_plural = "AperturasManuales"
 
+
 class Proveedor(models.Model):
     idProveedor = models.CharField(max_length=30, verbose_name='ID')
     nombre_proveedor = models.CharField(

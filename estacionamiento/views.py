@@ -5,6 +5,7 @@ import os
 
 from django.conf import settings
 from django.core.paginator import Paginator
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q, Sum, Count
 from django.http import HttpResponse, JsonResponse
@@ -18,7 +19,7 @@ from .models import (
     CicloCaja, CicloMensual, Persona, CicloAnual,
     Cobros, Estacionado, AperturaManual
 )
-from .forms import EstacionamientoForm, AperturaManualForm
+from .forms import EstacionamientoForm, AperturaManualForm, ProveedorForm
 from .tables import HistorialEstacionamientoTable
 
 
@@ -37,18 +38,18 @@ def socket_arduino(cantidad):
     script_loc = os.path.join(base_dir, 'scripts/client.py')
     os.system(f'python3 {script_loc} abrir_tiempo {cantidad}')
 
-def apertura_Manual(request):
-    form = AperturaManualForm(request.POST or None)
-    if form.is_valid():
-        form.save()
 
-    if request.method == 'POST':
-        return redirect('estacionamiento:historial')
+# def apertura_Manual(request):
+#     form = AperturaManualForm(request.POST or None)
+#     if form.is_valid():
+#         form.save()
 
-    else:
-        return render(request, 'estacionamiento/apertura_manual.html',
-                      {'form': form, 'title': 'Apertura Manual'})
+#     if request.method == 'POST':
+#         return redirect('estacionamiento:historial')
 
+#     else:
+#         return render(request, 'estacionamiento/apertura_manual.html',
+#                       {'form': form, 'title': 'Apertura Manual'})
 
 
 @login_required
@@ -68,7 +69,7 @@ def apertura_Manual(request):
 @login_required
 def pago_deuda(request, id):
     entradaMoroso = RegistroEstacionamiento.objects.get(id=id)
-    salida = str(entradaMoroso.persona.deuda) 
+    salida = str(entradaMoroso.persona.deuda)
     cobroDeuda = Cobros(precio=entradaMoroso.persona.deuda,
                         registroEstacionamiento=entradaMoroso, deuda=True)
     socioMoroso = entradaMoroso.persona
@@ -166,6 +167,7 @@ def funcionCobros(dato):
     else:
         return tiempoTolerancia(dato)
 
+
 def tiempoTolerancia(dato):
     tolerancia = today - timedelta(minutes=15)
     entrada = RegistroEstacionamiento.objects.filter(
@@ -175,13 +177,12 @@ def tiempoTolerancia(dato):
     )
 
     if entrada:
-        #no excedio tiempo tolerancia
+        # No excedio tiempo tolerancia
         return False
 
     else:
-        #excedio tiempo tolerancia
+        # Excedio tiempo tolerancia
         return True
-
 
 
 def funcionEliminarEstacionado(entrada):
@@ -514,3 +515,29 @@ def fetch_proveedores(request):
     # Devuelve la respuesta en forma de json especificando el 'safe=False'
     # para evitar tener problemas de CORS.
     return JsonResponse(proveedores, safe=False)
+
+
+@login_required
+def add_proveedor(request):
+    form = ProveedorForm(request.POST or None)
+
+    if request.method == 'GET':
+        context = {'form': form, 'title': 'Agregar un proveedor'}
+        return render(request, 'estacionamiento/agregar_proveedor.html',
+                      context)
+
+    elif request.method == 'POST':
+        if form.is_valid():
+            form.save()
+            messages.success(request, f"El proveedor \
+                    {form.cleaned_data['nombre_proveedor']} se ha \
+                    guardado correctamente")
+
+        return redirect('menu_estacionamiento:proveedores')
+
+
+@login_required
+def detalle_proveedor(request, id):
+    proveedor = Proveedor.objects.get(id=id)
+    context = {'obj': proveedor, 'title': 'Detalle proveedor'}
+    return render(request, 'estacionamiento/detalle_proveedor.html', context)

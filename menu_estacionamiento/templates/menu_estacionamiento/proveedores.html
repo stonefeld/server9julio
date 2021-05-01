@@ -11,11 +11,17 @@
   <div class="content-section" style="padding:20px;">
     <div id="form_card" class="card-panel col s12">
 
-      <div class="input-group mx-auto" style="margin-bottom: 25px;">
-        <input type="text"  placeholder="Buscar..." name="buscar" id="buscar" value="" style="padding: 10px"></input>
-        <button type="button" id="clear-button" class="btn btn-secondary" style="padding: 10px; margin: 0px 5px 0px 5px">
-          <i>Borrar búsqueda</i>
-        </button>
+      <div class="d-flex">
+        <div class="input-group mx-auto" style="margin-bottom: 25px;">
+          <input type="text"  placeholder="Buscar..." name="buscar" id="buscar" value="" style="padding: 10px"></input>
+          <button type="button" id="clear-button" class="btn btn-secondary" style="padding: 10px; margin: 0px 5px 0px 5px">
+            <i>Borrar búsqueda</i>
+          </button>
+        </div>
+
+        <div class="p-2">
+          <a href="{% url 'estacionamiento:agregar-proveedor' %}" class="btn btn-outline-info" style="float: right">Agregar un proveedor</a>
+        </div>
       </div>
 
       <!-- Tabla de proveedores -->

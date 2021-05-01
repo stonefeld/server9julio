@@ -1,12 +1,16 @@
+from datetime import date
+
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.shortcuts import render
 
+from django_tables2 import RequestConfig
+
 from estacionamiento.models import (
     RegistroEstacionamiento, Proveedor,
-    CicloCaja, CicloMensual, Persona, CicloAnual, Cobros, Estacionado, Proveedor
+    CicloCaja, CicloMensual, Persona, CicloAnual, Cobros, Estacionado
 )
-from django_tables2 import RequestConfig
+from estacionamiento.forms import ProveedorForm
 from estacionamiento.tables import EstacionadosTable, ProveedoresTable
 
 
@@ -55,13 +59,16 @@ def resumenTiempoReal(request):
                 registroEstacionamiento__tiempo__hour=tiempo.hour,
                 registroEstacionamiento__tiempo__minute=tiempo.minute
             )
+
         table = EstacionadosTable(estacionamiento)
         RequestConfig(request).configure(table)
+
         return render(
             request,
             'menu_estacionamiento/resumen_tiempo.html',
             {'table': table, 'title': 'Historial'}
         )
+
     return render(
         request,
         template_name='menu_estacionamiento/resumen_tiempo.html',
