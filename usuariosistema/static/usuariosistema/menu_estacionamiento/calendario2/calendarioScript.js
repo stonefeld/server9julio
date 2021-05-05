@@ -26,9 +26,21 @@ function openModal(date){
   backDrop.style.display = 'block';
 }
 
-function load(){
+const loadEvents = async () => {
+  try {
+    const res = await fetch(`/estacionamiento/fetch_Events`);
+    events = await res.json();
+    load();
+  } catch (err) {
+    console.error(err);
+  }
+};
 
+const load = () => {
   //tener en cuenta que Date toma como 0 el mes de Enero como si fuera un array [Enero, Febrero, Marzo, etc]
+  // Día de semana, Mes, Día Numero, Año, Hora
+  
+
   const dt = new Date();
 
   if(nav !== 0){
@@ -104,7 +116,7 @@ function closeModal(){
   deleteTarifaModal.style.display = 'none';
   backDrop.style.display = 'none';
   clicked= null;
-  load()
+  load();
 }
 
 function saveTarifa(){
@@ -113,15 +125,37 @@ function saveTarifa(){
     events.push({
       date:clicked,
     })
+    const cuerpo = {
+      fecha: clicked,
+      accion: 'add'
+    }
+    const options = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(cuerpo)
+    };
+    fetch(`/estacionamiento/fetch_Events`, options)
     localStorage.setItem('events', JSON.stringify(events))
     closeModal()
-  
-  
 
 }
 
 function deleteTarifa(){
   events = events.filter(e => e.date !== clicked)
+  const cuerpo = {
+    fecha: clicked,
+    accion: 'delete'
+  }
+  const options = {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(cuerpo)
+  };
+  fetch(`/estacionamiento/fetch_Events`, options)
   localStorage.setItem('events', JSON.stringify(events))
   closeModal()
 }
@@ -147,4 +181,4 @@ function initButtons(){
 }
 
 initButtons();
-load();
+loadEvents();
