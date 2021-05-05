@@ -89,7 +89,7 @@ class CicloCaja(models.Model):
         verbose_name_plural = "Ciclos Caja"
 
     def __str__(self):
-        return f'Ciclo número {self.cicloCaja}'
+        return f'Caja: {self.cicloCaja} Mes: {self.cicloMensual.cicloMensual} Año: {self.cicloMensual.cicloAnual.cicloAnual}'
 
 
 class RegistroEstacionamiento(models.Model):

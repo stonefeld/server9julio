@@ -507,7 +507,6 @@ def fetch_Events(request):
             final_date = f'{day}/{month}/{year}'
             diction = { "date" : final_date }
             listeventos.append(diction)
-        print(listeventos)
         return JsonResponse(listeventos, safe=False)
     else:
         r = request.body
@@ -520,5 +519,4 @@ def fetch_Events(request):
             evento.save()
         elif data['accion'] == 'delete':
             Dia_Especial.objects.filter(dia_Especial=fecha).delete()
-        print(data)
         return JsonResponse('Ok', safe=False)
