@@ -1,9 +1,13 @@
-{% extends "base.html" %}
+{% extends "menu_estacionamiento.html" %}
 
 {% load crispy_forms_tags %}
 
 {% block subtitle %}
-  <h1>Editar Socio</h1>
+  {% if subtitle %}
+    <h1>{{ subtitle }} Proveedor</h1>
+  {% else %}
+    <h1>Agregar Proveedor</h1>
+  {% endif %}
 {% endblock subtitle %}
 
 {% block content %}
@@ -18,22 +22,18 @@
                 {% csrf_token %}
                 <div class="row">
                   <div class="col-6">
-                    {{ form.nombre_apellido|as_crispy_field }}
+                    {{ form.idProveedor|as_crispy_field }}
                   </div>
                   <div class="col-6">
-                    {{ form.dni|as_crispy_field }}
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col-6">
-                    {{ form.nrTarjeta|as_crispy_field }}
-                  </div>
-                  <div class="col-6">
-                    {{ form.nrSocio|as_crispy_field }}
+                    {{ form.nombre_proveedor|as_crispy_field }}
                   </div>
                 </div>
                 <div class="form-group" style="padding-top:10px">
-                  <a href="{% url 'usuario:lista' %}" class="btn btn-outline-info">Cancelar</a>
+                  {% if subtitle %}
+                    <a href="{% url 'estacionamiento:detalle-proveedor' id %}" class="btn btn-outline-info" style="text-decoration: none">Cancelar</a>
+                  {% else %}
+                    <a href="{% url 'menu_estacionamiento:proveedores' %}" class="btn btn-outline-info" style="text-decoration:none">Cancelar</a>
+                  {% endif %}
                   <button class="btn btn-outline-info" type="submit">Guardar</button>
                 </div>
               </div>

@@ -40,7 +40,7 @@ const drawRows = () => {
     return `
       <tr class="proveedor">
         <td>${proveedor.idProveedor}</td>
-        <td>${proveedor.nombre_proveedor}</td>
+        <td><a href="/estacionamiento/proveedor/${proveedor.id}/" style="text-decoration:none">${proveedor.nombre_proveedor}</a></td>
       </tr>
     `;
   }).join('');

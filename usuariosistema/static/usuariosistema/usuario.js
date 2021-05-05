@@ -36,10 +36,21 @@ const loadUsuarios = async () => {
 
 const drawRows = () => {
   const returnString = usuarios.map((usuario) => {
+    if (usuario.dni == null) { usuario.dni = 'No establecido'; }
+    if (usuario.nrTarjeta == null) { usuario.nrTarjeta = 'No establecido'; }
+    if (usuario.general == true) {
+      usuario.general = '✔';
+    } else {
+      usuario.general = '✘';
+    }
     return `
       <tr class="usuario">
         <td>${usuario.nrSocio}</td>
         <td><a href="${usuario.id}">${usuario.nombre_apellido}</a></td>
+        <td>${usuario.nrTarjeta}</td>
+        <td>${usuario.dni}</td>
+        <td>${usuario.general}</td>
+        <td>$ ${usuario.deuda}</td>
       </tr>
     `;
   }).join('');

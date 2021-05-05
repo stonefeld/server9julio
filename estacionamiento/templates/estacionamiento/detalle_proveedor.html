@@ -1,0 +1,40 @@
+{% extends "menu_estacionamiento.html" %}
+
+{% block subtitle %}
+  <h1>Detalle estacionamiento</h1>
+{% endblock subtitle %}
+
+{% block content %}
+
+  <div class="container" style="padding: 20px">
+    <div class="row justify-content-center">
+      <div class="col-lg-10 col-md-12">
+        <div class="card mb-4">
+          <div class="card-body">
+
+            <div class="input-group mb-3">
+              <p class="form-control">{{ obj.idProveedor }}</p>
+              <div class="input-group-append">
+                <span class="input-group-text" id="basic-addon2">ID</span>
+              </div>
+            </div>
+
+            <div class="input-group mb-3">
+              <p class="form-control">{{ obj.nombre_proveedor }}</p>
+              <div class="input-group-append">
+                <span class="input-group-text" id="basic-addon2">Proveedor</span>
+              </div>
+            </div>
+
+            <div>
+              <a href="{% url 'menu_estacionamiento:proveedores' %}" style="text-decoration:none" class="btn btn-outline-info">Cancelar</a>
+              <a href="{% url 'estacionamiento:editar-proveedor' obj.id %}" style="text-decoration: none" class="btn btn-outline-info">Editar</a>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+{% endblock content %}

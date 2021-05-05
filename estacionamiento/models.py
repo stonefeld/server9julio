@@ -38,6 +38,7 @@ class AperturaManual(models.Model):
         verbose_name = "AperturaManual"
         verbose_name_plural = "AperturasManuales"
 
+
 class Proveedor(models.Model):
     idProveedor = models.CharField(max_length=30, verbose_name='ID')
     nombre_proveedor = models.CharField(
@@ -56,6 +57,9 @@ class Proveedor(models.Model):
             'idProveedor': self.idProveedor,
             'nombre_proveedor': self.nombre_proveedor
         }
+
+    def get_absolute_url(self):
+        return f'/estacionamiento/proveedor/{self.id}'
 
 
 class CicloAnual(models.Model):
@@ -149,6 +153,7 @@ class RegistroEstacionamiento(models.Model):
 
         elif self.tipo == 'MANUAL':
             self.identificador = self.aperturaManual.razon
+
         super().save(*args, **kwargs)
 
     class Meta:

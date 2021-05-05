@@ -4,7 +4,6 @@
   <h1>Detalle estacionamiento</h1>
 {% endblock subtitle %}
 
-
 {% block content %}
 
   <div class="container" style="padding: 20px">
@@ -12,6 +11,13 @@
       <div class="col-lg-10 col-md-12">
         <div class="card mb-4">
           <div class="card-body">
+
+            <div class="input-group mb-3">
+              <p class="form-control">{{ datos.tipo }}</p>
+              <div class="input-group-append">
+                <span class="input-group-text" id="basic-addon2">Tipo</span>
+              </div>
+            </div>
 
             <div class="input-group mb-3">
               <p class="form-control">{{ datos.identificador }}</p>
@@ -54,26 +60,18 @@
                 <p class="form-control">No</p>
               {% endif %}
               <div class="input-group-append">
-                <span class="input-group-text" id="basic-addon2">Autorización</span>
+                <span class="input-group-text" id="basic-addon2">Autorizado</span>
               </div>
             </div>
 
             <div>
-              <a href="{% url 'estacionamiento:historial' %}" style="text-decoration:none">
-                <button class="btn btn-outline-info">Cancelar</button>
-              </a>
-              <a href="{% url 'estacionamiento:editar' datos.id %}" style="text-decoration:none">
-                <button class="btn btn-outline-info">Editar</button>
-              </a>
+              <a href="{% url 'estacionamiento:historial' %}" style="text-decoration:none" class="btn btn-outline-info">Cancelar</a>
+              <a href="{% url 'estacionamiento:editar' datos.id %}" style="text-decoration:none" class="btn btn-outline-info">Editar</a>
               {% if datos.tipo == 'NOSOCIO' or datos.tipo == 'SOCIO-MOROSO'%}
-                <a href="{% url 'estacionamiento:editar' datos.id %}" style="text-decoration:none">
-                <button class="btn btn-outline-info">Cobrar</button>
-                </a>
+                <a href="" style="text-decoration:none" class="btn btn-outline-info">Cobrar</a>
               {% endif %}
               {% if datos.tipo == 'SOCIO-MOROSO'%}
-                <a href="{% url 'estacionamiento:pago_deuda' datos.id %}" style="text-decoration:none">
-                <button class="btn btn-outline-info">Regularizar Deuda</button>
-                </a>
+                <a href="{% url 'estacionamiento:pago_deuda' datos.id %}" style="text-decoration:none" class="btn btn-outline-info">Regularizar Deuda</a>
               {% endif %}
             </div>
 
