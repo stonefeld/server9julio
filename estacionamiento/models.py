@@ -58,6 +58,9 @@ class Proveedor(models.Model):
             'nombre_proveedor': self.nombre_proveedor
         }
 
+    def get_absolute_url(self):
+        return f'/estacionamiento/proveedor/{self.id}'
+
 
 class CicloAnual(models.Model):
     cicloAnual = models.IntegerField(verbose_name='cicloAnual')
@@ -150,6 +153,7 @@ class RegistroEstacionamiento(models.Model):
 
         elif self.tipo == 'MANUAL':
             self.identificador = self.aperturaManual.razon
+
         super().save(*args, **kwargs)
 
     class Meta:

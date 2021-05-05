@@ -32,23 +32,8 @@ def postpone(function):
 
 @login_required
 def listaUsuarios(request):
-    if request.method == 'GET':
-        persona = Persona.objects.all()
-        busqueda = request.GET.get('buscar')
-
-        if busqueda:
-            persona = Persona.objects.filter(
-                Q(nrSocio__icontains=busqueda) |
-                Q(nombre_apellido__icontains=busqueda) |
-                Q(nrTarjeta__icontains=busqueda) |
-                Q(dni__icontains=busqueda)
-            ).distinct()
-
-        table = PersonaTable(persona.filter(~Q(nombre_apellido='NOSOCIO')))
-        RequestConfig(request).configure(table)
-
-        return render(request, 'usuario/lista_usuarios.html',
-                      {'table': table, 'title': 'Lista de socios'})
+    return render(request, 'usuario/lista_usuarios.html',
+                  {'title': 'Lista de socios'})
 
 
 @login_required
@@ -59,7 +44,7 @@ def editarUsuario(request, id):
         form.save()
 
     if request.method == 'POST':
-        messages.success(request, 'Los datos del socio fueron guardados con éxito')
+        messages.success(request, 'Los datos fueron guardados con éxito')
         return redirect('usuario:lista')
 
     else:

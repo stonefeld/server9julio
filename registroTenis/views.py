@@ -5,13 +5,14 @@ from django.shortcuts import render
 from .models import EntradaTenis
 from usuario.models import Persona
 
+
 def respuesta(request):
     if request.method == 'GET':
         nrTarjeta = request.GET.get('nrTarjeta', '')
         direccion = request.GET.get('direccion', '')
         try:
             user = Persona.objects.get(nrTarjeta=int(nrTarjeta))
-            if user.general == True:
+            if user.general:
                 if int(direccion) == 1:
                     entrada = EntradaTenis(lugar='TENIS', persona=user, direccion='SALIDA', autorizado=True)
 
@@ -28,4 +29,3 @@ def respuesta(request):
             rta = '#2'
 
         return HttpResponse(rta)
-

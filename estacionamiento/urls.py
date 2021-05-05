@@ -14,5 +14,9 @@ urlpatterns = [
     path('cierre-caja/', views.cierre_caja, name='cierre-caja'),
     path('fetch/', views.fetch_proveedores, name='fetch-proveedores'),
     path('proveedor/add/', views.add_proveedor, name='agregar-proveedor'),
+    path('proveedor/<int:id>/', views.detalle_proveedor,
+         name='detalle-proveedor'),
+    path('proveedor/<int:id>/editar', views.editar_proveedor,
+         name='editar-proveedor'),
     path('pago_deuda/<int:id>/', views.pago_deuda, name='pago_deuda')
 ]

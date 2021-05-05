@@ -3,7 +3,11 @@
 {% load crispy_forms_tags %}
 
 {% block subtitle %}
-  <h1>Agregar un Proveedor</h1>
+  {% if subtitle %}
+    <h1>{{ subtitle }} Proveedor</h1>
+  {% else %}
+    <h1>Agregar Proveedor</h1>
+  {% endif %}
 {% endblock subtitle %}
 
 {% block content %}
@@ -25,7 +29,11 @@
                   </div>
                 </div>
                 <div class="form-group" style="padding-top:10px">
-                  <a href="{% url 'menu_estacionamiento:proveedores' %}" class="btn btn-outline-info" style="text-decoration:none"> Cancelar </a>
+                  {% if subtitle %}
+                    <a href="{% url 'estacionamiento:detalle-proveedor' id %}" class="btn btn-outline-info" style="text-decoration: none">Cancelar</a>
+                  {% else %}
+                    <a href="{% url 'menu_estacionamiento:proveedores' %}" class="btn btn-outline-info" style="text-decoration:none">Cancelar</a>
+                  {% endif %}
                   <button class="btn btn-outline-info" type="submit">Guardar</button>
                 </div>
               </div>

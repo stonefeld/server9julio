@@ -39,19 +39,6 @@ def socket_arduino(cantidad):
     os.system(f'python3 {script_loc} abrir_tiempo {cantidad}')
 
 
-# def apertura_Manual(request):
-#     form = AperturaManualForm(request.POST or None)
-#     if form.is_valid():
-#         form.save()
-
-#     if request.method == 'POST':
-#         return redirect('estacionamiento:historial')
-
-#     else:
-#         return render(request, 'estacionamiento/apertura_manual.html',
-#                       {'form': form, 'title': 'Apertura Manual'})
-
-
 @login_required
 def apertura_Manual(request):
     form = AperturaManualForm(request.POST or None)
@@ -92,7 +79,8 @@ def emision_resumen_mensual(request):  # Falta testing
             annotate(cantidad_Entradas=Count("id")).\
             order_by("persona__nombre_apellido").\
             exclude(persona__isnull=True).\
-            filter(direccion='SALIDA', cicloCaja__cicloMensual=cicloMensual_, autorizado = True)
+            filter(direccion='SALIDA', cicloCaja__cicloMensual=cicloMensual_,
+                   autorizado=True)
 
         output = []
         response = HttpResponse(content_type='text/csv')
@@ -169,6 +157,7 @@ def funcionCobros(dato):
 
 
 def tiempoTolerancia(dato):
+    today = now()
     tolerancia = today - timedelta(minutes=15)
     entrada = RegistroEstacionamiento.objects.filter(
         Q(tiempo__range=(tolerancia, today)),
@@ -231,7 +220,7 @@ def respuesta(request):
 
                     else:
                         resultado = funcionCobros(dato)
-                        if resultado == False:
+                        if not resultado:
                             entrada = RegistroEstacionamiento(
                                 tipo='SOCIO-MOROSO',
                                 lugar='ESTACIONAMIENTO',
@@ -266,7 +255,7 @@ def respuesta(request):
 
                     else:
                         resultado = funcionCobros(dato)
-                        if resultado == False:
+                        if not resultado:
                             entrada = RegistroEstacionamiento(
                                 tipo='SOCIO-MOROSO',
                                 lugar='ESTACIONAMIENTO',
@@ -282,7 +271,7 @@ def respuesta(request):
                             rta = '#6'  # NoSocio no pago Deuda o no Pago Entrada
 
                 except:
-                    if tiempoTolerancia(dato) == False:
+                    if not tiempoTolerancia(dato):
                         entrada = RegistroEstacionamiento(
                             tipo='NOSOCIO',
                             lugar='ESTACIONAMIENTO',
@@ -464,8 +453,6 @@ def detalle_estacionamiento(request, id):
 def editar_estacionamiento(request, id):
     obj = RegistroEstacionamiento.objects.get(id=id)
     form = EstacionamientoForm(request.POST or None, instance=obj)
-    if form.is_valid():
-        form.save()
 
     context = {
         'form': form,
@@ -474,7 +461,17 @@ def editar_estacionamiento(request, id):
     }
 
     if request.method == 'POST':
-        return redirect('estacionamiento:historial')
+        print(form.errors)
+        if form.is_valid():
+            form.save()
+            return redirect('estacionamiento:historial')
+
+        else:
+            messages.warning(request, 'El formulario no fue \
+                             completado correctamente')
+            return render(request,
+                          'estacionamiento/editar_historial.html',
+                          context)
 
     else:
         return render(request,
@@ -541,3 +538,16 @@ def detalle_proveedor(request, id):
     proveedor = Proveedor.objects.get(id=id)
     context = {'obj': proveedor, 'title': 'Detalle proveedor'}
     return render(request, 'estacionamiento/detalle_proveedor.html', context)
+
+
+@login_required
+def editar_proveedor(request, id):
+    obj = Proveedor.objects.get(id=id)
+    form = ProveedorForm(request.POST or None, instance=obj)
+    context = {
+        'form': form,
+        'id': obj.id,
+        'title': 'Editar proveedor',
+        'subtitle': 'Editar'
+    }
+    return render(request, 'estacionamiento/agregar_proveedor.html', context)
