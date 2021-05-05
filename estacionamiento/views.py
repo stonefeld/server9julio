@@ -54,6 +54,37 @@ def apertura_Manual(request):
         return render(request, 'estacionamiento/apertura_manual.html',
                       {'form': form, 'title': 'Apertura Manual'})
 
+@login_required
+def cobrarEntrada(request, id):
+    entradaCobrar = RegistroEstacionamiento.objects.get(id = id)
+    today = datetime.date(datetime.now())
+    dia_Especial = Dia_Especial.objects.filter(
+        Q(dia_Especial=today)
+    ).distinct()
+    if entradaCobrar:
+        #Hoy es día Especial
+        tarifaEspacial = TarifaEspecial.objects.all().last()
+        cobro = Cobros(precio=tarifaEspacial.deuda, 
+                        registroEstacionamiento = entradaCobrar, deuda=False)
+        cobro.save()
+        return HttpResponse(f'{tarifaEspacial.deuda}')
+    time = datetime.time(datetime.now())
+    horarios = Horarios_Precio.objects.all()
+    i = 0
+    for horario in horarios:
+        i = i + 1
+        if time < horario['final'] or i == 3 :
+            tarifaNormal = horario['precio']
+
+    cobro = Cobros(precio = tarifaNormal, 
+                    registroEstacionamiento = entradaCobrar, deuda=False)
+    cobro.save()
+    return HttpResponse(f'{tarifaNormal}')
+
+    
+    
+
+
 
 @login_required
 def pago_deuda(request, id):
@@ -551,7 +582,7 @@ def editar_proveedor(request, id):
         'subtitle': 'Editar'
     }
     return render(request, 'estacionamiento/agregar_proveedor.html', context)
-    
+
 @csrf_exempt
 def fetch_Events(request):
     if request.method == 'GET':   
