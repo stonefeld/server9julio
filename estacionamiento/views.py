@@ -102,6 +102,37 @@ def pago_deuda(request, id):
     entradaMoroso.save()
     return HttpResponse(salida)
 
+
+@login_required
+def emision_resumen_anterior(request,id):
+    cicloCajaR = CicloCaja.objects.get(id=id)
+    cicloMensualActual = CicloMensual.objects.all().last()
+    if cicloMensualActual.cicloMensual == cicloCajaR.cicloMensual.cicloMensual :
+        return redirect('menu_estacionamiento:menu_estacionamiento')
+    else:
+        resumen_mensual = RegistroEstacionamiento.objects.\
+            values("persona__nombre_apellido", "persona__nrSocio").\
+            annotate(cantidad_Entradas=Count("id")).\
+            order_by("persona__nombre_apellido").\
+            exclude(persona__isnull=True).\
+            filter(direccion='SALIDA', cicloCaja__cicloMensual=cicloCajaR.cicloMensual.cicloMensual,
+                   autorizado=True)
+
+        output = []
+        response = HttpResponse(content_type='text/csv')
+        writer = csv.writer(response)
+        output.append(['NrSocio', 'Persona', 'Cantidad_Entradas'])
+
+        for entrada in resumen_mensual:
+            output.append([entrada['persona__nrSocio'],
+                           entrada['persona__nombre_apellido'],
+                           entrada['cantidad_Entradas']])
+
+        writer.writerows(output)
+        response['Content-Disposition'] = \
+            'attachment; filename="Resumen_Mensual.csv"'
+        return response
+
 @login_required
 def emision_resumen_mensual(request):  # Falta testing
     cicloCaja_ = CicloCaja.objects.all().last()
@@ -155,7 +186,7 @@ def emision_resumen_mensual(request):  # Falta testing
 
 
 @login_required
-def cierre_caja(request):  # Cierre de caja con contraseña? / Falta testing
+def cierre_caja(request):  
     cicloCaja_ = CicloCaja.objects.all().last()
     recaudado = Cobros.objects.filter(
         registroEstacionamiento__cicloCaja=cicloCaja_, deuda=False).\
@@ -464,6 +495,7 @@ def historial_estacionamiento(request):
                 tiempo__hour=tiempo.hour,
                 tiempo__minute=tiempo.minute
             )
+        
 
         table = HistorialEstacionamientoTable(estacionamiento)
         RequestConfig(request).configure(table)

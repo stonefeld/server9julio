@@ -1,0 +1,14 @@
+{% extends "menu_estacionamiento.html" %}
+{% load render_table from django_tables2 %}
+
+{% block subtitle %}
+  <h1>Historial Cajas</h1>
+{% endblock subtitle %}
+
+{% block content %}
+
+<div style="padding-top:40px; padding-left:10px; padding-right:10px; padding-bottom:10px">
+    {% render_table table %}
+</div>
+
+{% endblock content %}

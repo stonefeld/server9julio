@@ -25,7 +25,7 @@ class EstacionadosTable(tables.Table):  # Necesita Tipo de dato
         empty_text = 'No hay ninguna entrada registrada'
 
 
-class ProveedoresTable(tables.Table):  # Falta hacer
+class ProveedoresTable(tables.Table):  
     idProveedor = tables.Column()
     nombre_proveedor = tables.Column()
 
@@ -34,6 +34,5 @@ class ProveedoresTable(tables.Table):  # Falta hacer
         order_by = '-tiempo'
         empty_text = 'No hay ninguna entrada registrada'
         row_attrs = {
-            # 'id': lambda record: record.nombre_proveedor,
             'id': 'proveedores'
         }

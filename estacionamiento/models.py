@@ -78,6 +78,8 @@ class CicloMensual(models.Model):
     class Meta:
         verbose_name = "Ciclo Mensual"
         verbose_name_plural = "Ciclos Mensuales"
+    
+    
 
 
 class CicloCaja(models.Model):
@@ -94,6 +96,9 @@ class CicloCaja(models.Model):
 
     def __str__(self):
         return f'Caja: {self.cicloCaja} Mes: {self.cicloMensual.cicloMensual} Año: {self.cicloMensual.cicloAnual.cicloAnual}'
+    
+    def get_absolute_url(self):
+        return f'/estacionamiento/emision_resumen/{self.id}'
 
 
 class RegistroEstacionamiento(models.Model):

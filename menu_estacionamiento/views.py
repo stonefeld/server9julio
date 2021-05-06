@@ -12,6 +12,7 @@ from estacionamiento.models import (
 )
 from estacionamiento.forms import ProveedorForm
 from estacionamiento.tables import EstacionadosTable, ProveedoresTable
+from .tables import HistorialCajas
 
 
 @login_required
@@ -101,4 +102,20 @@ def historial(request):
         request,
         template_name='menu_estacionamiento/historial.html',
         context={}
+    )
+
+@login_required
+def historial_cajas(request):
+    cajas = CicloCaja.objects.all()
+    table = HistorialCajas(cajas)
+    RequestConfig(request).configure(table)
+
+    context = {
+        'table': table,
+        'title': 'HistorialCajas'
+    }
+    return render(
+        request,
+        template_name='menu_estacionamiento/historialCajas.html',
+        context = context 
     )
