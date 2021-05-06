@@ -7,6 +7,8 @@ class EstacionamientoForm(forms.ModelForm):
         model = RegistroEstacionamiento
         fields = [
             'identificador',
+            'persona',
+            'noSocio',
             'tipo',
             'lugar',
             'tiempo',

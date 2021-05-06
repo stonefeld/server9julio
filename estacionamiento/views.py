@@ -458,7 +458,7 @@ def editar_estacionamiento(request, id):
 
     context = {
         'form': form,
-        'id': obj.id,
+        'obj': obj,
         'title': 'Detalle historial'
     }
 
