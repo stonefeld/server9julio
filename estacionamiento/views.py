@@ -465,20 +465,22 @@ def editar_estacionamiento(request, id):
     }
 
     if request.method == 'POST':
-        idProveedor = request.POST.get('idProveedor')
-        dni = request.POST.get('noSocio')
-        if idProveedor:
-            prov = Proveedor.objects.get(id=obj.proveedor.id)
-
-        if dni:
-            per = Persona.objects.get(id=obj.persona.id)
-
         if form.is_valid():
-            if idProveedor:
+            idProveedor = request.POST.get('idProveedor')
+            dni = request.POST.get('noSocio')
+
+            if idProveedor and form.cleaned_data['proveedor']:
+                prov = Proveedor.objects.get(id=obj.proveedor.id)
+
+            if dni and form.cleaned_data['persona']:
+                per = Persona.objects.get(id=obj.persona.id)
+
+            print(form.cleaned_data['persona'])
+            if idProveedor and form.cleaned_data['proveedor']:
                 prov.idProveedor = idProveedor
                 prov.save()
 
-            if dni:
+            if dni and form.cleaned_data['persona']:
                 per.dni = dni
                 per.save()
 
