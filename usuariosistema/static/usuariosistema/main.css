@@ -5,6 +5,12 @@ body {
   text-align: center;
 }
 
+.content-area h2{
+  font-family: Arial, Helvetica, sans-serif;
+  letter-spacing: 4px;
+  padding-top: 30px;
+}
+
 .bg-steel {
   background-color: #5f788a;
 }
@@ -69,6 +75,8 @@ body {
 
 .button-vincular-socio:hover {
   color: #495057;
+  border-color: #007bff;
+  box-shadow: 0px 0px 10px #17a2b8a9;
 }
 
 
@@ -98,12 +106,6 @@ body {
 /*   position: relative; */
 /*   background: #ddd; */
 
-/* } */
-
-/* .content-area h2{ */
-/*   font-family: Arial, Helvetica, sans-serif; */
-/*   letter-spacing: 4px; */
-/*   padding-top: 30px; */
 /* } */
 
 /* ul { */

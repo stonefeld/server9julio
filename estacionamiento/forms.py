@@ -9,6 +9,7 @@ class EstacionamientoForm(forms.ModelForm):
             'identificador',
             'persona',
             'noSocio',
+            'proveedor',
             'tipo',
             'lugar',
             'tiempo',

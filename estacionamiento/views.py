@@ -1,7 +1,9 @@
 import csv
 from datetime import date, time, timedelta, datetime
+import json
 from threading import Thread
 import os
+
 from django.conf import settings
 from django.core.paginator import Paginator
 from django.contrib import messages
@@ -11,7 +13,6 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.utils.timezone import now
 from django.views.decorators.csrf import csrf_exempt
-import json
 
 from django_tables2 import RequestConfig
 
@@ -70,6 +71,7 @@ def pago_deuda(request, id):
     entradaMoroso.autorizado = True
     entradaMoroso.save()
     return HttpResponse(salida)
+
 
 @login_required
 def emision_resumen_mensual(request):  # Falta testing
@@ -463,8 +465,23 @@ def editar_estacionamiento(request, id):
     }
 
     if request.method == 'POST':
-        print(form.errors)
+        idProveedor = request.POST.get('idProveedor')
+        dni = request.POST.get('noSocio')
+        if idProveedor:
+            prov = Proveedor.objects.get(id=obj.proveedor.id)
+
+        if dni:
+            per = Persona.objects.get(id=obj.persona.id)
+
         if form.is_valid():
+            if idProveedor:
+                prov.idProveedor = idProveedor
+                prov.save()
+
+            if dni:
+                per.dni = dni
+                per.save()
+
             form.save()
             return redirect('estacionamiento:historial')
 
@@ -578,6 +595,7 @@ def fetch_Events(request):
             final_date = f'{day}/{month}/{year}'
             diction = {"date": final_date}
             listeventos.append(diction)
+
         print(listeventos)
 
         return JsonResponse(listeventos, safe=False)
