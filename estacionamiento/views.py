@@ -1,7 +1,9 @@
 import csv
 from datetime import date, time, timedelta, datetime
+import json
 from threading import Thread
 import os
+
 from django.conf import settings
 from django.core.paginator import Paginator
 from django.contrib import messages
@@ -11,7 +13,6 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.utils.timezone import now
 from django.views.decorators.csrf import csrf_exempt
-import json
 
 from django_tables2 import RequestConfig
 
@@ -521,13 +522,28 @@ def editar_estacionamiento(request, id):
 
     context = {
         'form': form,
-        'id': obj.id,
+        'obj': obj,
         'title': 'Detalle historial'
     }
 
     if request.method == 'POST':
-        print(form.errors)
+        idProveedor = request.POST.get('idProveedor')
+        dni = request.POST.get('noSocio')
+        if idProveedor:
+            prov = Proveedor.objects.get(id=obj.proveedor.id)
+
+        if dni:
+            per = Persona.objects.get(id=obj.persona.id)
+
         if form.is_valid():
+            if idProveedor:
+                prov.idProveedor = idProveedor
+                prov.save()
+
+            if dni:
+                per.dni = dni
+                per.save()
+
             form.save()
             return redirect('estacionamiento:historial')
 
@@ -577,6 +593,8 @@ def fetch_proveedores(request):
     # Devuelve la respuesta en forma de json especificando el 'safe=False'
     # para evitar tener problemas de CORS.
     return JsonResponse(proveedores, safe=False)
+
+
 @login_required
 def add_proveedor(request):
     form = ProveedorForm(request.POST or None)
@@ -615,9 +633,10 @@ def editar_proveedor(request, id):
     }
     return render(request, 'estacionamiento/agregar_proveedor.html', context)
 
+
 @csrf_exempt
 def fetch_Events(request):
-    if request.method == 'GET':   
+    if request.method == 'GET':
         eventos = Dia_Especial.objects.values("dia_Especial").all()
         listeventos = []
         for evento in eventos:
@@ -626,8 +645,10 @@ def fetch_Events(request):
                 day = date_splitted[0][1]
             else:
                 day = date_splitted[0]
+
             if date_splitted[1][0] == '0':
                 month = date_splitted[1][1]
+
             else:
                 month = date_splitted[1]
 
