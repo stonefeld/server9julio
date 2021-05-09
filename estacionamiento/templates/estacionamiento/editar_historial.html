@@ -9,12 +9,16 @@
 
 {% block content %}
 
+  <!-- NO DARLE PELOTA A ESTO, su unica funcionalidad es tener una forma de saber -->
+  <!-- cual era el tipo original del registro para las funcionalidades en js.     -->
+  <!-- Debe haber una forma mas linda de hacerlo, pero con el apuro lo solucione  -->
+  <!-- asi.                                                                       -->
   {% if obj.tipo == 'SOCIO' or obj.tipo == 'SOCIO-MOROSO' %}
     <p id="tipo-general" style="display:none">socio</p>
-  {% elif obj.tipo == 'PROVEEDOR' %}
-    <p id="tipo-general" style="display:none">proveedor</p>
   {% elif obj.tipo == 'NOSOCIO' %}
     <p id="tipo-general" style="display:none">nosocio</p>
+  {% elif obj.tipo == 'PROVEEDOR' %}
+    <p id="tipo-general" style="display:none">proveedor</p>
   {% endif %}
 
   <div class="container" style="padding: 20px;">
@@ -29,7 +33,7 @@
                   {% if obj.tipo == 'SOCIO' or obj.tipo == 'SOCIO-MOROSO' %}
                     <div class="col-6">
 
-                      <!-- Esta seccion esta oculta para poder completar el form con los datos desde js -->
+                      <!-- Esta seccion esta oculta para poder completar el form con los datos desde js. -->
                       <div style="display:none">
                         {{ form.persona|as_crispy_field }}
                       </div>
@@ -43,7 +47,7 @@
                   {% elif obj.tipo == 'NOSOCIO' %}
                     <div class="col-6">
 
-                      <!-- Esta seccion esta oculta para poder completar el form con los datos desde js -->
+                      <!-- Esta seccion esta oculta para poder completar el form con los datos desde js. -->
                       <div style="display:none">
                         {{ form.persona|as_crispy_field }}
                       </div>
@@ -59,12 +63,9 @@
                   {% elif obj.tipo == 'PROVEEDOR' %}
                     <div class="col-6">
 
-                      <!-- Esta seccion esta oculta para poder completar el form con los datos desde js -->
+                      <!-- Esta seccion esta oculta para poder completar el form con los datos desde js. -->
                       <div style="display:none">
                         {{ form.proveedor|as_crispy_field }}
-                      </div>
-                      <div id="form-persona" style="display:none">
-                        <button type="button" data-toggle="modal" data-target="#exampleModal" class="button-vincular-socio" style="text-decoration:none" id="button-vincular">{{ obj.persona.nombre_apellido }}</button>
                       </div>
 
                       <label class="requierField">Proveedor</label>
@@ -107,6 +108,7 @@
                   <button class="btn btn-outline-info" type="submit">Guardar</button>
                 </div>
 
+                <!-- Esta es la seccion del modal, por tu bien, no tocar!!! -->
                 <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
                   <div class="modal-dialog" role="document">
                     <div class="modal-content">
@@ -152,6 +154,7 @@
                     </div>
                   </div>
                 </div>
+                <!-- Aca termina el modal. -->
 
               </div>
             </form>
