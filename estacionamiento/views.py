@@ -62,20 +62,20 @@ def cobrarEntrada(request, id):
     dia_Especial = Dia_Especial.objects.filter(
         Q(dia_Especial=today)
     ).distinct()
-    if entradaCobrar:
+    if dia_Especial:
         #Hoy es día Especial
         tarifaEspacial = TarifaEspecial.objects.all().last()
-        cobro = Cobros(precio=tarifaEspacial.deuda, 
+        cobro = Cobros(precio=tarifaEspacial.precio, 
                         registroEstacionamiento = entradaCobrar, deuda=False)
         cobro.save()
-        return HttpResponse(f'{tarifaEspacial.deuda}')
+        return HttpResponse(f'{tarifaEspacial.precio}')
     time = datetime.time(datetime.now())
     horarios = Horarios_Precio.objects.all()
     i = 0
     for horario in horarios:
         i = i + 1
-        if time < horario['final'] or i == 3 :
-            tarifaNormal = horario['precio']
+        if time < horario.final or i == 3 :
+            tarifaNormal = horario.precio
 
     cobro = Cobros(precio = tarifaNormal, 
                     registroEstacionamiento = entradaCobrar, deuda=False)
@@ -511,8 +511,16 @@ def historial_estacionamiento(request):
 @login_required
 def detalle_estacionamiento(request, id):
     datos = RegistroEstacionamiento.objects.get(id=id)
+    cobro = Cobros.objects.filter(
+        Q(registroEstacionamiento__id__icontains = id)
+    ).distinct()
+    if cobro:
+        cobrado = 'True'
+    else:
+        cobrado = 'False'
+    print(cobrado)
     return render(request, 'estacionamiento/detalle_historial.html',
-                  {'datos': datos, 'title': 'Detalle Historial'})
+                  {'datos': datos, 'title': 'Detalle Historial', 'cobrado': cobrado})
 
 
 @login_required

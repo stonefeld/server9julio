@@ -53,7 +53,6 @@ def seleccionarCalendario(request):
 def tarifasEspeciales(request):
     r = request.body
     data = json.loads(r.decode())
-    print(data)
     TarifaEspecial(precio=data.replace(',','.')).save()
     return JsonResponse('Ok', safe = False)
 

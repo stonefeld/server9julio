@@ -67,8 +67,10 @@
             <div>
               <a href="{% url 'estacionamiento:historial' %}" style="text-decoration:none" class="btn btn-outline-info">Cancelar</a>
               <a href="{% url 'estacionamiento:editar' datos.id %}" style="text-decoration:none" class="btn btn-outline-info">Editar</a>
-              {% if datos.tipo == 'NOSOCIO' or datos.tipo == 'SOCIO-MOROSO'%}
-                <a href="{% url 'estacionamiento:cobrarEntrada' datos.id %}" style="text-decoration:none" class="btn btn-outline-info">Cobrar</a>
+              {% if datos.tipo == 'NOSOCIO' or datos.tipo == 'SOCIO-MOROSO' %}
+                {% if cobrado == 'False' %}
+                  <a href="{% url 'estacionamiento:cobrarEntrada' datos.id %}" style="text-decoration:none" class="btn btn-outline-info">Cobrar</a>
+                {% endif %}
               {% endif %}
               {% if datos.tipo == 'SOCIO-MOROSO'%}
                 <a href="{% url 'estacionamiento:pago_deuda' datos.id %}" style="text-decoration:none" class="btn btn-outline-info">Regularizar Deuda</a>
