@@ -518,7 +518,6 @@ def detalle_estacionamiento(request, id):
         cobrado = 'True'
     else:
         cobrado = 'False'
-    print(cobrado)
     return render(request, 'estacionamiento/detalle_historial.html',
                   {'datos': datos, 'title': 'Detalle Historial', 'cobrado': cobrado})
 
