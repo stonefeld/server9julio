@@ -14,4 +14,6 @@ urlpatterns = [
     path('historial/', historial_estacionamiento, name='historial'),
     path('historialCajas/', views.historial_cajas, name='historialCajas'),
     path('tarifaEspecial/', views.tarifasEspeciales, name='tarifaEspecial'),
+    path('playground/', views.playground, name='playground'),
+    
 ]

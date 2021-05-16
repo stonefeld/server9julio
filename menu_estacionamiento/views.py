@@ -58,6 +58,16 @@ def tarifasEspeciales(request):
 
 
 @login_required
+def playground(request):
+    return render(
+        request,
+        template_name='menu_estacionamiento/playground.html',
+        context={}
+        )
+
+
+
+@login_required
 def resumenTiempoReal(request):
     if request.method == 'GET':
         estacionamiento = Estacionado.objects.all()

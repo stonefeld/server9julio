@@ -13,12 +13,43 @@
         <a style="text-decoration:none" href={% url 'estacionamiento:cierre-caja' %}>
           <button class="btn btn-outline-info btn-lg" type="submit">Cierre Caja</button>
         </a>
+
+        <a style="text-decoration:none" href={% url 'estacionamiento:cierre-caja' %}></a>
+          <button class="btn btn-outline-info btn-lg text-decoration:none" data-toggle="modal" data-target="#modalCierreDeCaja">Cierre Caja Modal</button>
+        </a>
+
+        <!--Modal-->
+          <div class="modal fade" id="modalCierreDeCaja" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="exampleModalLabel">Cierre de Caja</h5>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <div class="modal-body">
+                  <p>Lo recaudado fue : {{recaudado}}</p>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                  <button type="button" class="btn btn-primary">Cerrar caja</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!--Modal-->
+          
         <a style="text-decoration:none" href={% url 'estacionamiento:resumen-mensual' %}>
           <button class="btn btn-outline-info btn-lg" type="submit">Emitir Resumen Mensual</button>
         </a>
         <a style="text-decoration:none" href={% url 'estacionamiento:apertura-manual' %}>
           <button class="btn btn-outline-info btn-lg" type="submit">Apertura Manual</button>
         </a>
+        <a style="text-decoration:none" href={% url 'menu_estacionamiento:playground' %}>
+          <button class="btn btn-outline-info btn-lg" type="submit">PlayGround</button>
+        </a>
+
       </div>
 
       <p style="font-size:18px; margin-top:20px;">
