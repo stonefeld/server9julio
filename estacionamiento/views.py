@@ -201,7 +201,11 @@ def cierre_caja(request):
         cicloCaja_.save()
         recaudado['recaudacion'] = '0.0'
 
-    return HttpResponse(recaudado['recaudacion'])
+    #return HttpResponse(recaudado['recaudacion'])
+    context ={'recaudado':recaudado['recaudacion']}
+    print(context)
+    return render(request, 'menu_estacionamiento/inicio_estacionamiento.html', context)
+    #return JsonResponse(recaudado['recaudacion'])
 
 
 def funcionCobros(dato):
