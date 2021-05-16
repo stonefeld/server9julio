@@ -1,17 +1,19 @@
 from datetime import date
-
+import json
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.shortcuts import render
-
+from django.http import HttpResponse, JsonResponse
 from django_tables2 import RequestConfig
 
 from estacionamiento.models import (
     RegistroEstacionamiento, Proveedor,
-    CicloCaja, CicloMensual, Persona, CicloAnual, Cobros, Estacionado
+    CicloCaja, CicloMensual, Persona, CicloAnual, Cobros, Estacionado, Horarios_Precio, TarifaEspecial
 )
 from estacionamiento.forms import ProveedorForm
 from estacionamiento.tables import EstacionadosTable, ProveedoresTable
+from .tables import HistorialCajas
+from django.views.decorators.csrf import csrf_exempt
 
 
 @login_required
@@ -22,14 +24,37 @@ def menu_estacionamiento(request):
         context={}
     )
 
-
+@csrf_exempt
 @login_required
 def seleccionarCalendario(request):
-    return render(
-        request,
-        template_name='menu_estacionamiento/calendario.html',
-        context={}
-    )
+    if request.method == 'POST':
+        r = request.body
+        data = json.loads(r.decode())
+        i = 0
+        for tarifa in data:
+            i = i + 1
+            horario = Horarios_Precio.objects.get(id = i)
+            horario.inicio = tarifa['Inicio']
+            horario.final = tarifa['Final']
+            horario.precio = float(tarifa['tarifa'].replace(',','.'))
+            horario.save()
+        return JsonResponse('Ok', safe=False)
+    else:
+        horariosPrecios = Horarios_Precio.objects.all()
+        tarifaEspecial = TarifaEspecial.objects.all().last().precio
+        return render(
+            request,
+            template_name='menu_estacionamiento/calendario.html',
+            context={"horariosPrecios" : horariosPrecios,
+                    "tarifaEspecial" : tarifaEspecial}
+            )
+
+@csrf_exempt
+def tarifasEspeciales(request):
+    r = request.body
+    data = json.loads(r.decode())
+    TarifaEspecial(precio=data.replace(',','.')).save()
+    return JsonResponse('Ok', safe = False)
 
 
 @login_required
@@ -100,4 +125,20 @@ def historial(request):
         request,
         template_name='menu_estacionamiento/historial.html',
         context={}
+    )
+
+@login_required
+def historial_cajas(request):
+    cajas = CicloCaja.objects.all()
+    table = HistorialCajas(cajas)
+    RequestConfig(request).configure(table)
+
+    context = {
+        'table': table,
+        'title': 'HistorialCajas'
+    }
+    return render(
+        request,
+        template_name='menu_estacionamiento/historialCajas.html',
+        context = context 
     )

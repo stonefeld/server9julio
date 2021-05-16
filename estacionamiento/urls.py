@@ -9,6 +9,8 @@ urlpatterns = [
     path('apertura-manual/', views.apertura_Manual, name='apertura-manual'),
     path('historial/<int:id>/editar/', views.editar_estacionamiento,
          name='editar'),
+     path('historial/<int:id>/cobrarEntrada', views.cobrarEntrada, 
+          name = 'cobrarEntrada'),
     path('emision-resumen/', views.emision_resumen_mensual,
          name='resumen-mensual'),
     path('cierre-caja/', views.cierre_caja, name='cierre-caja'),
@@ -19,5 +21,9 @@ urlpatterns = [
     path('proveedor/<int:id>/editar', views.editar_proveedor,
          name='editar-proveedor'),
     path('pago_deuda/<int:id>/', views.pago_deuda, name='pago_deuda'),
-    path('fetch_Events', views.fetch_Events, name='fetch_Events'),
+    path('fetch_Events',
+          views.fetch_Events, name='fetch_Events'),
+     path('emision_resumen/<int:id>/',
+          views.emision_resumen_anterior, name='emision_anterior'),
+     
 ]

@@ -1,11 +1,13 @@
 {% extends "menu_estacionamiento.html" %}
-
+{% load static %}
 {% block subtitle %}
   <h1>Detalle estacionamiento</h1>
 {% endblock subtitle %}
-
 {% block content %}
 
+{% endblock content %}
+
+{% block js %}
   <div class="container" style="padding: 20px">
     <div class="row justify-content-center">
       <div class="col-lg-10 col-md-12">
@@ -67,18 +69,35 @@
             <div>
               <a href="{% url 'estacionamiento:historial' %}" style="text-decoration:none" class="btn btn-outline-info">Cancelar</a>
               <a href="{% url 'estacionamiento:editar' datos.id %}" style="text-decoration:none" class="btn btn-outline-info">Editar</a>
-              {% if datos.tipo == 'NOSOCIO' or datos.tipo == 'SOCIO-MOROSO'%}
-                <a href="" style="text-decoration:none" class="btn btn-outline-info">Cobrar</a>
-              {% endif %}
-              {% if datos.tipo == 'SOCIO-MOROSO'%}
-                <a href="{% url 'estacionamiento:pago_deuda' datos.id %}" style="text-decoration:none" class="btn btn-outline-info">Regularizar Deuda</a>
+              {% if cobrado == 'False' %}
+                {% if datos.tipo == 'NOSOCIO' or datos.tipo == 'SOCIO-MOROSO' %}
+                  <a href="{% url 'estacionamiento:cobrarEntrada' datos.id %}" style="text-decoration:none" class="btn btn-outline-info" id="cobrar">Cobrar</a>
+                {% endif %}
+                {% if datos.tipo == 'SOCIO-MOROSO'%}
+                  <a href="{% url 'estacionamiento:pago_deuda' datos.id %}" style="text-decoration:none" class="btn btn-outline-info" id="pagarDeuda">Regularizar Deuda</a>
+                {% endif %}
               {% endif %}
             </div>
-
+            
           </div>
         </div>
       </div>
     </div>
-  </div>
+    <div id="deleteTarifaModal">
+      <h2>TARIFA ESPECIAL</h2>
 
-{% endblock content %}
+      <p id="fechaTarifaEspecial"></p>
+
+      <label>Esta a punto de eliminar la tarifa especial para la fecha mostrada arriba. Esto afectara
+      el precio de la tarifa para este día ¿Está seguro de su decisión?
+      </label>
+
+      <button id="deleteButton">Eliminar</button>
+      <button id="closeButton">Cancelar</button>
+    </div>
+  </div>
+<div id="modalBackDrop"></div>
+<link rel="stylesheet" title="text/css" href="{% static 'usuariosistema/menu_estacionamiento/calendario2/calendarioStyle.css' %}">
+<script type="text/javascript" src="{% static 'usuariosistema/menu_estacionamiento/detallehistorial.js' %}"></script>
+
+{% endblock js %}

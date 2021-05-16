@@ -9,7 +9,57 @@ const deleteTarifaModal = document.getElementById('deleteTarifaModal');
 const backDrop = document.getElementById('modalBackDrop');
 const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
+function guardarTarifasNormales(){
+  var tarifa1 = document.getElementById("valorTarifaNormal").value;
+  var tarifa2 = document.getElementById("valorTarifaNormal2").value;
+  var tarifa3 = document.getElementById("valorTarifaNormal3").value;
+  var Ihorario1 = document.getElementById("clockpickerTarifaNormal1").value;
+  var Fhorario1 = document.getElementById("clockpickerTarifaNormal2").value;
+  var Ihorario2 = document.getElementById("clockpickerTarifaNormal3").value;
+  var Fhorario2 = document.getElementById("clockpickerTarifaNormal4").value;
+  var Ihorario3 = document.getElementById("clockpickerTarifaNormal5").value;
+  var Fhorario3 = document.getElementById("clockpickerTarifaNormal6").value;
 
+  
+  if(tarifa1 == null || tarifa2== null || tarifa3 == null)
+  {
+    console.log('Error Tarifas Erroneas');
+  }
+  else{
+    if(Ihorario1 > Fhorario1.value || Ihorario2> Fhorario2|| Ihorario3 > Fhorario3){
+    console.log('Error al seleccionar los hoarios');
+    }
+    else{
+      tarifasNormales = [
+        {"tarifa": tarifa1, "Inicio": Ihorario1, "Final": Fhorario1},
+        {"tarifa": tarifa2, "Inicio": Ihorario2, "Final": Fhorario2},
+        {"tarifa": tarifa3, "Inicio": Ihorario3, "Final": Fhorario3}
+      ]
+      const options = {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(tarifasNormales)
+      };
+      fetch(`/menu_estacionamiento/calendario/`, options);
+    }
+  }
+  
+}
+function guardarTarifasEspeciales(){
+  var tarifaEspecial = document.getElementById("TarifaEspecial").value;
+  if(tarifaEspecial != null){
+    const options = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(tarifaEspecial)
+    };
+    fetch('/menu_estacionamiento/tarifaEspecial/',options);
+  }
+}
 
 function openModal(date){
   clicked = date
@@ -172,11 +222,14 @@ function initButtons(){
     load();
   })
 
-  document.getElementById('saveButton').addEventListener('click', saveTarifa)
-  document.getElementById('cancelButton').addEventListener('click', closeModal)
+  document.getElementById('saveButton').addEventListener('click', saveTarifa);
+  document.getElementById('cancelButton').addEventListener('click', closeModal);
 
-  document.getElementById('deleteButton').addEventListener('click', deleteTarifa)
-  document.getElementById('closeButton').addEventListener('click', closeModal)
+  document.getElementById('deleteButton').addEventListener('click', deleteTarifa);
+  document.getElementById('closeButton').addEventListener('click', closeModal);
+
+  document.getElementById('guardarTarifas').addEventListener('click', guardarTarifasNormales);
+  document.getElementById('guardarEspecial').addEventListener('click', guardarTarifasEspeciales);
 
 }
 
