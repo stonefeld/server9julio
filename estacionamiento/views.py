@@ -284,7 +284,7 @@ def respuesta(request):
                         )
                         entrada.save()
                         # abrir barrera
-                        rta = '#1'
+                        rta = '#1' #salida socio
                         funcionEliminarEstacionado(entrada)
 
                     else:
@@ -299,10 +299,11 @@ def respuesta(request):
                                 cicloCaja=cicloCaja_
                             )
                             entrada.save()
-                            rta = '#0'  # Registro Socio Moroso Cobro por NoSocio
+                            rta = '#1'   #salida sociomoroso autorizada
+                            # Registro Socio Moroso Cobro por NoSocio
                             funcionEliminarEstacionado(entrada)
                         else:
-                            rta = '#6'  # NoSocio no pago Deuda o no Pago Entrada
+                            rta = '#6'  # SocioMoroso no pago Deuda o no Pago Entrada
                 except:
                     rta = '#2'  # El usuario No existe
 
@@ -319,7 +320,7 @@ def respuesta(request):
                             cicloCaja=cicloCaja_
                         )
                         entrada.save()
-                        rta = '#1'
+                        rta = '#1' #salida socio autorizada por dni
                         funcionEliminarEstacionado(entrada)
 
                     else:
@@ -334,7 +335,8 @@ def respuesta(request):
                                 cicloCaja=cicloCaja_
                             )
                             entrada.save()
-                            rta = '#0'  # Registro Socio Moroso Cobro por NoSocio
+                            rta = '#1' #salida socio moroso autorizada  
+                            # Registro Socio Moroso Cobro por NoSocio
                             funcionEliminarEstacionado(entrada)
                         else:
                             rta = '#6'  # NoSocio no pago Deuda o no Pago Entrada
@@ -350,10 +352,10 @@ def respuesta(request):
                             cicloCaja=cicloCaja_
                         )
                         entrada.save()
-                        rta = '#1'
+                        rta = '#1' #salida no socio autorizada
                         funcionEliminarEstacionado(entrada)
                     else:
-                        rta = '#5'
+                        rta = '#5' #no puede salir
                         # El No Socio no pagó y excedió
                         # el tiempo de tolerancia
 
@@ -370,7 +372,7 @@ def respuesta(request):
                     )
                     entrada.save()
                     # Abrir barrera
-                    rta = '#1'
+                    rta = '#1' #salida proveedores autorizada
                     funcionEliminarEstacionado(entrada)
 
                 except:
@@ -392,7 +394,7 @@ def respuesta(request):
                         )
                         entrada.save()
                         # Abrir barrera
-                        rta = '#1'
+                        rta = '#1' #Registro Socio
 
                     else:
                         entrada = RegistroEstacionamiento(
@@ -404,10 +406,10 @@ def respuesta(request):
                             cicloCaja=cicloCaja_
                         )
                         entrada.save()
-                        rta = '#0'  # Registro Socio Moroso
+                        rta = '#0'  # Registro Socio Moroso el usuario debe dirigirse a la cabina de portería
 
                 except:
-                    rta = '#2'  # El usuario No existe
+                    rta = '#2'  # El usuario No existe ingresar DNI
 
             elif int(tipo) == 1:
                 try:
@@ -422,7 +424,7 @@ def respuesta(request):
                             cicloCaja=cicloCaja_
                         )
                         entrada.save()
-                        rta = '#1'
+                        rta = '#1' #Registro Socio 
 
                     else:
                         entrada = RegistroEstacionamiento(
@@ -435,7 +437,7 @@ def respuesta(request):
                         )
                         entrada.save()
                         # Abrir barrera
-                        rta = '#0'  # Registro Socio Moroso
+                        rta = '#0'  # Registro Socio Moroso el usuario debe dirigirse a la cabina de portería
 
                 except:
                     entrada = RegistroEstacionamiento(
@@ -447,7 +449,7 @@ def respuesta(request):
                         cicloCaja=cicloCaja_
                     )
                     entrada.save()
-                    rta = '#3'  # NoSocio registrado
+                    rta = '#3'  # NoSocio registrado el usuarios debe dirigirse a la cabina de portería
 
             else:
                 try:
@@ -462,7 +464,7 @@ def respuesta(request):
                     )
                     entrada.save()
                     # Abrir barrera
-                    rta = '#1'
+                    rta = '#1'  #Entrada autorizada
 
                 except:
                     rta = '#4'  # Error Proveedor no encontrado
