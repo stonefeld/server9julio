@@ -15,7 +15,7 @@
         </a>
 
         <a style="text-decoration:none" href={% url 'estacionamiento:cierre-caja' %}></a>
-          <button class="btn btn-outline-info btn-lg text-decoration:none" data-toggle="modal" data-target="#modalCierreDeCaja">Cierre Caja Modal</button>
+          <button class="btn btn-outline-info btn-lg text-decoration:none" data-toggle="modal" data-target="#modalCierreDeCaja" id = "cierreCaja">Cierre Caja Modal</button>
         </a>
 
         <!--Modal-->
@@ -29,7 +29,7 @@
                   </button>
                 </div>
                 <div class="modal-body">
-                  <p>Lo recaudado fue : {{recaudado}}</p>
+                  <p id = 'recaudadoTexto'>Lo recaudado fue : {{ recaudado }}</p>
                 </div>
                 <div class="modal-footer">
                   <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
@@ -38,6 +38,25 @@
               </div>
             </div>
           </div>
+          <script type="text/javascript">
+            document.getElementById('cierreCaja').addEventListener('click', () =>{
+              loadRecaudado()
+            });
+            const loadRecaudado = async () => {
+              try {
+                const res = await fetch('/estacionamiento/cierre-caja/')
+                var recaudado = await res.json();
+                console.log(recaudado)
+                load(recaudado)
+              } catch (err) {
+                console.error(err);
+              }
+            };
+            const load = (recaudado) => {
+              document.getElementById("recaudadoTexto").innerHTML = `Lo recaudado fue : ${recaudado} `
+            }
+
+          </script>
           <!--Modal-->
           
         <a style="text-decoration:none" href={% url 'estacionamiento:resumen-mensual' %}>

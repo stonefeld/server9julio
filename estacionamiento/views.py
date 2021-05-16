@@ -55,53 +55,83 @@ def apertura_Manual(request):
         return render(request, 'estacionamiento/apertura_manual.html',
                       {'form': form, 'title': 'Apertura Manual'})
 
+@csrf_exempt
 @login_required
 def cobrarEntrada(request, id):
-    entradaCobrar = RegistroEstacionamiento.objects.get(id = id)
-    today = datetime.date(datetime.now())
-    dia_Especial = Dia_Especial.objects.filter(
-        Q(dia_Especial=today)
-    ).distinct()
-    if dia_Especial:
-        #Hoy es día Especial
-        tarifaEspacial = TarifaEspecial.objects.all().last()
-        cobro = Cobros(precio=tarifaEspacial.precio, 
+    if request.method == 'GET':
+        entradaCobrar = RegistroEstacionamiento.objects.get(id = id)
+        today = datetime.date(datetime.now())
+        dia_Especial = Dia_Especial.objects.filter(
+            Q(dia_Especial=today)
+        ).distinct()
+        if dia_Especial:
+            #Hoy es día Especial
+            tarifaEspacial = TarifaEspecial.objects.all().last()
+            return JsonResponse(tarifaEspacial.precio, safe=False)
+        time = datetime.time(datetime.now())
+        horarios = Horarios_Precio.objects.all()
+        i = 0
+        for horario in horarios:
+            i = i + 1
+            diference = max(time, horario.final)
+            if time < horario.final or i == 3 :
+                tarifaNormal = horario.precio
+                break
+        return JsonResponse(tarifaNormal, safe=False)
+    else:
+        entradaCobrar = RegistroEstacionamiento.objects.get(id = id)
+        today = datetime.date(datetime.now())
+        dia_Especial = Dia_Especial.objects.filter(
+            Q(dia_Especial=today)
+        ).distinct()
+        if dia_Especial:
+            #Hoy es día Especial
+            tarifaEspacial = TarifaEspecial.objects.all().last()
+            cobro = Cobros(precio=tarifaEspacial.precio, 
+                            registroEstacionamiento = entradaCobrar, deuda=False)
+            cobro.save()
+            messages.warning(request, 'Cobro por $' + f'{tarifaEspacial}')
+            #return redirect("estacionamiento:historial")
+            return JsonResponse("Ok", safe=False)
+        time = datetime.time(datetime.now())
+        horarios = Horarios_Precio.objects.all()
+        i = 0
+        for horario in horarios:
+            i = i + 1
+            if time < horario.final or i == 3 :
+                tarifaNormal = horario.precio
+                break
+
+        cobro = Cobros(precio = tarifaNormal, 
                         registroEstacionamiento = entradaCobrar, deuda=False)
         cobro.save()
-        return HttpResponse(f'{tarifaEspacial.precio}')
-    time = datetime.time(datetime.now())
-    horarios = Horarios_Precio.objects.all()
-    i = 0
-    for horario in horarios:
-        i = i + 1
-        if time < horario.final or i == 3 :
-            tarifaNormal = horario.precio
+        messages.warning(request, 'Cobro por $' + f'{tarifaNormal}')
+        #return redirect("estacionamiento:historial")
+        return JsonResponse("Ok", safe=False)
 
-    cobro = Cobros(precio = tarifaNormal, 
-                    registroEstacionamiento = entradaCobrar, deuda=False)
-    cobro.save()
-    return HttpResponse(f'{tarifaNormal}')
-
-    
-    
-
-
-
+@csrf_exempt
 @login_required
 def pago_deuda(request, id):
-    entradaMoroso = RegistroEstacionamiento.objects.get(id=id)
-    salida = str(entradaMoroso.persona.deuda)
-    cobroDeuda = Cobros(precio=entradaMoroso.persona.deuda,
-                        registroEstacionamiento=entradaMoroso, deuda=True)
-    socioMoroso = entradaMoroso.persona
-    socioMoroso.deuda = 0.0
-    socioMoroso.general = True
-    socioMoroso.save()
-    cobroDeuda.save()
-    entradaMoroso.tipo = 'SOCIO'
-    entradaMoroso.autorizado = True
-    entradaMoroso.save()
-    return HttpResponse(salida)
+    if request.method == "POST":
+        entradaMoroso = RegistroEstacionamiento.objects.get(id=id)
+        salida = str(entradaMoroso.persona.deuda)
+        cobroDeuda = Cobros(precio=entradaMoroso.persona.deuda,
+                            registroEstacionamiento=entradaMoroso, deuda=True)
+        socioMoroso = entradaMoroso.persona
+        socioMoroso.deuda = 0.0
+        socioMoroso.general = True
+        socioMoroso.save()
+        cobroDeuda.save()
+        entradaMoroso.tipo = 'SOCIO'
+        entradaMoroso.autorizado = True
+        entradaMoroso.save()
+        messages.warning(request, 'Pago de deuda por $' + f'{salida}' ' dirigirse hacia administración para realizar el pago')
+        return JsonResponse("Ok", safe=False)
+    else:
+        entradaMoroso = RegistroEstacionamiento.objects.get(id=id)
+        salida = entradaMoroso.persona.deuda
+        return JsonResponse(salida, safe = False)
+    #return HttpResponse(salida)
 
 
 @login_required
@@ -193,7 +223,6 @@ def cierre_caja(request):
     recaudado = Cobros.objects.filter(
         registroEstacionamiento__cicloCaja=cicloCaja_, deuda=False).\
         aggregate(recaudacion=Sum('precio'))
-
     if recaudado['recaudacion']:
         cicloCaja_.recaudado = recaudado['recaudacion']
         cicloCaja_.save()
@@ -204,9 +233,10 @@ def cierre_caja(request):
         recaudado['recaudacion'] = '0.0'
 
     dinero = recaudado['recaudacion']
-    messages.warning(request, 'Lo recaudado en esta caja fue de $'+ dinero)
+    #context ={'recaudado':dinero}
+    messages.warning(request, 'Lo recaudado en esta caja fue de $'+ f'{dinero}')
     return redirect('menu_estacionamiento:menu_estacionamiento')
-    #return HttpResponse(recaudado['recaudacion'])
+    #return JsonResponse(dinero, safe=False)
 
 
 def funcionCobros(dato):
@@ -468,9 +498,12 @@ def respuesta(request):
 
                 except:
                     rta = '#4'  # Error Proveedor no encontrado
-            funcionEliminarEstacionado(entrada)
-            estacionado = Estacionado(registroEstacionamiento=entrada)
-            estacionado.save()
+            try:
+                funcionEliminarEstacionado(entrada)
+                estacionado = Estacionado(registroEstacionamiento=entrada)
+                estacionado.save()
+            except:
+                pass
 
         return HttpResponse(rta)
 

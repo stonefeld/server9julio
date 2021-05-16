@@ -71,33 +71,138 @@
               <a href="{% url 'estacionamiento:editar' datos.id %}" style="text-decoration:none" class="btn btn-outline-info">Editar</a>
               {% if cobrado == 'False' %}
                 {% if datos.tipo == 'NOSOCIO' or datos.tipo == 'SOCIO-MOROSO' %}
-                  <a href="{% url 'estacionamiento:cobrarEntrada' datos.id %}" style="text-decoration:none" class="btn btn-outline-info" id="cobrar">Cobrar</a>
+                  <!--<a href="{% url 'estacionamiento:cobrarEntrada' datos.id %}" style="text-decoration:none" class="btn btn-outline-info" id="cobrar">Cobrar</a>-->
+                  <a style="text-decoration:none"></a>
+                    <button style="text-decoration:none" class="btn btn-outline-info" data-toggle="modal" data-target="#modalCobrar" id = "cobrarEntrada">Cobrar</button>
+                  </a>
                 {% endif %}
                 {% if datos.tipo == 'SOCIO-MOROSO'%}
-                  <a href="{% url 'estacionamiento:pago_deuda' datos.id %}" style="text-decoration:none" class="btn btn-outline-info" id="pagarDeuda">Regularizar Deuda</a>
+                  <!--<a href="{% url 'estacionamiento:pago_deuda' datos.id %}" style="text-decoration:none" class="btn btn-outline-info" id="pagarDeuda">Regularizar Deuda</a>-->
+                  <a style="text-decoration:none"></a>
+                    <button style="text-decoration:none" class="btn btn-outline-info" data-toggle="modal" data-target="#modalDeuda" id = "pagarDeuda">Regularizar Deuda</button>
+                  </a>
                 {% endif %}
               {% endif %}
             </div>
-            
+              <!--ModalCobro-->
+            <div class="modal fade" id="modalCobrar" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+              <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Cierre de Caja</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                  <div class="modal-body">
+                    <p id = 'recaudadoTexto'>Tarifa a pagar es : {{ recaudado }}</p>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id = "cobrarDinero">Cerrar caja</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!--ModalCobro-->
+
+            <!--ModalDeuda-->
+            <div class="modal fade" id="modalDeuda" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+              <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Cierre de Caja</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                  <div class="modal-body">
+                    <p id = 'deuda_a_Pagar'>La deuda del socio es: {{ recaudado }}</p>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id = "regularizar">Regulizar Deuda</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!--ModalDeuda-->
+            <script type="text/javascript">
+              const loadPrecio = async () => {
+                try {
+                  const res = await fetch('cobrarEntrada');
+                  var precio = await res.json();
+                  load(precio)
+                } catch (err) {
+                  console.error(err);
+                }
+              };
+              const load = (precio) => {
+                document.getElementById("recaudadoTexto").innerHTML = `Tarifa a pagar es : $${precio} `
+              };
+              const cobrarTarifa = async () =>{
+                try {
+                  const options = {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json'
+                    }
+                  };
+                  const res = await fetch('cobrarEntrada',options);
+                  const respuesta = await res.json();
+                  if(respuesta){
+                    location.href = "/menu_estacionamiento/historial"
+                  }
+                } catch (err) {
+                  console.error(err);
+                }
+              };
+              const loadDeuda = async () =>{
+                try {
+                  const res = await fetch('pago_deuda');
+                  var deuda = await res.json();
+                  deudaLoad(deuda)
+                } catch (err) {
+                  console.error(err);
+                }
+              };
+              const deudaLoad = (deuda) =>{
+                document.getElementById('deuda_a_Pagar').innerHTML = `La deuda del socio es: $${deuda}`
+              };
+              const regularizarDeuda = async () =>{
+                try {
+                  const options = {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json'
+                    }
+                  };
+                  const res = await fetch('pago_deuda',options);
+                  const respuesta = await res.json();
+                  if(respuesta){
+                    location.href = "/menu_estacionamiento/historial"
+                  }
+                } catch (err) {
+                  console.error(err);
+                }
+              };
+              document.getElementById('cobrarEntrada').addEventListener('click', () =>{
+                loadPrecio();
+              });
+              document.getElementById('cobrarDinero').addEventListener('click', () =>{
+                cobrarTarifa();
+              });
+              document.getElementById('pagarDeuda').addEventListener('click', () => {
+                loadDeuda();
+              });
+              document.getElementById('regularizar').addEventListener('click', () => {
+                regularizarDeuda();
+              });
+            </script>
           </div>
         </div>
       </div>
     </div>
-    <div id="deleteTarifaModal">
-      <h2>TARIFA ESPECIAL</h2>
-
-      <p id="fechaTarifaEspecial"></p>
-
-      <label>Esta a punto de eliminar la tarifa especial para la fecha mostrada arriba. Esto afectara
-      el precio de la tarifa para este día ¿Está seguro de su decisión?
-      </label>
-
-      <button id="deleteButton">Eliminar</button>
-      <button id="closeButton">Cancelar</button>
-    </div>
   </div>
-<div id="modalBackDrop"></div>
-<link rel="stylesheet" title="text/css" href="{% static 'usuariosistema/menu_estacionamiento/calendario2/calendarioStyle.css' %}">
-<script type="text/javascript" src="{% static 'usuariosistema/menu_estacionamiento/detallehistorial.js' %}"></script>
 
 {% endblock js %}

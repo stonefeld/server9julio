@@ -20,7 +20,7 @@ urlpatterns = [
          name='detalle-proveedor'),
     path('proveedor/<int:id>/editar', views.editar_proveedor,
          name='editar-proveedor'),
-    path('pago_deuda/<int:id>/', views.pago_deuda, name='pago_deuda'),
+    path('historial/<int:id>/pago_deuda', views.pago_deuda, name='pago_deuda'),
     path('fetch_Events',
           views.fetch_Events, name='fetch_Events'),
      path('emision_resumen/<int:id>/',
