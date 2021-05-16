@@ -55,18 +55,19 @@ def apertura_Manual(request):
         return render(request, 'estacionamiento/apertura_manual.html',
                       {'form': form, 'title': 'Apertura Manual'})
 
+
 @login_required
 def cobrarEntrada(request, id):
-    entradaCobrar = RegistroEstacionamiento.objects.get(id = id)
+    entradaCobrar = RegistroEstacionamiento.objects.get(id=id)
     today = datetime.date(datetime.now())
     dia_Especial = Dia_Especial.objects.filter(
         Q(dia_Especial=today)
     ).distinct()
     if dia_Especial:
-        #Hoy es día Especial
+        # Hoy es día Especial
         tarifaEspacial = TarifaEspecial.objects.all().last()
-        cobro = Cobros(precio=tarifaEspacial.precio, 
-                        registroEstacionamiento = entradaCobrar, deuda=False)
+        cobro = Cobros(precio=tarifaEspacial.precio,
+                       registroEstacionamiento=entradaCobrar, deuda=False)
         cobro.save()
         return HttpResponse(f'{tarifaEspacial.precio}')
     time = datetime.time(datetime.now())
@@ -74,17 +75,13 @@ def cobrarEntrada(request, id):
     i = 0
     for horario in horarios:
         i = i + 1
-        if time < horario.final or i == 3 :
+        if time < horario.final or i == 3:
             tarifaNormal = horario.precio
 
-    cobro = Cobros(precio = tarifaNormal, 
-                    registroEstacionamiento = entradaCobrar, deuda=False)
+    cobro = Cobros(precio=tarifaNormal,
+                   registroEstacionamiento=entradaCobrar, deuda=False)
     cobro.save()
     return HttpResponse(f'{tarifaNormal}')
-
-    
-    
-
 
 
 @login_required
@@ -105,11 +102,12 @@ def pago_deuda(request, id):
 
 
 @login_required
-def emision_resumen_anterior(request,id):
+def emision_resumen_anterior(request, id):
     cicloCajaR = CicloCaja.objects.get(id=id)
     cicloMensualActual = CicloMensual.objects.all().last()
     if cicloMensualActual.cicloMensual == cicloCajaR.cicloMensual.cicloMensual :
         return redirect('menu_estacionamiento:menu_estacionamiento')
+
     else:
         resumen_mensual = RegistroEstacionamiento.objects.\
             values("persona__nombre_apellido", "persona__nrSocio").\
@@ -133,6 +131,7 @@ def emision_resumen_anterior(request,id):
         response['Content-Disposition'] = \
             'attachment; filename="Resumen_Mensual.csv"'
         return response
+
 
 @login_required
 def emision_resumen_mensual(request):  # Falta testing
@@ -188,7 +187,7 @@ def emision_resumen_mensual(request):  # Falta testing
 
 
 @login_required
-def cierre_caja(request):  
+def cierre_caja(request):
     cicloCaja_ = CicloCaja.objects.all().last()
     recaudado = Cobros.objects.filter(
         registroEstacionamiento__cicloCaja=cicloCaja_, deuda=False).\
@@ -204,9 +203,9 @@ def cierre_caja(request):
         recaudado['recaudacion'] = '0.0'
 
     dinero = recaudado['recaudacion']
-    messages.warning(request, 'Lo recaudado en esta caja fue de $'+ dinero)
+    messages.warning(request, 'Lo recaudado en esta caja fue de $' + dinero)
     return redirect('menu_estacionamiento:menu_estacionamiento')
-    #return HttpResponse(recaudado['recaudacion'])
+    # return HttpResponse(recaudado['recaudacion'])
 
 
 def funcionCobros(dato):
@@ -480,6 +479,20 @@ def historial_estacionamiento(request):
         busqueda = request.GET.get('buscar')
         fecha = request.GET.get('fecha')
         tiempo = request.GET.get('tiempo')
+        caja_input = request.GET.get('caja')
+        mensual_input = request.GET.get('caja_mensual')
+
+        anuales = CicloAnual.objects.all()
+        ciclo_anual = list(anuales.values())
+        ciclo_mensual = []
+        ciclo_caja = []
+        for anual in anuales:
+            mensuales = CicloMensual.objects.all().filter(cicloAnual=anual.id)
+            ciclo_mensual += list(mensuales.values())
+            for mensual in mensuales:
+                ciclo_caja += (list(CicloCaja.objects.all().filter(
+                    cicloMensual=mensual.id
+                ).values()))
 
         if busqueda:
             estacionamiento = estacionamiento.filter(
@@ -500,7 +513,14 @@ def historial_estacionamiento(request):
                 tiempo__hour=tiempo.hour,
                 tiempo__minute=tiempo.minute
             )
-        
+
+        if caja_input:
+            estacionamiento = estacionamiento.filter(cicloCaja=caja_input)
+
+        if mensual_input:
+            estacionamiento = estacionamiento.filter(
+                cicloCaja__cicloMensual=mensual_input
+            )
 
         table = HistorialEstacionamientoTable(estacionamiento)
         RequestConfig(request).configure(table)
@@ -508,7 +528,9 @@ def historial_estacionamiento(request):
         return render(
             request,
             'estacionamiento/historial.html',
-            {'table': table, 'title': 'Historial'}
+            {'table': table, 'title': 'Historial',
+             'anual': ciclo_anual, 'mensual': ciclo_mensual,
+             'caja': ciclo_caja}
         )
 
 
@@ -516,12 +538,14 @@ def historial_estacionamiento(request):
 def detalle_estacionamiento(request, id):
     datos = RegistroEstacionamiento.objects.get(id=id)
     cobro = Cobros.objects.filter(
-        Q(registroEstacionamiento__id__icontains = id)
+        Q(registroEstacionamiento__id__icontains=id)
     ).distinct()
     if cobro:
         cobrado = 'True'
+
     else:
         cobrado = 'False'
+
     return render(request, 'estacionamiento/detalle_historial.html',
                   {'datos': datos, 'title': 'Detalle Historial', 'cobrado': cobrado})
 
