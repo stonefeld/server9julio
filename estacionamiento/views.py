@@ -511,17 +511,23 @@ def editar_estacionamiento(request, id):
                     # que el autorizado se mantenga en False.
                     if not per.general and form.cleaned_data['tipo'] == 'SOCIO':
                         form.cleaned_data['tipo'] = 'SOCIO-MOROSO'
-                        form.cleaned_data['autorizado'] = False
+                        form.cleaned_data['autorizado'] = funcionCobros(dni)
                         messages.warning(request, 'El tipo de entrada fue \
                                          cambiada a SOCIO-MOROSO por tener \
                                          deuda')
+
+                    if per.general and form.cleaned_data['tipo'] == 'SOCIO-MOROSO':
+                        form.cleaned_data['tipo'] = 'SOCIO'
+                        form.cleaned_data['autorizado'] = True
+                        messages.warning(request, 'El tipo de entrada fue \
+                                         cambiada a SOCIO por no tener deuda')
 
                     if (not obj.tipo == 'SOCIO-MOROSO' and
                        form.cleaned_data['tipo'] == 'SOCIO-MOROSO'):
                         # Si el tipo original no era socio-moroso, y se lo
                         # cambio a socio-moroso, por default no debe estar
                         # autorizado.
-                        form.cleaned_data['autorizado'] = False
+                        form.cleaned_data['autorizado'] = funcionCobros(dni)
 
             elif form.cleaned_data['tipo'] == 'PROVEEDOR':
                 # Idem anterior pero en el caso de que el tipo seleccionado sea
