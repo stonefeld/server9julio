@@ -183,7 +183,8 @@ def emision_resumen_mensual(request):  # Falta testing
         return response
 
     else:
-        return HttpResponse("Error debe cerrar la caja primero")
+        messages.warning(request, 'Error debe cerrar caja primero')
+        return redirect('menu_estacionamiento:menu_estacionamiento')
 
 
 @login_required
@@ -202,7 +203,10 @@ def cierre_caja(request):
         cicloCaja_.save()
         recaudado['recaudacion'] = '0.0'
 
-    return HttpResponse(recaudado['recaudacion'])
+    dinero = recaudado['recaudacion']
+    messages.warning(request, 'Lo recaudado en esta caja fue de $'+ dinero)
+    return redirect('menu_estacionamiento:menu_estacionamiento')
+    #return HttpResponse(recaudado['recaudacion'])
 
 
 def funcionCobros(dato):
