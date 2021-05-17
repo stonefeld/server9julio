@@ -193,7 +193,7 @@ class Estacionado(models.Model):
 
 
 class Dia_Especial(models.Model):
-    dia_Especial = models.DateField(verbose_name="DiaEspecial")
+    dia_Especial = models.DateField(verbose_name="Día Especial")
 
 class Horarios_Precio(models.Model):
     inicio = models.TimeField(default="00:00:00")
