@@ -7,102 +7,162 @@
 
 {% block content %}
 <div style="padding: 30px;" >
-    <a style="text-decoration:none" href={% url 'menu_estacionamiento:playground' %}>
-        <button class="btn btn-outline-info btn-lg" type="submit">Ingresa Socio por Entrada</button>
-    </a>
-
-    <a style="text-decoration:none" href={% url 'menu_estacionamiento:playground' %}>
-        <button class="btn btn-outline-info btn-lg" type="submit">Sale Socio por Entrada</button>
-    </a>
-
-    <a style="text-decoration:none" href={% url 'menu_estacionamiento:playground' %}>
-        <button class="btn btn-outline-info btn-lg" type="submit">Ingresa Proveedor por Entrada</button>
-    </a>
-
-    <a style="text-decoration:none" href={% url 'menu_estacionamiento:playground' %}>
-        <button class="btn btn-outline-info btn-lg" type="submit">Sale Proveedor por Entrada</button>
-    </a>
-
-    <a style="text-decoration:none" href={% url 'menu_estacionamiento:playground' %}>
-        <button class="btn btn-outline-info btn-lg" type="submit">Ingresa NoSocio por Entrada</button>
-    </a>
-
-    <a style="text-decoration:none" href={% url 'menu_estacionamiento:playground' %}>
-        <button class="btn btn-outline-info btn-lg" type="submit">Sale NoSocio por Entrada</button>
-    </a>
-
-    <div class="p-2">
-        <button type="button" class="btn btn-outline-info"  data-toggle="modal" data-target="#exampleModal">Filtro avanzado</button>
-    </div>
     
-    </div>
+    <div class="container" style="padding: 20px;">
+        <div class="card mb-4">
+          <div class="card-body">
+            <h5>Playground </h5>
+            <div class="row justify-content-center" style="padding-top: 20px; padding-bottom: 20px;">
+            
+              <div class="col">
+                <label>Número de tarjeta</label>
+                <input type="number" min="0" class="form-control" placeholder="Numero de Trajeta" id=numTarjeta>
+                <small id="emailHelp" class="form-text text-muted">Ingrese su número de la tarjeta de identifación</small>
+              </div>
 
-    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-      <div class="modal-dialog" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLabel">Filtro Avanzado</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
-            </button>
-          </div>
-          <div class="modal-body">
-            <form method="GET">
-              <div class="form-row">
-                <div class="form-group col-md-12">
-                  <div class="input-group">
-
-                    <input type="text" class="form-control" name="buscar" placeholder="Buscar...">
-                    <div class="input-group-append">
-                      <span class="input-group-text">Nombre y apellido</span>
+              <div class="col">
+                
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" id="entradaTarjeta" value="0">
+                        <label class="form-check-label" for="entradaTarjeta">Entrada</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" id="salidaTarjeta" value="1">
+                        <label class="form-check-label" for="salidaTarjeta">Salida</label>
                     </div>
 
-                  </div>
+              </div>
+      
+              <div class="col">
+                <div class="d-flex justify-content-center" style="padding-top: 30px;"> 
+                  <button class="btn btn-danger" id="saveNumTarj">Guardar</button>
                 </div>
               </div>
-              <div class="form-row">
-                <div class="form-group col-md-12">
-                  <div class="input-group">
+            </div>
 
-                    <input type="date" class="form-control" name="fecha">
-                    <div class="input-group-append">
-                      <span class="input-group-text">Fecha</span>
-                    </div>
-
+            <div class="row justify-content-center" style="padding-top: 20px; padding-bottom: 20px;">
+            
+                <div class="col">
+                  <label>Número de DNI</label>
+                  <input type="number" min="0" class="form-control" placeholder="Número de DNI" id="numDNI" >
+                  <small id="emailHelp" class="form-text text-muted">Ingrese su DNI</small>
+                </div>
+  
+                <div class="col">
+                  
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="checkbox" id="entradaDNI" value="0">
+                            <label class="form-check-label" for="entradaDNI">Entrada</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="checkbox" id="salidaDNI" value="1">
+                            <label class="form-check-label" for="salidaDNI">Salida</label>
+                        </div>
+                </div>
+        
+                <div class="col">
+                  <div class="d-flex justify-content-center" style="padding-top: 30px;"> 
+                    <button class="btn btn-danger" id="saveNumDNI">Guardar</button>
                   </div>
                 </div>
-              </div>
-              <div class="form-row">
-                <div class="form-group col-md-12">
-                  <div class="input-group">
+            </div>
 
-                    <input type="text" class="form-control" id="clockpicker" name="tiempo">
-                    <div class="input-group-append">
-                      <span class="input-group-text">Hora</span>
-                    </div>
-
-                    <script type="text/javascript">
-                      var input = $('#clockpicker');
-                      input.clockpicker({
-                        autoclose: true,
-                        default: 'now'
-                      });
-                    </script>
-
+            <div class="row justify-content-center" style="padding-top: 20px; padding-bottom: 20px;">
+            
+                <div class="col">
+                  <label>Número de Proveedores</label>
+                  <input type="number" min="0" class="form-control" placeholder="Número de Proveedor" id="numProv">
+                  <small id="emailHelp" class="form-text text-muted">Ingrese su número de proveedor</small>
+                </div>
+  
+                <div class="col">
+                  
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="checkbox" id="entradaProv" value="0">
+                            <label class="form-check-label" for="entradaProv">Entrada</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="checkbox" id="salidaProv" value="1">
+                            <label class="form-check-label" for="salidaProv">Salida</label>
+                        </div>
+                </div>
+        
+                <div class="col">
+                  <div class="d-flex justify-content-center" style="padding-top: 30px;"> 
+                    <button class="btn btn-danger" id="saveNumProveedor">Guardar</button>
                   </div>
                 </div>
-              </div>
-              <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
-                <button type="submit" class="btn btn-primary">Filtrar</button>
-              </div>
-            </form>
+            </div>
+
+
           </div>
         </div>
-      </div>
     </div>
 
+</div>
 
-</div>    
+<script type="text/javascript">
+
+document.getElementById('saveNumTarj').addEventListener('click',()=>{
+agarrarDatosTarjetaYDir()
+});
+
+function agarrarDatosTarjetaYDir(){
+var numTarjeta = document.getElementById('numTarjeta').value
+var entradaTarj = document.getElementById('entradaTarjeta')
+var salidaTarj = document.getElementById('salidaTarjeta')
+
+if(entradaTarj.checked){
+    var checkedTarj = document.getElementById('entradaTarjeta').value
+    fetch(`/estacionamiento/?tipo=0&dato=${numTarjeta}&direccion=${checkedTarj}`)
+}
+else if(salidaTarj){
+    var checkedTarj2 = document.getElementById('salidaTarjeta').value
+    fetch(`/estacionamiento/?tipo=0&dato=${numTarjeta}&direccion=${checkedTarj2}`)
+}
+}
+
+document.getElementById('saveNumDNI').addEventListener('click',()=>{
+agarrarDatosDNIYDir()
+});
+
+function agarrarDatosDNIYDir(){
+var numDNI = document.getElementById('numDNI').value
+var entradaDNI = document.getElementById('entradaDNI')
+var salidaDNI = document.getElementById('salidaDNI')
+
+if(entradaDNI.checked){
+    var checkedDNI = document.getElementById('entradaDNI').value
+    fetch(`/estacionamiento/?tipo=1&dato=${numDNI}&direccion=${checkedDNI}`)
+}
+else if(salidaDNI){
+    var checkedDNI2 = document.getElementById('salidaDNI').value
+    fetch(`/estacionamiento/?tipo=1&dato=${numDNI}&direccion=${checkedDNI2}`)
+}
+}
+
+document.getElementById('saveNumProveedor').addEventListener('click',()=>{
+agarrarProveedoresYDir()
+});
+
+function agarrarProveedoresYDir(){
+var numProv = document.getElementById('numProv').value
+var entradaProv = document.getElementById('entradaProv')
+var salidaProv = document.getElementById('salidaProv')
+
+if(entradaProv.checked){
+    var checkedProv = document.getElementById('entradaProv').value
+    fetch(`/estacionamiento/?tipo=2&dato=${numProv}&direccion=${checkedProv}`)
+}
+else if(salidaProv){
+    var checkedProv2 = document.getElementById('salidaProv').value
+    fetch(`/estacionamiento/?tipo=2&dato=${numProv}&direccion=${checkedProv2}`)
+}
+
+}
+    
+</script>
+
+
 
 {% endblock content %}
