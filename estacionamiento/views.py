@@ -135,11 +135,12 @@ def pago_deuda(request, id):
 
 
 @login_required
-def emision_resumen_anterior(request,id):
+def emision_resumen_anterior(request, id):
     cicloCajaR = CicloCaja.objects.get(id=id)
     cicloMensualActual = CicloMensual.objects.all().last()
-    if cicloMensualActual.cicloMensual == cicloCajaR.cicloMensual.cicloMensual :
+    if cicloMensualActual.cicloMensual == cicloCajaR.cicloMensual.cicloMensual:
         return redirect('menu_estacionamiento:menu_estacionamiento')
+
     else:
         resumen_mensual = RegistroEstacionamiento.objects.\
             values("persona__nombre_apellido", "persona__nrSocio").\
@@ -161,8 +162,11 @@ def emision_resumen_anterior(request,id):
 
         writer.writerows(output)
         response['Content-Disposition'] = \
-            'attachment; filename="Resumen_Mensual.csv"'
+            'attachment; filename="resumen_mensual_'\
+            f'{cicloCajaR.cicloMensual.cicloMensual}_año_'\
+            f'{cicloCajaR.cicloMensual.cicloAnual.cicloAnual}.csv"'
         return response
+
 
 @login_required
 def emision_resumen_mensual(request):  # Falta testing
@@ -189,10 +193,12 @@ def emision_resumen_mensual(request):  # Falta testing
 
         writer.writerows(output)
         response['Content-Disposition'] = \
-            'attachment; filename="Resumen_Mensual.csv"'
+            'attachment; filename="resumen_mensual_'\
+            f'{cicloMensual_.cicloMensual}_año_'\
+            f'{cicloMensual_.cicloAnual.cicloAnual}.csv"'
         cicloAnual_ = CicloAnual.objects.all().last()
 
-        if (cicloMensual_.cicloMensual >= 12):
+        if cicloMensual_.cicloMensual >= 12:
             cicloAnual_ = CicloAnual(cicloAnual=(cicloAnual_.cicloAnual + 1))
             cicloAnual_.save()
             cicloAnual_ = CicloAnual.objects.all().last()
@@ -218,7 +224,7 @@ def emision_resumen_mensual(request):  # Falta testing
 
 
 @login_required
-def cierre_caja(request):  
+def cierre_caja(request):
     cicloCaja_ = CicloCaja.objects.all().last()
     recaudado = Cobros.objects.filter(
         registroEstacionamiento__cicloCaja=cicloCaja_, deuda=False).\
@@ -512,9 +518,16 @@ def respuesta(request):
 def historial_estacionamiento(request):
     if request.method == 'GET':
         estacionamiento = RegistroEstacionamiento.objects.all()
+
         busqueda = request.GET.get('buscar')
         fecha = request.GET.get('fecha')
         tiempo = request.GET.get('tiempo')
+        caja_input = request.GET.get('caja')
+        mensual_input = request.GET.get('caja_mensual')
+
+        ciclo_anual = list(CicloAnual.objects.all().values())
+        ciclo_mensual = list(CicloMensual.objects.all().values())
+        ciclo_caja = list(CicloCaja.objects.all().values())
 
         if busqueda:
             estacionamiento = estacionamiento.filter(
@@ -535,7 +548,18 @@ def historial_estacionamiento(request):
                 tiempo__hour=tiempo.hour,
                 tiempo__minute=tiempo.minute
             )
-        
+
+        if caja_input:
+            estacionamiento = estacionamiento.filter(cicloCaja=caja_input)
+            messages.info(request, f'Visualizando \
+                          {CicloCaja.objects.get(id=caja_input)}')
+
+        if mensual_input:
+            estacionamiento = estacionamiento.filter(
+                cicloCaja__cicloMensual=mensual_input
+            )
+            messages.info(request, f'Visualizando \
+                          {CicloMensual.objects.get(id=mensual_input)}')
 
         table = HistorialEstacionamientoTable(estacionamiento)
         RequestConfig(request).configure(table)
@@ -543,7 +567,10 @@ def historial_estacionamiento(request):
         return render(
             request,
             'estacionamiento/historial.html',
-            {'table': table, 'title': 'Historial'}
+            {'table': table, 'title': 'Historial',
+             'anual': ciclo_anual, 'mensual': ciclo_mensual,
+             'caja': ciclo_caja, 'viscaja': caja_input,
+             'vismes': mensual_input}
         )
 
 
@@ -551,14 +578,17 @@ def historial_estacionamiento(request):
 def detalle_estacionamiento(request, id):
     datos = RegistroEstacionamiento.objects.get(id=id)
     cobro = Cobros.objects.filter(
-        Q(registroEstacionamiento__id__icontains = id)
+        Q(registroEstacionamiento__id__icontains=id)
     ).distinct()
     if cobro:
         cobrado = 'True'
+
     else:
         cobrado = 'False'
+
     return render(request, 'estacionamiento/detalle_historial.html',
-                  {'datos': datos, 'title': 'Detalle Historial', 'cobrado': cobrado})
+                  {'datos': datos, 'title': 'Detalle Historial',
+                   'cobrado': cobrado})
 
 
 @login_required
@@ -566,6 +596,8 @@ def editar_estacionamiento(request, id):
     obj = RegistroEstacionamiento.objects.get(id=id)
     form = EstacionamientoForm(request.POST or None, instance=obj)
 
+    # Cargo el form y el objeto del registro para poder renderizar ciertos
+    # datos en el html.
     context = {
         'form': form,
         'obj': obj,
@@ -574,37 +606,98 @@ def editar_estacionamiento(request, id):
 
     if request.method == 'POST':
         if form.is_valid():
+            # Recibo las variables de ID y DNI para asignar al proveedor o
+            # socio en los respectivos casos.
             idProveedor = request.POST.get('idProveedor')
             dni = request.POST.get('noSocio')
 
-            if idProveedor and form.cleaned_data['proveedor']:
-                prov = Proveedor.objects.get(id=obj.proveedor.id)
+            # Chequeo el tipo de entrada que se selecciono al hacer la edicion.
+            if form.cleaned_data['tipo'] == 'NOSOCIO':
+                # En caso de que el tipo seleccionado haya sido NOSOCIO me
+                # aseguro de eliminar cualquier proveedor o persona previamente
+                # asignada en el form para evitar conflictos.
+                form.cleaned_data['persona'] = None
+                form.cleaned_data['proveedor'] = None
+                # Realizo lo mismo pero para el objeto en particular para
+                # eliminar cualquier persona o proveedor previamente guardado.
+                obj.persona = None
+                obj.proveedor = None
+                obj.save()
 
-            if dni and form.cleaned_data['persona']:
-                per = Persona.objects.get(id=obj.persona.id)
+            elif (form.cleaned_data['tipo'] == 'SOCIO' or
+                  form.cleaned_data['tipo'] == 'SOCIO-MOROSO'):
+                # En caso de que el tipo seleccionado sea SOCIO o SOCIO-MOROSO
+                # y no haya ninguna persona seleccionada en el form, es decir,
+                # asegura que es un socio pero no especifica cual, lo
+                # redirecciona a la misma pagina para reiniciar el formulario.
+                if not form.cleaned_data['persona']:
+                    messages.warning(request, 'El formulario no fue \
+                                     completado correctamente')
+                    return redirect('estacionamiento:editar', id)
 
-            print(form.cleaned_data['persona'])
-            if idProveedor and form.cleaned_data['proveedor']:
-                prov.idProveedor = idProveedor
-                prov.save()
+                else:
+                    # Utilizando el DNI ingresado y la persona asociada para
+                    # guardar el DNI del socio en la DB.
+                    per = Persona.objects.get(id=obj.persona.id)
+                    if dni:
+                        per.dni = dni
+                        per.save()
 
-            if dni and form.cleaned_data['persona']:
-                per.dni = dni
-                per.save()
+                    # Por ultimo chequeo que si el tipo seleccionado fue socio
+                    # pero el socio sigue teniendo deuda, que la entrada cambie
+                    # por la fuerza a socio-moroso nuevamente y se asegure
+                    # que el autorizado se mantenga en False.
+                    if (not per.general and
+                       form.cleaned_data['tipo'] == 'SOCIO'):
+                        form.cleaned_data['tipo'] = 'SOCIO-MOROSO'
+                        form.cleaned_data['autorizado'] = funcionCobros(dni)
+                        messages.warning(request, 'El tipo de entrada fue \
+                                         cambiada a SOCIO-MOROSO por tener \
+                                         deuda')
+
+                    if (per.general and
+                       form.cleaned_data['tipo'] == 'SOCIO-MOROSO'):
+                        form.cleaned_data['tipo'] = 'SOCIO'
+                        form.cleaned_data['autorizado'] = True
+                        messages.warning(request, 'El tipo de entrada fue \
+                                         cambiada a SOCIO por no tener deuda')
+
+                    if (not obj.tipo == 'SOCIO-MOROSO' and
+                       form.cleaned_data['tipo'] == 'SOCIO-MOROSO'):
+                        # Si el tipo original no era socio-moroso, y se lo
+                        # cambio a socio-moroso, por default no debe estar
+                        # autorizado.
+                        form.cleaned_data['autorizado'] = funcionCobros(dni)
+
+            elif form.cleaned_data['tipo'] == 'PROVEEDOR':
+                # Idem anterior pero en el caso de que el tipo seleccionado sea
+                # proveedor y no haya proveedor asociado en el form.
+                if not form.cleaned_data['proveedor']:
+                    messages.warning(request, 'El formulario no fue \
+                                     completado correctamente')
+                    return redirect('estacionamiento:editar', id)
+
+                elif idProveedor:
+                    # Utilizando las variables recibidas del form, chequeo que
+                    # haya un ID ingresado y un proveedor asociado para guardar
+                    # el correspondiente ID al proveedor en cuestion.
+                    prov = Proveedor.objects.get(id=obj.proveedor.id)
+                    prov.idProveedor = idProveedor
+                    prov.save()
 
             form.save()
             return redirect('estacionamiento:historial')
 
         else:
-            messages.warning(request, 'El formulario no fue \
-                             completado correctamente')
-            return render(request,
-                          'estacionamiento/editar_historial.html',
+            # Si existe algun error en el formulario, reinicia la pagina con
+            # un mensaje de advertencia.
+            messages.warning(request, 'El formulario no fue completado \
+                             correctamente')
+            return render(request, 'estacionamiento/editar_historial.html',
                           context)
 
     else:
-        return render(request,
-                      'estacionamiento/editar_historial.html',
+        return render(request, 'estacionamiento/editar_historial.html',
                       context)
 
 
@@ -688,7 +781,8 @@ def fetch_Events(request):
         eventos = Dia_Especial.objects.values("dia_Especial").all()
         listeventos = []
         for evento in eventos:
-            date_splitted = evento['dia_Especial'].strftime('%d/%m/%Y').split('/')
+            date_splitted = evento['dia_Especial'].\
+                strftime('%d/%m/%Y').split('/')
             if date_splitted[0][0] == '0':
                 day = date_splitted[0][1]
             else:
@@ -702,7 +796,7 @@ def fetch_Events(request):
 
             year = date_splitted[2]
             final_date = f'{day}/{month}/{year}'
-            diction = { "date" : final_date }
+            diction = {'date': final_date}
             listeventos.append(diction)
         return JsonResponse(listeventos, safe=False)
     else:

@@ -9,106 +9,157 @@
 
 {% block content %}
 
-  <div class="content-section" style="padding:20px;">
-    <div id="form_card" class="card-panel col s12">
+  <div id="mySidebar" class="sidebar">
+    <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">x</a>
+    {% if not anual %}
+      <a href="#">No hay ciclos.</a>
+    {% else %}
+      <a href="{% url 'estacionamiento:historial' %}">Todos</a>
+    {% endif %}
+    {% for ca in anual %}
+      <button class="dropdown-btn">Ciclo Anual {{ ca.cicloAnual }}
+        <i class="caret fa fa-caret-down" style="display: none"></i>
+      </button>
+      <div class="dropdown-container">
+        {% for cm in mensual %}
+          {% if cm.cicloAnual_id == ca.id %}
+            <button class="dropdown-btn">Ciclo Mensual {{ cm.cicloMensual }}
+              <i class="caret fa fa-caret-down" style="display: none"></i>
+            </button>
+            <div class="dropdown-container">
+              <form method="GET">
+                <input style="display:none" value="{{ cm.id }}" name="caja_mensual"></input>
+                <button class="dropdown-btn" type="submit">Todos</button>
+              </form>
+              {% for cc in caja %}
+                {% if cc.cicloMensual_id == cm.id %}
+                  <form method="GET">
+                    <input style="display:none" value="{{ cc.id }}" name="caja"></input>
+                    <button class="dropdown-btn" type="submit">Ciclo Caja {{ cc.cicloCaja }}</button>
+                  </form>
+                {% endif %}
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+    {% endfor %}
+  </div>
 
-      <div class="d-flex">
-        <div class="mr-auto p-2">
-          <div class="mr-auto">
-            <form method="GET">
-              <div class="form-row">
-                <div class="form-group col-12">
-                  <div class="input-group">
-                    <input class="form-control" type="text" placeholder="Buscar..." name="buscar" value=""/>
-                    <button class="btn btn-secondary" type="submit" style="margin-left:20px;">
-                      <i>Buscar</i>
-                    </button>
+  <div id="main">
+    <div class="content-section" style="padding:20px;">
+      <div id="form_card" class="card-panel col s12">
+
+        <div class="d-flex">
+          <div class="mr-auto p-2">
+            <div class="mr-auto">
+              <form method="GET">
+                <div class="form-row">
+                  <div class="form-group col-12">
+                    <div class="input-group">
+                      {% if viscaja %}
+                        <input name="caja" value="{{ viscaja }}" style="display:none"></input>
+                      {% elif vismes %}
+                        <input name="caja_mensual" value="{{ vismes }}" style="display:none"></input>
+                      {% endif %}
+                      <input class="form-control" type="text" placeholder="Buscar..." name="buscar" value=""/>
+                      <button class="btn btn-secondary" type="submit" style="margin-left:20px;">
+                        <i>Buscar</i>
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </form>
+            </form>
+          </div>
+
+          <div class="p-2">
+            <button class="openbtn btn btn-outline-info" onclick="openNav()" id="openbtn">☰ Ciclos</button>
+          </div>
+
+          <div class="p-2">
+            <button type="button" class="btn btn-outline-info"  data-toggle="modal" data-target="#exampleModal">Filtro avanzado</button>
+          </div>
         </div>
 
-        <div class="p-2">
-          <button type="button" class="btn btn-outline-info"  data-toggle="modal" data-target="#exampleModal">Filtro avanzado</button>
-        </div>
+        <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Filtro Avanzado</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <form method="GET">
+                  {% if viscaja %}
+                    <input name="caja" value="{{ viscaja }}" style="display:none"></input>
+                  {% elif vismes %}
+                    <input name="caja_mensual" value="{{ vismes }}" style="display:none"></input>
+                  {% endif %}
+                  <div class="form-row">
+                    <div class="form-group col-md-12">
+                      <div class="input-group">
 
-        <div class="p-2">
-          <a href="{% url 'usuario:historial' %}" class="btn btn-outline-info" style="float: right">Molinetes </a>
-        </div>
-      </div>
+                        <input type="text" class="form-control" name="buscar" placeholder="Buscar...">
+                        <div class="input-group-append">
+                          <span class="input-group-text">Nombre y apellido</span>
+                        </div>
 
-      <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title" id="exampleModalLabel">Filtro Avanzado</h5>
-              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-              </button>
-            </div>
-            <div class="modal-body">
-              <form method="GET">
-                <div class="form-row">
-                  <div class="form-group col-md-12">
-                    <div class="input-group">
-
-                      <input type="text" class="form-control" name="buscar" placeholder="Buscar...">
-                      <div class="input-group-append">
-                        <span class="input-group-text">Nombre y apellido</span>
                       </div>
-
                     </div>
                   </div>
-                </div>
-                <div class="form-row">
-                  <div class="form-group col-md-12">
-                    <div class="input-group">
+                  <div class="form-row">
+                    <div class="form-group col-md-12">
+                      <div class="input-group">
 
-                      <input type="date" class="form-control" name="fecha">
-                      <div class="input-group-append">
-                        <span class="input-group-text">Fecha</span>
+                        <input type="date" class="form-control" name="fecha">
+                        <div class="input-group-append">
+                          <span class="input-group-text">Fecha</span>
+                        </div>
+
                       </div>
-
                     </div>
                   </div>
-                </div>
-                <div class="form-row">
-                  <div class="form-group col-md-12">
-                    <div class="input-group">
+                  <div class="form-row">
+                    <div class="form-group col-md-12">
+                      <div class="input-group">
 
-                      <input type="text" class="form-control" id="clockpicker" name="tiempo">
-                      <div class="input-group-append">
-                        <span class="input-group-text">Hora</span>
+                        <input type="text" class="form-control" id="clockpicker" name="tiempo">
+                        <div class="input-group-append">
+                          <span class="input-group-text">Hora</span>
+                        </div>
+
+                        <script type="text/javascript">
+                          var input = $('#clockpicker');
+                          input.clockpicker({
+                            autoclose: true,
+                            default: 'now'
+                          });
+                        </script>
+
                       </div>
-
-                      <script type="text/javascript">
-                        var input = $('#clockpicker');
-                        input.clockpicker({
-                          autoclose: true,
-                          default: 'now'
-                        });
-                      </script>
-
                     </div>
                   </div>
-                </div>
-                <div class="modal-footer">
-                  <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
-                  <button type="submit" class="btn btn-primary">Filtrar</button>
-                </div>
-              </form>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                    <button type="submit" class="btn btn-primary">Filtrar</button>
+                  </div>
+                </form>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <div style="padding-top:40px; padding-left:10px; padding-right:10px; padding-bottom:10px">
-        {% render_table table %}
-      </div>
+        <div style="padding-top:40px; padding-left:10px; padding-right:10px; padding-bottom:10px">
+          {% render_table table %}
+        </div>
 
+      </div>
     </div>
   </div>
+
+  <script src="{% static 'usuariosistema/historial.js' %}"></script>
 
 {% endblock content%}
