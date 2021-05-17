@@ -239,18 +239,18 @@ def cierre_caja(request):
         recaudado['recaudacion'] = '0.0'
 
     dinero = recaudado['recaudacion']
-    #context ={'recaudado':dinero}
-    messages.warning(request, 'Lo recaudado en esta caja fue de $'+ f'{dinero}')
+    # context ={'recaudado':dinero}
+    messages.warning(request, f'Lo recaudado en esta caja fue de ${dinero}')
     return redirect('menu_estacionamiento:menu_estacionamiento')
-    #return JsonResponse(dinero, safe=False)
+    # return JsonResponse(dinero, safe=False)
 
 
 def funcionCobros(dato):
     today = now()
     ayer = today - timedelta(days=1)
     cobro = Cobros.objects.filter(
-        Q(registroEstacionamiento__tiempo__range=(ayer, today)) &
-        Q(registroEstacionamiento__noSocio__icontains=int(dato)) &
+        Q(registroEstacionamiento__tiempo__range=(ayer, today)),
+        Q(registroEstacionamiento__noSocio__icontains=int(dato)) |
         Q(registroEstacionamiento__Socio__nrTarjeta__icontains=int(dato))
     ).distinct()
 
@@ -321,7 +321,7 @@ def respuesta(request):
                         entrada.save()
                         # abrir barrera
                         messages.warning(request, 'Salida Socio Autorizada')
-                        rta = '#1' #salida socio
+                        rta = '#1'  # salida socio
                         funcionEliminarEstacionado(entrada)
 
                     else:
@@ -337,12 +337,14 @@ def respuesta(request):
                             )
                             entrada.save()
                             messages.warning(request, 'Salida Socio-Moroso Autorizada')
-                            rta = '#1'   #salida sociomoroso autorizada
+                            rta = '#1'  # salida sociomoroso autorizada
                             # Registro Socio Moroso Cobro por NoSocio
                             funcionEliminarEstacionado(entrada)
+
                         else:
                             messages.warning(request, 'Socio-Moroso no pago la Deuda o no Pago el Estacionamiento')
                             rta = '#6'  # SocioMoroso no pago Deuda o no Pago Entrada
+
                 except:
                     messages.warning(request, 'La Tarjeta no Existe. Ingresar con DNI')
                     rta = '#2'  # El usuario No existe
@@ -380,12 +382,13 @@ def respuesta(request):
                             rta = '#1' #salida socio moroso autorizada  
                             # Registro Socio Moroso Cobro por NoSocio
                             funcionEliminarEstacionado(entrada)
+
                         else:
                             messages.warning(request, 'Salida Socio-Moroso No Autorizada Dirigirse a Portería')
                             rta = '#6'  # NoSocio no pago Deuda o no Pago Entrada
 
                 except:
-                    if not tiempoTolerancia(dato):
+                    if not funcionCobros(dato):
                         entrada = RegistroEstacionamiento(
                             tipo='NOSOCIO',
                             lugar='ESTACIONAMIENTO',
@@ -396,11 +399,12 @@ def respuesta(request):
                         )
                         entrada.save()
                         messages.warning(request, 'Salida NoSocio Autorizada')
-                        rta = '#1' #salida no socio autorizada
+                        rta = '#1'  # salida no socio autorizada
                         funcionEliminarEstacionado(entrada)
+
                     else:
                         messages.warning(request, 'El No Socio no Pagó y Excedió Tiempo Tolerancia')
-                        rta = '#5' #no puede salir
+                        rta = '#5'  # no puede salir
                         # El No Socio no pagó y excedió
                         # el tiempo de tolerancia
 
@@ -418,7 +422,7 @@ def respuesta(request):
                     entrada.save()
                     # Abrir barrera
                     messages.warning(request, 'Salida Proveedor Autorizada')
-                    rta = '#1' #salida proveedores autorizada
+                    rta = '#1'  # salida proveedores autorizada
                     funcionEliminarEstacionado(entrada)
 
                 except:
