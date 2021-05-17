@@ -31,7 +31,7 @@ SECRET_KEY = config['SECRET_KEY']
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['192.168.0.180', 'server9julio.net', '172.20.1.120']
+ALLOWED_HOSTS = ['192.168.0.180', 'server9julio.ddns.net', '172.20.1.120']
 
 
 # Application definition
