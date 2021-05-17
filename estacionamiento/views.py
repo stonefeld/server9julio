@@ -249,8 +249,8 @@ def funcionCobros(dato):
     today = now()
     ayer = today - timedelta(days=1)
     cobro = Cobros.objects.filter(
-        Q(registroEstacionamiento__noSocio__icontains=int(dato)) |
-        Q(registroEstacionamiento__persona__nrTarjeta__icontains=int(dato)),
+        Q(registroEstacionamiento__noSocio=int(dato)) |
+        Q(registroEstacionamiento__persona__nrTarjeta=int(dato)),
         Q(registroEstacionamiento__tiempo__range=(ayer, today)),
     ).distinct()
 
@@ -266,8 +266,8 @@ def tiempoTolerancia(dato):
     tolerancia = today - timedelta(minutes=15)
     entrada = RegistroEstacionamiento.objects.filter(
         Q(tiempo__range=(tolerancia, today)),
-        Q(noSocio__icontains=int(dato)),
-        Q(direccion__icontains='ENTRADA')
+        Q(noSocio=int(dato)),
+        Q(direccion='ENTRADA')
     )
 
     if entrada:
