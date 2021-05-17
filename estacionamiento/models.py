@@ -186,7 +186,7 @@ class Estacionado(models.Model):
                 verbose_name='Registro Estacionamiento')
 
     def __str__(self):
-        return f'{self.tiempo} - {self.identificador}'
+        return f'{self.registroEstacionamiento.tiempo} - {self.registroEstacionamiento.identificador}'
 
     def get_absolute_url(self):
         return f'/estacionamiento/historial/{self.registroEstacionamiento.id}/'
