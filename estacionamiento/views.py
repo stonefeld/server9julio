@@ -250,7 +250,7 @@ def funcionCobros(dato):
     ayer = today - timedelta(days=1)
     cobro = Cobros.objects.filter(
         Q(registroEstacionamiento__noSocio__icontains=int(dato)) |
-        Q(registroEstacionamiento__Socio__nrTarjeta__icontains=int(dato)),
+        Q(registroEstacionamiento__persona__nrTarjeta__icontains=int(dato)),
         Q(registroEstacionamiento__tiempo__range=(ayer, today)),
     ).distinct()
 
