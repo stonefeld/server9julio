@@ -213,7 +213,7 @@ class Dia_Especial(models.Model):
         verbose_name_plural = 'Días Especiales'
 
     def __str__(self):
-        return f'Día Especial: {self.dia_especial}'
+        return f'Día Especial: {self.dia_Especial}'
 
 
 class TarifaEspecial(models.Model):
