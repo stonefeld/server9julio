@@ -48,7 +48,6 @@ INSTALLED_APPS = [
     'usuario',
     'usuariosistema',
     'menu_estacionamiento',
-    
 
     # Third party apps
     'crispy_forms',
@@ -99,7 +98,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': '9Julio_db',
-        'USER': 'root',
+        'USER': 'admin',
         'PASSWORD': '',
         'HOST': '127.0.0.1',
         'PORT': 3306,
