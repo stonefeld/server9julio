@@ -320,6 +320,7 @@ def respuesta(request):
                         )
                         entrada.save()
                         # abrir barrera
+                        messages.warning(request, 'Salida Socio Autorizada')
                         rta = '#1' #salida socio
                         funcionEliminarEstacionado(entrada)
 
@@ -335,12 +336,15 @@ def respuesta(request):
                                 cicloCaja=cicloCaja_
                             )
                             entrada.save()
+                            messages.warning(request, 'Salida Socio-Moroso Autorizada')
                             rta = '#1'   #salida sociomoroso autorizada
                             # Registro Socio Moroso Cobro por NoSocio
                             funcionEliminarEstacionado(entrada)
                         else:
+                            messages.warning(request, 'Socio-Moroso no pago la Deuda o no Pago el Estacionamiento')
                             rta = '#6'  # SocioMoroso no pago Deuda o no Pago Entrada
                 except:
+                    messages.warning(request, 'La Tarjeta no Existe. Ingresar con DNI')
                     rta = '#2'  # El usuario No existe
 
             elif int(tipo) == 1:
@@ -356,6 +360,7 @@ def respuesta(request):
                             cicloCaja=cicloCaja_
                         )
                         entrada.save()
+                        messages.warning(request, 'Salida Socio Autorizada por DNI')
                         rta = '#1' #salida socio autorizada por dni
                         funcionEliminarEstacionado(entrada)
 
@@ -371,10 +376,12 @@ def respuesta(request):
                                 cicloCaja=cicloCaja_
                             )
                             entrada.save()
+                            messages.warning(request, 'Salida Socio-Moroso Autorizada por DNI')
                             rta = '#1' #salida socio moroso autorizada  
                             # Registro Socio Moroso Cobro por NoSocio
                             funcionEliminarEstacionado(entrada)
                         else:
+                            messages.warning(request, 'Salida Socio-Moroso No Autorizada Dirigirse a Portería')
                             rta = '#6'  # NoSocio no pago Deuda o no Pago Entrada
 
                 except:
@@ -388,9 +395,11 @@ def respuesta(request):
                             cicloCaja=cicloCaja_
                         )
                         entrada.save()
+                        messages.warning(request, 'Salida NoSocio Autorizada')
                         rta = '#1' #salida no socio autorizada
                         funcionEliminarEstacionado(entrada)
                     else:
+                        messages.warning(request, 'El No Socio no Pagó y Excedió Tiempo Tolerancia')
                         rta = '#5' #no puede salir
                         # El No Socio no pagó y excedió
                         # el tiempo de tolerancia
@@ -408,10 +417,12 @@ def respuesta(request):
                     )
                     entrada.save()
                     # Abrir barrera
+                    messages.warning(request, 'Salida Proveedor Autorizada')
                     rta = '#1' #salida proveedores autorizada
                     funcionEliminarEstacionado(entrada)
 
                 except:
+                    messages.warning(request, 'El Codigo que digitó es incorrecto')
                     rta = '#4'  # Error Proveedor no encontrado
 
         else:
@@ -429,6 +440,7 @@ def respuesta(request):
                             cicloCaja=cicloCaja_
                         )
                         entrada.save()
+                        messages.warning(request, 'Entrada Socio Registrada')
                         # Abrir barrera
                         rta = '#1' #Registro Socio
 
@@ -442,9 +454,11 @@ def respuesta(request):
                             cicloCaja=cicloCaja_
                         )
                         entrada.save()
+                        messages.warning(request, 'Entrada Socio-Moroso Registrada Dirigirse a Portería')
                         rta = '#0'  # Registro Socio Moroso el usuario debe dirigirse a la cabina de portería
 
                 except:
+                    messages.warning(request, 'La tarjeta que ingresó es incorrecta. Ingrese DNI')
                     rta = '#2'  # El usuario No existe ingresar DNI
 
             elif int(tipo) == 1:
@@ -460,6 +474,7 @@ def respuesta(request):
                             cicloCaja=cicloCaja_
                         )
                         entrada.save()
+                        messages.warning(request, 'Entrada Socio Registrada por DNI')
                         rta = '#1' #Registro Socio 
 
                     else:
@@ -473,6 +488,7 @@ def respuesta(request):
                         )
                         entrada.save()
                         # Abrir barrera
+                        messages.warning(request, 'Entrada Socio-Moroso Registrada por DNI')
                         rta = '#0'  # Registro Socio Moroso el usuario debe dirigirse a la cabina de portería
 
                 except:
@@ -485,6 +501,7 @@ def respuesta(request):
                         cicloCaja=cicloCaja_
                     )
                     entrada.save()
+                    messages.warning(request, 'Entrada Registrada por DNI. Acercarse a Portería.')
                     rta = '#3'  # NoSocio registrado el usuarios debe dirigirse a la cabina de portería
 
             else:
@@ -500,9 +517,11 @@ def respuesta(request):
                     )
                     entrada.save()
                     # Abrir barrera
+                    messages.warning(request, 'Entrada Proveedor Registrada')
                     rta = '#1'  #Entrada autorizada
 
                 except:
+                    messages.warning(request, 'El Codigo que digitó es incorrecto')
                     rta = '#4'  # Error Proveedor no encontrado
             try:
                 funcionEliminarEstacionado(entrada)
@@ -511,7 +530,7 @@ def respuesta(request):
             except:
                 pass
 
-        return HttpResponse(rta)
+        return JsonResponse(rta,safe=False)
 
 
 @login_required

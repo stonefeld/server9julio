@@ -154,6 +154,7 @@ class RegistroEstacionamiento(models.Model):
     def save(self, *args, **kwargs):
         if self.tipo == 'SOCIO' or self.tipo == 'SOCIO-MOROSO':
             self.identificador = self.persona.nombre_apellido
+            self.noSocio = self.persona.dni
 
         elif self.tipo == 'NOSOCIO':
             self.identificador = self.noSocio

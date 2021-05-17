@@ -107,60 +107,99 @@ document.getElementById('saveNumTarj').addEventListener('click',()=>{
 agarrarDatosTarjetaYDir()
 });
 
-function agarrarDatosTarjetaYDir(){
-var numTarjeta = document.getElementById('numTarjeta').value
-var entradaTarj = document.getElementById('entradaTarjeta')
-var salidaTarj = document.getElementById('salidaTarjeta')
+const agarrarDatosTarjetaYDir = async () => {
+  var numTarjeta = document.getElementById('numTarjeta').value
+  var entradaTarj = document.getElementById('entradaTarjeta')
+  var salidaTarj = document.getElementById('salidaTarjeta')
 
-if(entradaTarj.checked){
-    var checkedTarj = document.getElementById('entradaTarjeta').value
-    fetch(`/estacionamiento/?tipo=0&dato=${numTarjeta}&direccion=${checkedTarj}`)
-}
-else if(salidaTarj){
-    var checkedTarj2 = document.getElementById('salidaTarjeta').value
-    fetch(`/estacionamiento/?tipo=0&dato=${numTarjeta}&direccion=${checkedTarj2}`)
-}
+  if(entradaTarj.checked){
+      var checkedTarj = document.getElementById('entradaTarjeta').value
+      try{
+        const res = await fetch(`/estacionamiento/?tipo=0&dato=${numTarjeta}&direccion=${checkedTarj}`)
+        const resp = await res.json();
+        redirect();
+      }catch (err){
+        console.error(err);
+      }
+      
+  }
+  else if(salidaTarj){
+      var checkedTarj2 = document.getElementById('salidaTarjeta').value
+      try{
+        const res = await fetch(`/estacionamiento/?tipo=0&dato=${numTarjeta}&direccion=${checkedTarj2}`)
+        const resp = await res.json();
+        redirect();
+      }catch (err){
+        console.error(err);
+      }
+  }
 }
 
 document.getElementById('saveNumDNI').addEventListener('click',()=>{
 agarrarDatosDNIYDir()
 });
 
-function agarrarDatosDNIYDir(){
-var numDNI = document.getElementById('numDNI').value
-var entradaDNI = document.getElementById('entradaDNI')
-var salidaDNI = document.getElementById('salidaDNI')
+const agarrarDatosDNIYDir = async () =>{
+  var numDNI = document.getElementById('numDNI').value
+  var entradaDNI = document.getElementById('entradaDNI')
+  var salidaDNI = document.getElementById('salidaDNI')
 
-if(entradaDNI.checked){
-    var checkedDNI = document.getElementById('entradaDNI').value
-    fetch(`/estacionamiento/?tipo=1&dato=${numDNI}&direccion=${checkedDNI}`)
-}
-else if(salidaDNI){
-    var checkedDNI2 = document.getElementById('salidaDNI').value
-    fetch(`/estacionamiento/?tipo=1&dato=${numDNI}&direccion=${checkedDNI2}`)
-}
-}
+  if(entradaDNI.checked){
+      var checkedDNI = document.getElementById('entradaDNI').value
+      try{
+        const res = await fetch(`/estacionamiento/?tipo=1&dato=${numDNI}&direccion=${checkedDNI}`)
+        const resp = await res.json();
+        redirect();
+      }catch (err){
+        console.error(err);
+      }
+  }
+  else if(salidaDNI){
+      var checkedDNI2 = document.getElementById('salidaDNI').value
+      try{
+        const res = await fetch(`/estacionamiento/?tipo=1&dato=${numDNI}&direccion=${checkedDNI2}`)
+        const resp = await res.json();
+        redirect();
+      }catch (err){
+        console.error(err);
+      }
+  }
+};
 
 document.getElementById('saveNumProveedor').addEventListener('click',()=>{
 agarrarProveedoresYDir()
 });
 
-function agarrarProveedoresYDir(){
-var numProv = document.getElementById('numProv').value
-var entradaProv = document.getElementById('entradaProv')
-var salidaProv = document.getElementById('salidaProv')
+const agarrarProveedoresYDir = async () =>{
+  var numProv = document.getElementById('numProv').value
+  var entradaProv = document.getElementById('entradaProv')
+  var salidaProv = document.getElementById('salidaProv')
 
-if(entradaProv.checked){
-    var checkedProv = document.getElementById('entradaProv').value
-    fetch(`/estacionamiento/?tipo=2&dato=${numProv}&direccion=${checkedProv}`)
-}
-else if(salidaProv){
-    var checkedProv2 = document.getElementById('salidaProv').value
-    fetch(`/estacionamiento/?tipo=2&dato=${numProv}&direccion=${checkedProv2}`)
-}
+  if(entradaProv.checked){
+      var checkedProv = document.getElementById('entradaProv').value
+      try{
+        const res = await fetch(`/estacionamiento/?tipo=2&dato=${numProv}&direccion=${checkedProv}`)
+        const resp = await res.json();
+        redirect();
+      }catch (err){
+        console.error(err);
+      }
+  }
+  else if(salidaProv){
+      var checkedProv2 = document.getElementById('salidaProv').value
+      try{
+        const res = await fetch(`/estacionamiento/?tipo=2&dato=${numProv}&direccion=${checkedProv2}`)
+        const resp = await res.json();
+        redirect();
+      }catch (err){
+        console.error(err);
+      }
+  }
+};
 
-}
-    
+const redirect = () =>{
+  location.href = "/menu_estacionamiento/playground"
+};
 </script>
 
 
