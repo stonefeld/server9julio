@@ -105,7 +105,7 @@ def pago_deuda(request, id):
 def emision_resumen_anterior(request, id):
     cicloCajaR = CicloCaja.objects.get(id=id)
     cicloMensualActual = CicloMensual.objects.all().last()
-    if cicloMensualActual.cicloMensual == cicloCajaR.cicloMensual.cicloMensual :
+    if cicloMensualActual.cicloMensual == cicloCajaR.cicloMensual.cicloMensual:
         return redirect('menu_estacionamiento:menu_estacionamiento')
 
     else:
@@ -129,7 +129,9 @@ def emision_resumen_anterior(request, id):
 
         writer.writerows(output)
         response['Content-Disposition'] = \
-            'attachment; filename="Resumen_Mensual.csv"'
+            'attachment; filename="resumen_mensual_'\
+            f'{cicloCajaR.cicloMensual.cicloMensual}_año_'\
+            f'{cicloCajaR.cicloMensual.cicloAnual.cicloAnual}.csv"'
         return response
 
 
@@ -158,10 +160,12 @@ def emision_resumen_mensual(request):  # Falta testing
 
         writer.writerows(output)
         response['Content-Disposition'] = \
-            'attachment; filename="Resumen_Mensual.csv"'
+            'attachment; filename="resumen_mensual_'\
+            f'{cicloMensual_.cicloMensual}_año_'\
+            f'{cicloMensual_.cicloAnual.cicloAnual}.csv"'
         cicloAnual_ = CicloAnual.objects.all().last()
 
-        if (cicloMensual_.cicloMensual >= 12):
+        if cicloMensual_.cicloMensual >= 12:
             cicloAnual_ = CicloAnual(cicloAnual=(cicloAnual_.cicloAnual + 1))
             cicloAnual_.save()
             cicloAnual_ = CicloAnual.objects.all().last()
@@ -203,7 +207,7 @@ def cierre_caja(request):
         recaudado['recaudacion'] = '0.0'
 
     dinero = recaudado['recaudacion']
-    messages.warning(request, 'Lo recaudado en esta caja fue de $' + dinero)
+    messages.warning(request, f'Lo recaudado en esta caja fue de ${dinero}')
     return redirect('menu_estacionamiento:menu_estacionamiento')
     # return HttpResponse(recaudado['recaudacion'])
 
@@ -476,23 +480,16 @@ def respuesta(request):
 def historial_estacionamiento(request):
     if request.method == 'GET':
         estacionamiento = RegistroEstacionamiento.objects.all()
+
         busqueda = request.GET.get('buscar')
         fecha = request.GET.get('fecha')
         tiempo = request.GET.get('tiempo')
         caja_input = request.GET.get('caja')
         mensual_input = request.GET.get('caja_mensual')
 
-        anuales = CicloAnual.objects.all()
-        ciclo_anual = list(anuales.values())
-        ciclo_mensual = []
-        ciclo_caja = []
-        for anual in anuales:
-            mensuales = CicloMensual.objects.all().filter(cicloAnual=anual.id)
-            ciclo_mensual += list(mensuales.values())
-            for mensual in mensuales:
-                ciclo_caja += (list(CicloCaja.objects.all().filter(
-                    cicloMensual=mensual.id
-                ).values()))
+        ciclo_anual = list(CicloAnual.objects.all().values())
+        ciclo_mensual = list(CicloMensual.objects.all().values())
+        ciclo_caja = list(CicloCaja.objects.all().values())
 
         if busqueda:
             estacionamiento = estacionamiento.filter(
@@ -516,11 +513,15 @@ def historial_estacionamiento(request):
 
         if caja_input:
             estacionamiento = estacionamiento.filter(cicloCaja=caja_input)
+            messages.info(request, f'Visualizando \
+                          {CicloCaja.objects.get(id=caja_input)}')
 
         if mensual_input:
             estacionamiento = estacionamiento.filter(
                 cicloCaja__cicloMensual=mensual_input
             )
+            messages.info(request, f'Visualizando \
+                          {CicloMensual.objects.get(id=mensual_input)}')
 
         table = HistorialEstacionamientoTable(estacionamiento)
         RequestConfig(request).configure(table)
@@ -530,7 +531,8 @@ def historial_estacionamiento(request):
             'estacionamiento/historial.html',
             {'table': table, 'title': 'Historial',
              'anual': ciclo_anual, 'mensual': ciclo_mensual,
-             'caja': ciclo_caja}
+             'caja': ciclo_caja, 'viscaja': caja_input,
+             'vismes': mensual_input}
         )
 
 
@@ -547,7 +549,8 @@ def detalle_estacionamiento(request, id):
         cobrado = 'False'
 
     return render(request, 'estacionamiento/detalle_historial.html',
-                  {'datos': datos, 'title': 'Detalle Historial', 'cobrado': cobrado})
+                  {'datos': datos, 'title': 'Detalle Historial',
+                   'cobrado': cobrado})
 
 
 @login_required
@@ -606,14 +609,16 @@ def editar_estacionamiento(request, id):
                     # pero el socio sigue teniendo deuda, que la entrada cambie
                     # por la fuerza a socio-moroso nuevamente y se asegure
                     # que el autorizado se mantenga en False.
-                    if not per.general and form.cleaned_data['tipo'] == 'SOCIO':
+                    if (not per.general and
+                       form.cleaned_data['tipo'] == 'SOCIO'):
                         form.cleaned_data['tipo'] = 'SOCIO-MOROSO'
                         form.cleaned_data['autorizado'] = funcionCobros(dni)
                         messages.warning(request, 'El tipo de entrada fue \
                                          cambiada a SOCIO-MOROSO por tener \
                                          deuda')
 
-                    if per.general and form.cleaned_data['tipo'] == 'SOCIO-MOROSO':
+                    if (per.general and
+                       form.cleaned_data['tipo'] == 'SOCIO-MOROSO'):
                         form.cleaned_data['tipo'] = 'SOCIO'
                         form.cleaned_data['autorizado'] = True
                         messages.warning(request, 'El tipo de entrada fue \
@@ -738,7 +743,8 @@ def fetch_Events(request):
         eventos = Dia_Especial.objects.values("dia_Especial").all()
         listeventos = []
         for evento in eventos:
-            date_splitted = evento['dia_Especial'].strftime('%d/%m/%Y').split('/')
+            date_splitted = evento['dia_Especial'].\
+                strftime('%d/%m/%Y').split('/')
             if date_splitted[0][0] == '0':
                 day = date_splitted[0][1]
             else:
@@ -752,7 +758,7 @@ def fetch_Events(request):
 
             year = date_splitted[2]
             final_date = f'{day}/{month}/{year}'
-            diction = { "date" : final_date }
+            diction = {'date': final_date}
             listeventos.append(diction)
         return JsonResponse(listeventos, safe=False)
     else:

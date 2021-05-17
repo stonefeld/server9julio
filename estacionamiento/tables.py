@@ -25,7 +25,7 @@ class EstacionadosTable(tables.Table):  # Necesita Tipo de dato
         empty_text = 'No hay ninguna entrada registrada'
 
 
-class ProveedoresTable(tables.Table):  
+class ProveedoresTable(tables.Table):
     idProveedor = tables.Column()
     nombre_proveedor = tables.Column()
 

@@ -11,6 +11,11 @@
 
   <div id="mySidebar" class="sidebar">
     <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">x</a>
+    {% if not anual %}
+      <a href="#">No hay ciclos.</a>
+    {% else %}
+      <a href="{% url 'estacionamiento:historial' %}">Todos</a>
+    {% endif %}
     {% for ca in anual %}
       <button class="dropdown-btn">Ciclo Anual {{ ca.cicloAnual }}
         <i class="caret fa fa-caret-down" style="display: none"></i>
@@ -52,6 +57,11 @@
                 <div class="form-row">
                   <div class="form-group col-12">
                     <div class="input-group">
+                      {% if viscaja %}
+                        <input name="caja" value="{{ viscaja }}" style="display:none"></input>
+                      {% elif vismes %}
+                        <input name="caja_mensual" value="{{ vismes }}" style="display:none"></input>
+                      {% endif %}
                       <input class="form-control" type="text" placeholder="Buscar..." name="buscar" value=""/>
                       <button class="btn btn-secondary" type="submit" style="margin-left:20px;">
                         <i>Buscar</i>
@@ -70,10 +80,6 @@
           <div class="p-2">
             <button type="button" class="btn btn-outline-info"  data-toggle="modal" data-target="#exampleModal">Filtro avanzado</button>
           </div>
-
-          <div class="p-2">
-            <a href="{% url 'usuario:historial' %}" class="btn btn-outline-info" style="float: right">Molinetes </a>
-          </div>
         </div>
 
         <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -87,6 +93,11 @@
               </div>
               <div class="modal-body">
                 <form method="GET">
+                  {% if viscaja %}
+                    <input name="caja" value="{{ viscaja }}" style="display:none"></input>
+                  {% elif vismes %}
+                    <input name="caja_mensual" value="{{ vismes }}" style="display:none"></input>
+                  {% endif %}
                   <div class="form-row">
                     <div class="form-group col-md-12">
                       <div class="input-group">
