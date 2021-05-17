@@ -1,3 +1,4 @@
+from datetime import datetime
 from django.db import models
 from django.utils.timezone import now
 
@@ -190,9 +191,9 @@ class Dia_Especial(models.Model):
     dia_Especial = models.DateField(verbose_name="DiaEspecial")
 
 class Horarios_Precio(models.Model):
-    inicio = models.TimeField()
-    final = models.TimeField()
-    precio = models.FloatField()
+    inicio = models.TimeField(default="00:00:00")
+    final = models.TimeField(default="00:00:00")
+    precio = models.FloatField(default=250.0)
 
 class TarifaEspecial(models.Model):
-    precio = models.FloatField()
+    precio = models.FloatField(default=250.0)
