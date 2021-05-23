@@ -55,59 +55,65 @@ def apertura_Manual(request):
         return render(request, 'estacionamiento/apertura_manual.html',
                       {'form': form, 'title': 'Apertura Manual'})
 
+
 @csrf_exempt
 @login_required
 def cobrarEntrada(request, id):
     if request.method == 'GET':
-        entradaCobrar = RegistroEstacionamiento.objects.get(id = id)
+        entradaCobrar = RegistroEstacionamiento.objects.get(id=id)
         today = datetime.date(datetime.now())
         dia_Especial = Dia_Especial.objects.filter(
             Q(dia_Especial=today)
         ).distinct()
         if dia_Especial:
-            #Hoy es día Especial
+            # Hoy es día Especial
             tarifaEspacial = TarifaEspecial.objects.all().last()
             return JsonResponse(tarifaEspacial.precio, safe=False)
+
         time = datetime.time(datetime.now())
         horarios = Horarios_Precio.objects.all()
         i = 0
         for horario in horarios:
             i = i + 1
             diference = max(time, horario.final)
-            if time < horario.final or i == 3 :
+            if time < horario.final or i == 3:
                 tarifaNormal = horario.precio
                 break
+
         return JsonResponse(tarifaNormal, safe=False)
+
     else:
-        entradaCobrar = RegistroEstacionamiento.objects.get(id = id)
+        entradaCobrar = RegistroEstacionamiento.objects.get(id=id)
         today = datetime.date(datetime.now())
         dia_Especial = Dia_Especial.objects.filter(
             Q(dia_Especial=today)
         ).distinct()
         if dia_Especial:
-            #Hoy es día Especial
+            # Hoy es día Especial
             tarifaEspacial = TarifaEspecial.objects.all().last()
-            cobro = Cobros(precio=tarifaEspacial.precio, 
-                            registroEstacionamiento = entradaCobrar, deuda=False)
+            cobro = Cobros(precio=tarifaEspacial.precio,
+                           registroEstacionamiento=entradaCobrar, deuda=False)
             cobro.save()
-            messages.warning(request, 'Cobro por $' + f'{tarifaEspacial}')
-            #return redirect("estacionamiento:historial")
+            messages.warning(request, f'Cobro por ${tarifaEspacial}')
+            # return redirect("estacionamiento:historial")
             return JsonResponse("Ok", safe=False)
+
         time = datetime.time(datetime.now())
         horarios = Horarios_Precio.objects.all()
         i = 0
         for horario in horarios:
             i = i + 1
-            if time < horario.final or i == 3 :
+            if time < horario.final or i == 3:
                 tarifaNormal = horario.precio
                 break
 
-        cobro = Cobros(precio = tarifaNormal, 
-                        registroEstacionamiento = entradaCobrar, deuda=False)
+        cobro = Cobros(precio=tarifaNormal,
+                       registroEstacionamiento=entradaCobrar, deuda=False)
         cobro.save()
         messages.warning(request, 'Cobro por $' + f'{tarifaNormal}')
-        #return redirect("estacionamiento:historial")
+        # return redirect("estacionamiento:historial")
         return JsonResponse("Ok", safe=False)
+
 
 @csrf_exempt
 @login_required
