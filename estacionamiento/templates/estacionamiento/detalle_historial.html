@@ -69,18 +69,20 @@
             <div>
               <a href="{% url 'estacionamiento:historial' %}" style="text-decoration:none" class="btn btn-outline-info">Cancelar</a>
               <a href="{% url 'estacionamiento:editar' datos.id %}" style="text-decoration:none" class="btn btn-outline-info">Editar</a>
-              {% if cobrado == 'False' %}
-                {% if datos.tipo == 'NOSOCIO' or datos.tipo == 'SOCIO-MOROSO' %}
-                  <!--<a href="{% url 'estacionamiento:cobrarEntrada' datos.id %}" style="text-decoration:none" class="btn btn-outline-info" id="cobrar">Cobrar</a>-->
-                  <a style="text-decoration:none"></a>
-                    <button style="text-decoration:none" class="btn btn-outline-info" data-toggle="modal" data-target="#modalCobrar" id = "cobrarEntrada">Cobrar</button>
-                  </a>
-                {% endif %}
-                {% if datos.tipo == 'SOCIO-MOROSO'%}
-                  <!--<a href="{% url 'estacionamiento:pago_deuda' datos.id %}" style="text-decoration:none" class="btn btn-outline-info" id="pagarDeuda">Regularizar Deuda</a>-->
-                  <a style="text-decoration:none"></a>
-                    <button style="text-decoration:none" class="btn btn-outline-info" data-toggle="modal" data-target="#modalDeuda" id = "pagarDeuda">Regularizar Deuda</button>
-                  </a>
+              {% if datos.direccion == 'ENTRADA'%}
+                {% if cobrado == 'False'%}
+                  {% if datos.tipo == 'NOSOCIO' or datos.tipo == 'SOCIO-MOROSO' %}
+                    <!--<a href="{% url 'estacionamiento:cobrarEntrada' datos.id %}" style="text-decoration:none" class="btn btn-outline-info" id="cobrar">Cobrar</a>-->
+                    <a style="text-decoration:none"></a>
+                      <button style="text-decoration:none" class="btn btn-outline-info" data-toggle="modal" data-target="#modalCobrar" id = "cobrarEntrada">Cobrar</button>
+                    </a>
+                  {% endif %}
+                  {% if datos.tipo == 'SOCIO-MOROSO'%}
+                    <!--<a href="{% url 'estacionamiento:pago_deuda' datos.id %}" style="text-decoration:none" class="btn btn-outline-info" id="pagarDeuda">Regularizar Deuda</a>-->
+                    <a style="text-decoration:none"></a>
+                      <button style="text-decoration:none" class="btn btn-outline-info" data-toggle="modal" data-target="#modalDeuda" id = "pagarDeuda">Regularizar Deuda</button>
+                    </a>
+                  {% endif %}
                 {% endif %}
               {% endif %}
             </div>

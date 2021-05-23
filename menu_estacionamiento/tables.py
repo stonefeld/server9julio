@@ -6,6 +6,7 @@ class HistorialCajas(tables.Table):  # Necesita Tipo de dato
     cicloMensual__cicloAnual__cicloAnual = tables.Column(verbose_name="Año")
     cicloCaja = tables.Column(verbose_name="Caja")
     recaudado = tables.Column()
+    usuarioCaja = tables.Column()
 
     class Meta:
         template_name = 'table_template.html'
