@@ -73,7 +73,6 @@ def cobrarEntrada(request, id):
         i = 0
         for horario in horarios:
             i = i + 1
-            diference = max(time, horario.final)
             if time < horario.final or i == 3 :
                 tarifaNormal = horario.precio
                 break
@@ -223,6 +222,24 @@ def emision_resumen_mensual(request):  # Falta testing
     else:
         messages.warning(request, 'Error debe cerrar caja primero')
         return redirect('menu_estacionamiento:menu_estacionamiento')
+
+def emision_resumen_mensual_get(request):
+    cicloCaja_ = CicloCaja.objects.all().last()
+    if cicloCaja_.recaudado is not None:
+        cicloMensual_ = CicloMensual.objects.all().last()
+        resp = {
+            "inicio": datetime.date(cicloMensual_.inicioMes),
+            "final": datetime.date(now()),
+            "caja" : ''
+        }
+        return JsonResponse(resp, safe=False)
+    else:
+        resp = {
+            "inicio": '',
+            "final": '',
+            "caja" : 'Error debe cerrar caja primero'
+        }
+        return JsonResponse(resp, safe=False)
 
 @csrf_exempt
 @login_required
