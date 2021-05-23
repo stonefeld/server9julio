@@ -69,8 +69,8 @@
             <div>
               <a href="{% url 'estacionamiento:historial' %}" style="text-decoration:none" class="btn btn-outline-info">Cancelar</a>
               <a href="{% url 'estacionamiento:editar' datos.id %}" style="text-decoration:none" class="btn btn-outline-info">Editar</a>
-              {% if datos.direccion == 'ENTRADA'%}
-                {% if cobrado == 'False'%}
+              {% if datos.direccion == 'ENTRADA' %}
+                {% if cobrado == 'False' %}
                   {% if datos.tipo == 'NOSOCIO' or datos.tipo == 'SOCIO-MOROSO' %}
                     <!--<a href="{% url 'estacionamiento:cobrarEntrada' datos.id %}" style="text-decoration:none" class="btn btn-outline-info" id="cobrar">Cobrar</a>-->
                     <a style="text-decoration:none"></a>

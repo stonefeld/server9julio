@@ -362,7 +362,7 @@ def respuesta(request):
                         entrada.save()
                         # abrir barrera
                         messages.warning(request, 'Salida Socio Autorizada')
-                        rta = '#1' #salida socio
+                        rta = '#1'  # salida socio
                         funcionEliminarEstacionado(entrada)
 
                     else:
@@ -378,12 +378,14 @@ def respuesta(request):
                             )
                             entrada.save()
                             messages.warning(request, 'Salida Socio-Moroso Autorizada')
-                            rta = '#1'   #salida sociomoroso autorizada
+                            rta = '#1'  # salida sociomoroso autorizada
                             # Registro Socio Moroso Cobro por NoSocio
                             funcionEliminarEstacionado(entrada)
+
                         else:
                             messages.warning(request, 'Socio-Moroso no pago la Deuda o no Pago el Estacionamiento')
                             rta = '#6'  # SocioMoroso no pago Deuda o no Pago Entrada
+
                 except:
                     messages.warning(request, 'La Tarjeta no Existe. Ingresar con DNI')
                     rta = '#2'  # El usuario No existe
@@ -421,6 +423,7 @@ def respuesta(request):
                             rta = '#1' #salida socio moroso autorizada  
                             # Registro Socio Moroso Cobro por NoSocio
                             funcionEliminarEstacionado(entrada)
+
                         else:
                             messages.warning(request, 'Salida Socio-Moroso No Autorizada Dirigirse a Portería')
                             rta = '#6'  # NoSocio no pago Deuda o no Pago Entrada
@@ -437,11 +440,12 @@ def respuesta(request):
                         )
                         entrada.save()
                         messages.warning(request, 'Salida NoSocio Autorizada')
-                        rta = '#1' #salida no socio autorizada
+                        rta = '#1'  # salida no socio autorizada
                         funcionEliminarEstacionado(entrada)
+
                     else:
                         messages.warning(request, 'El No Socio no Pagó y Excedió Tiempo Tolerancia')
-                        rta = '#5' #no puede salir
+                        rta = '#5'  # no puede salir
                         # El No Socio no pagó y excedió
                         # el tiempo de tolerancia
 
@@ -459,7 +463,7 @@ def respuesta(request):
                     entrada.save()
                     # Abrir barrera
                     messages.warning(request, 'Salida Proveedor Autorizada')
-                    rta = '#1' #salida proveedores autorizada
+                    rta = '#1'  # salida proveedores autorizada
                     funcionEliminarEstacionado(entrada)
 
                 except:

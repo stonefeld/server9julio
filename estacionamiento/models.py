@@ -36,8 +36,8 @@ class AperturaManual(models.Model):
         entrada.save()
 
     class Meta:
-        verbose_name = "AperturaManual"
-        verbose_name_plural = "AperturasManuales"
+        verbose_name = 'Apertura Manual'
+        verbose_name_plural = 'Aperturas Manuales'
 
 
 class Proveedor(models.Model):
@@ -46,8 +46,8 @@ class Proveedor(models.Model):
             max_length=30, verbose_name='Proveedor')
 
     class Meta:
-        verbose_name = "Proveedor"
-        verbose_name_plural = "Proveedores"
+        verbose_name = 'Proveedor'
+        verbose_name_plural = 'Proveedores'
 
     def __str__(self):
         return str(self.nombre_proveedor)
@@ -67,8 +67,8 @@ class CicloAnual(models.Model):
     cicloAnual = models.IntegerField(verbose_name='cicloAnual')
 
     class Meta:
-        verbose_name = "Ciclo Anual"
-        verbose_name_plural = "Ciclos Anuales"
+        verbose_name = 'Ciclo Anual'
+        verbose_name_plural = 'Ciclos Anuales'
 
     def __str__(self):
         return f'Año: {self.cicloAnual}'
@@ -82,8 +82,8 @@ class CicloMensual(models.Model):
     finalMes = models.DateTimeField(verbose_name='final',null=True, blank=True)
     #todo debe de hacerse desde el view.
     class Meta:
-        verbose_name = "Ciclo Mensual"
-        verbose_name_plural = "Ciclos Mensuales"
+        verbose_name = 'Ciclo Mensual'
+        verbose_name_plural = 'Ciclos Mensuales'
 
     def __str__(self):
         return f'Mes: {self.cicloMensual} Año: {self.cicloAnual.cicloAnual}'
@@ -102,8 +102,8 @@ class CicloCaja(models.Model):
 
 
     class Meta:
-        verbose_name = "Ciclo Caja"
-        verbose_name_plural = "Ciclos Caja"
+        verbose_name = 'Ciclo Caja'
+        verbose_name_plural = 'Ciclos Caja'
 
 
     def __str__(self):
@@ -176,8 +176,8 @@ class RegistroEstacionamiento(models.Model):
         super().save(*args, **kwargs)
 
     class Meta:
-        verbose_name = "Registro Estacionamiento"
-        verbose_name_plural = "Registros Estacionamiento"
+        verbose_name = 'Registro Estacionamiento'
+        verbose_name_plural = 'Registros Estacionamiento'
 
 
 class Cobros(models.Model):
@@ -197,22 +197,45 @@ class Cobros(models.Model):
 class Estacionado(models.Model):
     registroEstacionamiento = models.ForeignKey(
                 RegistroEstacionamiento, on_delete=models.CASCADE,
-                verbose_name='registroEstacionamiento')
+                verbose_name='Registro Estacionamiento')
 
     def __str__(self):
-        return f'{self.tiempo} - {self.identificador}'
+        return f'{self.registroEstacionamiento.tiempo} - {self.registroEstacionamiento.identificador}'
 
     def get_absolute_url(self):
         return f'/estacionamiento/historial/{self.registroEstacionamiento.id}/'
 
 
-class Dia_Especial(models.Model):
-    dia_Especial = models.DateField(verbose_name="DiaEspecial")
-
 class Horarios_Precio(models.Model):
-    inicio = models.TimeField(default="00:00:00")
-    final = models.TimeField(default="00:00:00")
-    precio = models.FloatField(default=250.0)
+    inicio = models.TimeField(default='00:00:00', verbose_name='Inicio')
+    final = models.TimeField(default='00:00:00', verbose_name='Fín')
+    precio = models.FloatField(default=250.0, verbose_name='Precio')
+
+    class Meta:
+        verbose_name = 'Precio de Horarios'
+        verbose_name_plural = 'Precios de Horarios'
+
+    def __str__(self):
+        return f'Horario de inicio: {self.inicio}, horario de fin: {self.final}, precio: {self.precio}'
+
+
+class Dia_Especial(models.Model):
+    dia_Especial = models.DateField(verbose_name='Día Especial')
+
+    class Meta:
+        verbose_name = 'Día Especial'
+        verbose_name_plural = 'Días Especiales'
+
+    def __str__(self):
+        return f'Día Especial: {self.dia_Especial}'
+
 
 class TarifaEspecial(models.Model):
-    precio = models.FloatField(default=250.0)
+    precio = models.FloatField(default=250.0, verbose_name='Precio')
+
+    class Meta:
+        verbose_name = 'Tarifa Especial'
+        verbose_name_plural = 'Tarifas Especiales'
+
+    def __str__(self):
+        return f'Tarifa especial: {self.precio}'
