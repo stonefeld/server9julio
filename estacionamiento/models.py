@@ -1,7 +1,7 @@
 from datetime import datetime
 from django.db import models
 from django.utils.timezone import now
-
+from django.contrib.auth.models import User
 from usuario.models import Persona
 
 
@@ -78,7 +78,9 @@ class CicloMensual(models.Model):
     cicloMensual = models.IntegerField(verbose_name='cicloMensual')
     cicloAnual = models.ForeignKey(
             CicloAnual, on_delete=models.CASCADE, verbose_name='cicloAnual')
-
+    inicioMes = models.DateTimeField(verbose_name='inicio',null=True, blank=True)
+    finalMes = models.DateTimeField(verbose_name='final',null=True, blank=True)
+    #todo debe de hacerse desde el view.
     class Meta:
         verbose_name = "Ciclo Mensual"
         verbose_name_plural = "Ciclos Mensuales"
@@ -94,10 +96,15 @@ class CicloCaja(models.Model):
     cicloMensual = models.ForeignKey(
             CicloMensual, on_delete=models.CASCADE,
             verbose_name='cicloMensual')
+    inicioCaja = models.DateTimeField(verbose_name='inicio',null=True, blank=True)
+    finalCaja = models.DateTimeField(verbose_name='final', null=True, blank=True)
+    usuarioCaja = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+
 
     class Meta:
         verbose_name = "Ciclo Caja"
         verbose_name_plural = "Ciclos Caja"
+
 
     def __str__(self):
         return f'Caja: {self.cicloCaja} Mes: {self.cicloMensual.cicloMensual} Año: {self.cicloMensual.cicloAnual.cicloAnual}'
@@ -144,7 +151,8 @@ class RegistroEstacionamiento(models.Model):
     aperturaManual = models.ForeignKey(
             AperturaManual, on_delete=models.CASCADE,
             verbose_name='AperturaManual', null=True, blank=True)
-
+    usuarioEditor = models.ForeignKey(User,
+            on_delete=models.CASCADE, null=True, blank=True)
     def __str__(self):
         return f'{self.tiempo} - {self.identificador}'
 
@@ -175,10 +183,16 @@ class RegistroEstacionamiento(models.Model):
 class Cobros(models.Model):
     precio = models.FloatField(verbose_name='precio')
     deuda = models.BooleanField(default=False, verbose_name='deuda')
+    usuarioCobro = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     registroEstacionamiento = models.ForeignKey(
             RegistroEstacionamiento, on_delete=models.CASCADE,
             verbose_name='registroEstacionamiento')
-
+    class Meta:
+        verbose_name = "Cobro"
+        verbose_name_plural = "Cobros"
+    
+    def __str__(self):
+        return f'Usuario: {self.registroEstacionamiento.identificador} - Precio: ${self.precio}'
 
 class Estacionado(models.Model):
     registroEstacionamiento = models.ForeignKey(
