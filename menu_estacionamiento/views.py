@@ -131,6 +131,12 @@ def proveedores(request):
 
 
 @login_required
+def listaUsuarios(request):
+    return render(request, 'menu_estacionamiento/lista_usuarios.html',
+                  {'title': 'Lista de socios'})
+
+
+@login_required
 def historial(request):
     return render(
         request,
