@@ -67,10 +67,10 @@
               </button>
             </div>
             <div class="modal-body">
-              <p id = 'recaudadoTexto'>Lo recaudado en esta Caja Fue: $</p>
+              <p id = 'tiempoTexto'>El mes comienza el ... y finaliza hoy</p>
             </div>
             <div class="modal-footer">
-              <button type="button" class="btn btn-primary" id = "cerrarCaja">Cerrar Caja</button>
+              <button type="button" class="btn btn-primary" id = "emitirMes">Emitir resumen mensual</button>
               <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
             </div>
           </div>
@@ -133,7 +133,7 @@
         };
         const resumenMensual = async () => {
           try {
-            const res = await fetch('/estacionamiento/emision-resumen');
+            const res = await fetch('/estacionamiento/emision-resumen-get');
             var mes = await res.json();
             console.log(mes);
             loadmes(mes);
@@ -141,10 +141,19 @@
             console.error(err);
           }
         };
-        const loadmes = async (mes) => {
+        const loadmes = async (mes) =>{
           const inicio = mes.inicio
           const final = mes.final
-          document.getElementById("recaudadoTexto").innerHTML = `El mes comienza el $${recolectado}`
+          const cerrarCaja = mes.caja
+          if (cerrarCaja == ''){
+            document.getElementById("tiempoTexto").innerHTML = `El mes comienza el ${inicio} y finaliza ${final} `
+          }
+          else{
+            document.getElementById("tiempoTexto").innerHTML = cerrarCaja
+          }
+        };
+        const emitirMes = async () => {
+          location.href = "/estacionamiento/emision-resumen"
         };
         document.getElementById('CajaCerrar').addEventListener('click', () => {
           loadCaja();
@@ -154,6 +163,9 @@
         });
         document.getElementById('cerrarMes').addEventListener('click',() =>{
           resumenMensual();
+        });
+        document.getElementById('emitirMes').addEventListener('click', () =>{
+          emitirMes();
         });
       </script>
 

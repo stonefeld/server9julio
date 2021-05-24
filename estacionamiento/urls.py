@@ -13,6 +13,8 @@ urlpatterns = [
          name='cobrarEntrada'),
     path('emision-resumen/', views.emision_resumen_mensual,
          name='resumen-mensual'),
+     path('emision-resumen-get/', views.emision_resumen_mensual_get,
+         name='resumen-mensual-get'),
     path('cierre-caja/', views.cierre_caja, name='cierre-caja'),
     path('fetch/', views.fetch_proveedores, name='fetch-proveedores'),
     path('proveedor/add/', views.add_proveedor, name='agregar-proveedor'),
