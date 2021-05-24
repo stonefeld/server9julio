@@ -7,7 +7,7 @@ import os
 from django.conf import settings
 from django.core.paginator import Paginator
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib.auth.decorators import login_required
 from django.db.models import Q, Sum, Count
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
@@ -19,7 +19,7 @@ from django_tables2 import RequestConfig
 from .models import (
     RegistroEstacionamiento, Proveedor,
     CicloCaja, CicloMensual, Persona, CicloAnual,
-    Cobros, Estacionado, AperturaManual, TarifaEspecial,
+    Cobros, Estacionado, TarifaEspecial,
     Horarios_Precio, Dia_Especial
 )
 from .forms import EstacionamientoForm, AperturaManualForm, ProveedorForm
@@ -77,7 +77,7 @@ def cobrarEntrada(request, id):
 
         for horario in horarios:
             i = i + 1
-            if time < horario.final or i == 3 :
+            if time < horario.final or i == 3:
                 tarifaNormal = horario.precio
                 break
 
@@ -89,6 +89,7 @@ def cobrarEntrada(request, id):
         dia_Especial = Dia_Especial.objects.filter(
             Q(dia_Especial=today)
         ).distinct()
+
         if dia_Especial:
             # Hoy es día Especial
             tarifaEspacial = TarifaEspecial.objects.all().last()
@@ -98,6 +99,7 @@ def cobrarEntrada(request, id):
             messages.warning(request, 'Cobro por $' + f'{tarifaEspacial}')
             # return redirect("estacionamiento:historial")
             return JsonResponse("Ok", safe=False)
+
         time = datetime.time(datetime.now())
         horarios = Horarios_Precio.objects.all()
         i = 0
@@ -107,8 +109,12 @@ def cobrarEntrada(request, id):
                 tarifaNormal = horario.precio
                 break
 
-        cobro = Cobros(precio=tarifaNormal,
-                       registroEstacionamiento=entradaCobrar, deuda=False)
+        cobro = Cobros(
+            precio=tarifaNormal,
+            registroEstacionamiento=entradaCobrar,
+            deuda=False,
+            usuarioCobro=request.user
+        )
         cobro.save()
         messages.warning(request, 'Cobro por $' + f'{tarifaNormal}')
         # return redirect("estacionamiento:historial")
