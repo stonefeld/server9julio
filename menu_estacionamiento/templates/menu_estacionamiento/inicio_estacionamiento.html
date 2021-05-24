@@ -141,14 +141,13 @@
             console.error(err);
           }
         };
-        const loadmes = async (mes) =>{
+        const loadmes = async (mes) => {
           const inicio = mes.inicio
           const final = mes.final
           const cerrarCaja = mes.caja
-          if (cerrarCaja == ''){
-            document.getElementById("tiempoTexto").innerHTML = `El mes comienza el ${inicio} y finaliza ${final} `
-          }
-          else{
+          if (cerrarCaja == '') {
+            document.getElementById("tiempoTexto").innerHTML = `El mes comienza el ${inicio} y finaliza ${final}`
+          } else {
             document.getElementById("tiempoTexto").innerHTML = cerrarCaja
           }
         };

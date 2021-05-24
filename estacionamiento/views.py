@@ -233,6 +233,7 @@ def emision_resumen_mensual(request):  # Falta testing
         messages.warning(request, 'Error debe cerrar caja primero')
         return redirect('menu_estacionamiento:menu_estacionamiento')
 
+
 def emision_resumen_mensual_get(request):
     cicloCaja_ = CicloCaja.objects.all().last()
     if cicloCaja_.recaudado is not None:
@@ -240,16 +241,18 @@ def emision_resumen_mensual_get(request):
         resp = {
             "inicio": datetime.date(cicloMensual_.inicioMes),
             "final": datetime.date(now()),
-            "caja" : ''
+            "caja": ''
         }
         return JsonResponse(resp, safe=False)
+
     else:
         resp = {
             "inicio": '',
             "final": '',
-            "caja" : 'Error debe cerrar caja primero'
+            "caja": 'Error debe cerrar caja primero'
         }
         return JsonResponse(resp, safe=False)
+
 
 @csrf_exempt
 @login_required
