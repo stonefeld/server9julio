@@ -514,7 +514,7 @@ def respuesta(request):
                     rta = '#2'  # El usuario No existe ingresar DNI
 
             elif int(tipo) == 1:
-                try:
+                '''try:
                     user = Persona.objects.get(dni=int(dato))
                     if user.general:
                         entrada = RegistroEstacionamiento(
@@ -543,18 +543,18 @@ def respuesta(request):
                         messages.warning(request, 'Entrada Registrada por DNI. Acercarse a Portería')
                         rta = '#3'  # Registro Socio Moroso el usuario debe dirigirse a la cabina de portería
 
-                except:
-                    entrada = RegistroEstacionamiento(
-                        tipo='NOSOCIO',
-                        lugar='ESTACIONAMIENTO',
-                        noSocio=int(dato),
-                        direccion=direccion_,
-                        autorizado=True,
-                        cicloCaja=cicloCaja_
-                    )
-                    entrada.save()
-                    messages.warning(request, 'Entrada Registrada por DNI. Acercarse a Portería.')
-                    rta = '#3'  # NoSocio registrado el usuarios debe dirigirse a la cabina de portería
+                except:'''
+                entrada = RegistroEstacionamiento(
+                    tipo='NOSOCIO',
+                    lugar='ESTACIONAMIENTO',
+                    noSocio=int(dato),
+                    direccion=direccion_,
+                    autorizado=True,
+                    cicloCaja=cicloCaja_
+                )
+                entrada.save()
+                messages.warning(request, 'Entrada Registrada por DNI. Acercarse a Portería.')
+                rta = '#3'  # NoSocio registrado el usuarios debe dirigirse a la cabina de portería
 
             else:
                 try:
