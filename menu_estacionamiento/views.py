@@ -24,6 +24,7 @@ def menu_estacionamiento(request):
         context={}
     )
 
+
 @csrf_exempt
 @login_required
 def seleccionarCalendario(request):
@@ -33,10 +34,10 @@ def seleccionarCalendario(request):
         i = 0
         for tarifa in data:
             i = i + 1
-            horario = Horarios_Precio.objects.get(id = i)
+            horario = Horarios_Precio.objects.get(id=i)
             horario.inicio = tarifa['Inicio']
             horario.final = tarifa['Final']
-            horario.precio = float(tarifa['tarifa'].replace(',','.'))
+            horario.precio = float(tarifa['tarifa'].replace(',', '.'))
             horario.save()
         return JsonResponse('Ok', safe=False)
     else:
@@ -45,16 +46,17 @@ def seleccionarCalendario(request):
         return render(
             request,
             template_name='menu_estacionamiento/calendario.html',
-            context={"horariosPrecios" : horariosPrecios,
-                    "tarifaEspecial" : tarifaEspecial}
+            context={"horariosPrecios": horariosPrecios,
+                     "tarifaEspecial": tarifaEspecial}
             )
+
 
 @csrf_exempt
 def tarifasEspeciales(request):
     r = request.body
     data = json.loads(r.decode())
-    TarifaEspecial(precio=data.replace(',','.')).save()
-    return JsonResponse('Ok', safe = False)
+    TarifaEspecial(precio=data.replace(',', '.')).save()
+    return JsonResponse('Ok', safe=False)
 
 
 @login_required
@@ -63,8 +65,7 @@ def playground(request):
         request,
         template_name='menu_estacionamiento/playground.html',
         context={}
-        )
-
+    )
 
 
 @login_required

@@ -65,6 +65,7 @@ def cobrarEntrada(request, id):
         dia_Especial = Dia_Especial.objects.filter(
             Q(dia_Especial=today)
         ).distinct()
+
         if dia_Especial:
             # Hoy es día Especial
             tarifaEspacial = TarifaEspecial.objects.all().last()
@@ -73,10 +74,11 @@ def cobrarEntrada(request, id):
         time = datetime.time(datetime.now())
         horarios = Horarios_Precio.objects.all()
         i = 0
+
         for horario in horarios:
             i = i + 1
             diference = max(time, horario.final)
-            if time < horario.final or i == 3:
+            if time < horario.final or i == 3 :
                 tarifaNormal = horario.precio
                 break
 
@@ -94,10 +96,9 @@ def cobrarEntrada(request, id):
             cobro = Cobros(precio=tarifaEspacial.precio,
                            registroEstacionamiento=entradaCobrar, deuda=False)
             cobro.save()
-            messages.warning(request, f'Cobro por ${tarifaEspacial}')
+            messages.warning(request, 'Cobro por $' + f'{tarifaEspacial}')
             # return redirect("estacionamiento:historial")
             return JsonResponse("Ok", safe=False)
-
         time = datetime.time(datetime.now())
         horarios = Horarios_Precio.objects.all()
         i = 0
@@ -131,13 +132,15 @@ def pago_deuda(request, id):
         entradaMoroso.tipo = 'SOCIO'
         entradaMoroso.autorizado = True
         entradaMoroso.save()
-        messages.warning(request, 'Pago de deuda por $' + f'{salida}' ' dirigirse hacia administración para realizar el pago')
+        messages.warning(request, f'Pago de deuda por ${salida} dirigirse hacia administración para realizar el pago')
         return JsonResponse("Ok", safe=False)
+
     else:
         entradaMoroso = RegistroEstacionamiento.objects.get(id=id)
         salida = entradaMoroso.persona.deuda
-        return JsonResponse(salida, safe = False)
-    #return HttpResponse(salida)
+        return JsonResponse(salida, safe=False)
+
+    # return HttpResponse(salida)
 
 
 @login_required
@@ -171,6 +174,7 @@ def emision_resumen_anterior(request, id):
             'attachment; filename="resumen_mensual_'\
             f'{cicloCajaR.cicloMensual.cicloMensual}_año_'\
             f'{cicloCajaR.cicloMensual.cicloAnual.cicloAnual}.csv"'
+
         return response
 
 
@@ -230,28 +234,45 @@ def emision_resumen_mensual(request):  # Falta testing
         messages.warning(request, 'Error debe cerrar caja primero')
         return redirect('menu_estacionamiento:menu_estacionamiento')
 
+
 @csrf_exempt
 @login_required
 def cierre_caja(request):
     if request.method == 'GET':
         cicloCaja_ = CicloCaja.objects.all().last()
-        cobros = Cobros.objects.values("registroEstacionamiento__identificador", "precio").filter(registroEstacionamiento__cicloCaja=cicloCaja_, deuda=False).distinct()
+        cobros = Cobros.objects.\
+            values("registroEstacionamiento__identificador",
+                   "registroEstacionamiento__tipo", "precio").\
+            filter(registroEstacionamiento__cicloCaja=cicloCaja_,
+                   deuda=False).distinct()
+
         if not cobros:
             resp = {
                 "dinero": '0.0',
                 "cobros": ''
             }
             return JsonResponse(resp, safe=False)
+
         if cicloCaja_.recaudado:
-            return JsonResponse("Caja ya cerrada",safe=False)
+            return JsonResponse("Caja ya cerrada", safe=False)
+
         cobrosDic = []
         for cobro in cobros:
-            cobrosDic.append({"persona":cobro['registroEstacionamiento__identificador'],"precio":cobro['precio']})
+            cobrosDic.append(
+                {
+                    "persona": cobro['registroEstacionamiento__identificador'],
+                    "tipo": cobro['registroEstacionamiento__tipo'],
+                    "precio": cobro['precio']
+                }
+            )
+
         recaudado = Cobros.objects.filter(
             registroEstacionamiento__cicloCaja=cicloCaja_, deuda=False).\
             aggregate(recaudacion=Sum('precio'))
+
         if recaudado['recaudacion']:
             cicloCaja_.recaudado = recaudado['recaudacion']
+
         else:
             cicloCaja_.recaudado = 0.0
             recaudado['recaudacion'] = '0.0'
@@ -262,8 +283,9 @@ def cierre_caja(request):
             "cobros": cobrosDic
         }
         return JsonResponse(resp, safe=False)
-        #context ={'recaudado':dinero}
-        #messages.warning(request, 'Lo recaudado en esta caja fue de $'+ f'{dinero}')
+        # context ={'recaudado':dinero}
+        # messages.warning(request, 'Lo recaudado en esta caja fue de $'+ f'{dinero}')
+
     else:
         cicloCaja_ = CicloCaja.objects.all().last()
         recaudado = Cobros.objects.filter(
@@ -281,10 +303,11 @@ def cierre_caja(request):
             cicloCaja_.usuarioCaja = request.user
             cicloCaja_.save()
 
-        messages.warning(request, 'Lo recaudado en esta caja fue de $'+ f'{cicloCaja_.recaudado}')
-        return JsonResponse("Ok",safe=False)
-    #return redirect('menu_estacionamiento:menu_estacionamiento')
-    #return JsonResponse(dinero, safe=False)
+        messages.warning(request, f'Lo recaudado en esta caja fue de ${cicloCaja_.recaudado}')
+        return JsonResponse("Ok", safe=False)
+
+    # return redirect('menu_estacionamiento:menu_estacionamiento')
+    # return JsonResponse(dinero, safe=False)
 
 
 def funcionCobros(dato):

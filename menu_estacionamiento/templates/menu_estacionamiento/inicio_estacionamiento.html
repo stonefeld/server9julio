@@ -33,6 +33,7 @@
         </a>
 
       </div>
+
       <div class="modal fade" id="modalCierreCaja" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
           <div class="modal-content">
@@ -43,7 +44,10 @@
               </button>
             </div>
             <div class="modal-body">
-              <p id = 'recaudadoTexto'>Lo recaudado en esta Caja Fue: ${{ recaudado }}</p>
+              <p id = 'recaudadoTexto'>Lo recaudado en esta Caja Fue: $</p>
+              <table class="table">
+                <tbody id="cobros"></tbody>
+              </table>
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-primary" id = "cerrarCaja">Cerrar Caja</button>
@@ -52,6 +56,7 @@
           </div>
         </div>
       </div>
+
       <div class="modal fade" id="modalMensual" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
           <div class="modal-content">
@@ -62,7 +67,7 @@
               </button>
             </div>
             <div class="modal-body">
-              <p id = 'recaudadoTexto'>Lo recaudado en esta Caja Fue: ${{ recaudado }}</p>
+              <p id = 'recaudadoTexto'>Lo recaudado en esta Caja Fue: $</p>
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-primary" id = "cerrarCaja">Cerrar Caja</button>
@@ -73,6 +78,7 @@
       </div>
 
       <script type="text/javascript">
+        const cobrosTable = document.getElementById('cobros');
         const loadCaja = async () => {
           try {
             const res = await fetch('/estacionamiento/cierre-caja');
@@ -86,7 +92,31 @@
           const recolectado = caja.dinero;
           const cobros = caja.cobros;
           document.getElementById("recaudadoTexto").innerHTML = `Lo recaudado en la caja fue : $${recolectado}`;
-          console.log(cobros);
+          drawRows(cobros);
+        };
+        const drawRows = (cobros) => {
+          const returnString = cobros.map((cobro) => {
+            if (cobro.tipo == 'SOCIO' || cobro.tipo == 'SOCIO-MOROSO') {
+              return `
+                <tr>
+                  <td>Cobro a Socio ${cobro.persona} por $${cobro.precio}</td>
+                </tr>
+              `;
+            } else if (cobro.tipo == 'NOSOCIO') {
+              return `
+                <tr>
+                  <td>Cobro a NoSocio DNI: ${cobro.persona} por $${cobro.precio}</td>
+                </tr>
+              `;
+            } else if (cobro.tipo == 'PROVEEDOR') {
+              return `
+                <tr>
+                  <td>Cobro a Proveedor ID: ${cobro.persona} por $${cobro.precio}</td>
+                </tr>
+              `;
+            }
+          }).join('');
+          cobrosTable.innerHTML = returnString;
         };
         const cerrarCaja = async () => {
           try {
@@ -94,7 +124,7 @@
               method: 'POST',
               headers: { 'Content-Type': 'application/json' }
             };
-            const res = await fetch('/estacionamiento/cierre-caja/',options);
+            const res = await fetch('/estacionamiento/cierre-caja/', options);
             var caja = await res.json();
             location.href = "/menu_estacionamiento/menu_estacionamiento";
           } catch(err) {
@@ -105,6 +135,7 @@
           try {
             const res = await fetch('/estacionamiento/emision-resumen');
             var mes = await res.json();
+            console.log(mes);
             loadmes(mes);
           } catch (err) {
             console.error(err);
@@ -113,7 +144,7 @@
         const loadmes = async (mes) => {
           const inicio = mes.inicio
           const final = mes.final
-          document.getElementById("recaudadoTexto").innerHTML = `El mes comienza el $${recolectado} `
+          document.getElementById("recaudadoTexto").innerHTML = `El mes comienza el $${recolectado}`
         };
         document.getElementById('CajaCerrar').addEventListener('click', () => {
           loadCaja();
