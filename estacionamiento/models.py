@@ -123,6 +123,10 @@ class RegistroEstacionamiento(models.Model):
     DIRECCION_CHOICES = (('ENTRADA', 'ENTRADA'),
                          ('SALIDA', 'SALIDA'))
 
+    AUTORIZADO_CHOICES = (('TRUE', 'TRUE'),
+                            ('FALSE', 'FALSE'),
+                            ('TIEMPO TOLERANCIA','T.T'))
+
     tipo = models.CharField(
             max_length=30, verbose_name='Tipo',
             choices=TIPO_CHOICES, default='SOCIO')
@@ -144,8 +148,8 @@ class RegistroEstacionamiento(models.Model):
     direccion = models.CharField(
             max_length=30, choices=DIRECCION_CHOICES,
             verbose_name='Dirección', default='ENTRADA')
-    autorizado = models.BooleanField(
-            verbose_name='Autorización', default=False)
+    autorizado = models.CharField( max_length=30, choices=AUTORIZADO_CHOICES,
+            verbose_name='Autorización', default='FALSE')
     cicloCaja = models.ForeignKey(
             CicloCaja, on_delete=models.CASCADE, verbose_name='cicloCaja')
     aperturaManual = models.ForeignKey(
@@ -153,6 +157,8 @@ class RegistroEstacionamiento(models.Model):
             verbose_name='AperturaManual', null=True, blank=True)
     usuarioEditor = models.ForeignKey(User,
             on_delete=models.CASCADE, null=True, blank=True)
+    pago = models.CharField(max_length=30, verbose_name = 'pago',
+            null=True, blank=True)
     def __str__(self):
         return f'{self.tiempo} - {self.identificador}'
 
@@ -216,3 +222,6 @@ class Horarios_Precio(models.Model):
 
 class TarifaEspecial(models.Model):
     precio = models.FloatField(default=250.0)
+
+class TiempoTolerancia(models.Model):
+    tiempo = models.DecimalField(verbose_name='tiempo', default=15, max_digits=3, decimal_places=2)

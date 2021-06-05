@@ -3,9 +3,11 @@ import django_tables2 as tables
 
 class HistorialEstacionamientoTable(tables.Table):  # Necesita Tipo de dato
     identificador = tables.Column(linkify=True)
+    tipo = tables.Column()
     tiempo = tables.Column()
     direccion = tables.Column()
-    autorizado = tables.BooleanColumn()
+    autorizado = tables.Column()
+    pago = tables.Column()
 
     class Meta:
         template_name = 'table_template.html'
@@ -15,9 +17,11 @@ class HistorialEstacionamientoTable(tables.Table):  # Necesita Tipo de dato
 
 class EstacionadosTable(tables.Table):  # Necesita Tipo de dato
     registroEstacionamiento__identificador = tables.Column(linkify=True)
+    registroEstacionamiento__tipo = tables.Column()
     registroEstacionamiento__tiempo = tables.Column()
     registroEstacionamiento__direccion = tables.Column()
-    registroEstacionamiento__autorizado = tables.BooleanColumn()
+    registroEstacionamiento__autorizado = tables.Column()
+    registroEstacionamiento__pago = tables.Column()
 
     class Meta:
         template_name = 'table_template.html'

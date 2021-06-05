@@ -20,7 +20,7 @@ from .models import (
     RegistroEstacionamiento, Proveedor,
     CicloCaja, CicloMensual, Persona, CicloAnual,
     Cobros, Estacionado, AperturaManual, TarifaEspecial,
-    Horarios_Precio, Dia_Especial
+    Horarios_Precio, Dia_Especial, TiempoTolerancia
 )
 from .forms import EstacionamientoForm, AperturaManualForm, ProveedorForm
 from .tables import HistorialEstacionamientoTable
@@ -87,7 +87,7 @@ def cobrarEntrada(request, id):
             #Hoy es día Especial
             tarifaEspacial = TarifaEspecial.objects.all().last()
             cobro = Cobros(precio=tarifaEspacial.precio, 
-                            registroEstacionamiento = entradaCobrar, deuda=False)
+                            registroEstacionamiento = entradaCobrar, deuda=False, usuarioCobro = request.user)
             cobro.save()
             messages.warning(request, 'Cobro por $' + f'{tarifaEspacial}')
             #return redirect("estacionamiento:historial")
@@ -102,8 +102,10 @@ def cobrarEntrada(request, id):
                 break
 
         cobro = Cobros(precio = tarifaNormal, 
-                        registroEstacionamiento = entradaCobrar, deuda=False)
+                        registroEstacionamiento = entradaCobrar, deuda=False, usuarioCobro = request.user)
         cobro.save()
+        entradaCobrar.pago = 'OK'
+        entradaCobrar.save()
         messages.warning(request, 'Cobro por $' + f'{tarifaNormal}')
         #return redirect("estacionamiento:historial")
         return JsonResponse("Ok", safe=False)
@@ -118,11 +120,12 @@ def pago_deuda(request, id):
                             registroEstacionamiento=entradaMoroso, deuda=True)
         socioMoroso = entradaMoroso.persona
         socioMoroso.deuda = 0.0
-        socioMoroso.general = True
+        socioMoroso.estacionamiento = True
         socioMoroso.save()
         cobroDeuda.save()
         entradaMoroso.tipo = 'SOCIO'
-        entradaMoroso.autorizado = True
+        entradaMoroso.autorizado = 'TRUE'
+        entradaMoroso.pago = 'OK'
         entradaMoroso.save()
         messages.warning(request, 'Pago de deuda por $' + f'{salida}' ' dirigirse hacia administración para realizar el pago')
         return JsonResponse("Ok", safe=False)
@@ -141,23 +144,48 @@ def emision_resumen_anterior(request, id):
         return redirect('menu_estacionamiento:menu_estacionamiento')
 
     else:
-        resumen_mensual = RegistroEstacionamiento.objects.\
-            values("persona__nombre_apellido", "persona__nrSocio").\
-            annotate(cantidad_Entradas=Count("id")).\
+        resumen_mensual = []
+        entradas = RegistroEstacionamiento.objects.\
+            values("persona__nombre_apellido", "persona__nrSocio", 'tiempo').\
             order_by("persona__nombre_apellido").\
             exclude(persona__isnull=True).\
-            filter(direccion='SALIDA', cicloCaja__cicloMensual=cicloCajaR.cicloMensual.cicloMensual,
-                   autorizado=True)
-
+            filter(direccion='SALIDA', cicloCaja__cicloMensual__cicloMensual = cicloCajaR.cicloMensual.cicloMensual,
+                   autorizado='TRUE',)
+        for entrada in entradas:
+            print(entrada)
+        diaEspeciales = Dia_Especial.objects.values("dia_Especial").filter(Q(dia_Especial__range=(cicloMensualActual.inicioMes, cicloMensualActual.finalMes)))
+        numeroSocioant = 0
+        entradadic = {}
+        
+        for entrada in entradas:
+            if entrada['persona__nrSocio'] != numeroSocioant or numeroSocioant == 0:
+                numeroSocioant = entrada['persona__nrSocio']
+                entradadic = {
+                    'NrSocio' : entrada['persona__nrSocio'],
+                    'Persona' : entrada['persona__nombre_apellido'],
+                    'Entradas' : 1,
+                    'Normales' : 0,
+                    'Especiales' : 0  
+                }
+                resumen_mensual.append(entradadic)
+            else:
+                entradadic['Entradas'] = entradadic['Entradas'] + 1
+            
+            if entrada['tiempo'] in diaEspeciales:
+                entradadic['Especiales'] = entradadic['Especiales'] + 1
+            else:
+                entradadic['Normales'] = entradadic['Normales'] + 1
+       
         output = []
         response = HttpResponse(content_type='text/csv')
         writer = csv.writer(response)
-        output.append(['NrSocio', 'Persona', 'Cantidad_Entradas'])
-
+        output.append(['NrSocio', 'Persona', 'Cantidad_Entradas', 'Entradas_Normales', 'Entradas_Especiales'])
         for entrada in resumen_mensual:
-            output.append([entrada['persona__nrSocio'],
-                           entrada['persona__nombre_apellido'],
-                           entrada['cantidad_Entradas']])
+            output.append([entrada['NrSocio'],
+                           entrada['Persona'],
+                           entrada['Entradas'],
+                           entrada['Normales'],
+                           entrada['Especiales']])
 
         writer.writerows(output)
         response['Content-Disposition'] = \
@@ -172,26 +200,69 @@ def emision_resumen_mensual(request):  # Falta testing
     cicloCaja_ = CicloCaja.objects.all().last()
     if cicloCaja_.recaudado is not None:
         cicloMensual_ = CicloMensual.objects.all().last()
-        resumen_mensual = RegistroEstacionamiento.objects.\
-            values("persona__nombre_apellido", "persona__nrSocio").\
-            annotate(cantidad_Entradas=Count("id")).\
+        resumen_mensual = []
+        entradas = RegistroEstacionamiento.objects.\
+            values("persona__nombre_apellido", "persona__nrSocio",'tiempo').\
             order_by("persona__nombre_apellido").\
             exclude(persona__isnull=True).\
-            filter(direccion='SALIDA', cicloCaja__cicloMensual=cicloMensual_,
-                   autorizado=True)
+            filter(direccion='SALIDA', cicloCaja__cicloMensual__cicloMensual=cicloCaja_.cicloMensual.cicloMensual,
+                   autorizado='TRUE',)
+        diaEspeciales = Dia_Especial.objects.values("dia_Especial").filter(Q(dia_Especial__range=(cicloMensual_.inicioMes, now())))
+        numeroSocioant = 0
+        entradadic = {}
+        for entrada in entradas:
+            if entrada['persona__nrSocio'] != numeroSocioant or numeroSocioant == 0:
+                numeroSocioant = entrada['persona__nrSocio']
+                entradadic = {
+                    'NrSocio' : entrada['persona__nrSocio'],
+                    'Persona' : entrada['persona__nombre_apellido'],
+                    'Entradas' : 1,
+                    'Normales' : 0,
+                    'Especiales' : 0  
+                }
+                resumen_mensual.append(entradadic)
+            else:
+                entradadic['Entradas'] = entradadic['Entradas'] + 1
+            
+            if entrada['tiempo'] in diaEspeciales:
+                entradadic['Especiales'] = entradadic['Especiales'] + 1
+            else:
+                entradadic['Normales'] = entradadic['Normales'] + 1
 
         output = []
         cicloMensual_.finalMes = now()
         cicloMensual_.save()
         response = HttpResponse(content_type='text/csv')
         writer = csv.writer(response)
-        output.append(['NrSocio', 'Persona', 'Cantidad_Entradas'])
+        output.append(['NrSocio', 'Persona', 'Cantidad_Entradas', 'Entradas_Normales', 'Entradas_Especiales'])
+
+        for entrada in resumen_mensual:
+            output.append([entrada['NrSocio'],
+                           entrada['Persona'],
+                           entrada['Entradas'],
+                           entrada['Normales'],
+                           entrada['Especiales']])
+        
+        '''resumen_mensual = RegistroEstacionamiento.objects.\
+            values("persona__nombre_apellido", "persona__nrSocio").\
+            annotate(cantidad_Entradas=Count("id")).\
+            order_by("persona__nombre_apellido").\
+            exclude(persona__isnull=True).\
+            filter(direccion='SALIDA', cicloCaja__cicloMensual=cicloMensual_,
+                   autorizado='TRUE')
+
+        output = []
+        cicloMensual_.finalMes = now()
+        cicloMensual_.save()
+        response = HttpResponse(content_type='text/csv')
+        writer = csv.writer(response)
+        output.append(['NrSocio', 'Persona', 'Cantidad_Entradas', 'Entradas_Especiales', 'Entradas_Normales'])
 
         for entrada in resumen_mensual:
             output.append([entrada['persona__nrSocio'],
                            entrada['persona__nombre_apellido'],
                            entrada['cantidad_Entradas']])
-
+        '''
         writer.writerows(output)
         response['Content-Disposition'] = \
             'attachment; filename="resumen_mensual_'\
@@ -246,21 +317,35 @@ def emision_resumen_mensual_get(request):
 def cierre_caja(request):
     if request.method == 'GET':
         cicloCaja_ = CicloCaja.objects.all().last()
-        cobros = Cobros.objects.values("registroEstacionamiento__identificador", "precio").filter(registroEstacionamiento__cicloCaja=cicloCaja_, deuda=False).distinct()
-        if not cobros:
+        cobros = Cobros.objects.values("registroEstacionamiento__identificador", "precio", "usuarioCaja").filter(registroEstacionamiento__cicloCaja=cicloCaja_, deuda=False) #Trae todo los cobros realizados en este ciclo
+        personas = Cobros.objects.values("usuarioCaja").filter(registroEstacionamiento__cicloCaja=cicloCaja_, deuda=False).distinct() #Trae los usuarios que hicieron los cobros
+        if not cobros: #Si no hay cobros devolver 0
             resp = {
                 "dinero": '0.0',
-                "cobros": ''
+                "cobros": '',
+                "dineroPersonas":''
             }
             return JsonResponse(resp, safe=False)
         if cicloCaja_.recaudado:
             return JsonResponse("Caja ya cerrada",safe=False)
         cobrosDic = []
+        dineroPersonas = []
         for cobro in cobros:
-            cobrosDic.append({"persona":cobro['registroEstacionamiento__identificador'],"precio":cobro['precio']})
+            #Crear un dictionary con todos los cobros poniendo a quien se realizo el cobro, cual es el precio y que usuario del sistema lo realizo
+            cobrosDic.append({"persona":cobro['registroEstacionamiento__identificador'],"precio":cobro['precio'], "usuarioCaja": cobro["usuarioCaja"]}) 
+        
         recaudado = Cobros.objects.filter(
             registroEstacionamiento__cicloCaja=cicloCaja_, deuda=False).\
-            aggregate(recaudacion=Sum('precio'))
+            aggregate(recaudacion=Sum('precio')) #Trae lo reacuadado en la caja total 
+        for persona in personas['usuarioCaja']:
+            #Esto sirve para saber cuanto tiene que pagar cada uno de los usuarios del sistema
+            recaudadoPersona = Cobros.objects.filter(registroEstacionamiento__cicloCaja=cicloCaja_, deuda=False, usuarioCaja = persona)
+            dineroDic = {
+                    'Recaudado' : recaudadoPersona,
+                    'Persona' : persona,
+                }
+            dineroPersonas.append(dineroDic)
+             
         if recaudado['recaudacion']:
             cicloCaja_.recaudado = recaudado['recaudacion']
         else:
@@ -268,9 +353,11 @@ def cierre_caja(request):
             recaudado['recaudacion'] = '0.0'
 
         dinero = recaudado['recaudacion']
+        
         resp = {
             "dinero": dinero,
-            "cobros": cobrosDic
+            "cobros": cobrosDic,
+            "dineroPersonas":dineroPersonas
         }
         return JsonResponse(resp, safe=False)
         #context ={'recaudado':dinero}
@@ -307,7 +394,7 @@ def funcionCobros(dato):
         Q(registroEstacionamiento__tiempo__range=(ayer, today)),
     ).distinct()
     if cobro:
-        return False
+        return 'TRUE'
 
     else:
         return tiempoTolerancia(dato)
@@ -315,7 +402,8 @@ def funcionCobros(dato):
 
 def tiempoTolerancia(dato):
     today = now()
-    tolerancia = today - timedelta(minutes=15)
+    tiempo = TiempoTolerancia.objects.all().last().tiempo
+    tolerancia = today - timedelta(minutes=tiempo)
     entrada = RegistroEstacionamiento.objects.filter(
         Q(tiempo__range=(tolerancia, today)),
         Q(noSocio=int(dato)),
@@ -324,11 +412,11 @@ def tiempoTolerancia(dato):
 
     if entrada:
         # No excedio tiempo tolerancia
-        return False
+        return 'T.T'
 
     else:
         # Excedio tiempo tolerancia
-        return True
+        return 'FALSE'
 
 
 def funcionEliminarEstacionado(entrada):
@@ -341,6 +429,70 @@ def funcionEliminarEstacionado(entrada):
 
     except:
         return 1
+
+def pagoEstacionamiento(tipo, autorizado, direccion):
+    if tipo == 'SOCIO' or tipo == 'PROVEEDOR':
+        return 'OK'
+    else:
+        if direccion == 'SALIDA':
+            if autorizado == 'TRUE':
+                return 'OK'
+            else:
+                return 'FALSE'
+        else:
+            return 'FALSE'
+
+
+def registroEstacionamiento(tipo, dato, direccion,autorizado,cicloCaja):
+    pago = pagoEstacionamiento(tipo, autorizado, direccion)
+    if tipo == 'SOCIO' :
+        persona = dato
+        registro = RegistroEstacionamiento(
+        tipo=tipo,
+        lugar='ESTACIONAMIENTO',
+        persona = persona,
+        pago = pago,
+        direccion = direccion,
+        autorizado = autorizado,
+        cicloCaja = cicloCaja
+        )
+    elif tipo == 'SOCIO-MOROSO':
+        persona = dato
+        registro = RegistroEstacionamiento(
+        tipo=tipo,
+        lugar='ESTACIONAMIENTO',
+        persona = persona,
+        pago = pago,
+        direccion = direccion,
+        autorizado = autorizado,
+        cicloCaja = cicloCaja
+        )
+        
+    elif tipo == 'NOSOCIO':
+        noSocio = dato
+        registro = RegistroEstacionamiento(
+        tipo=tipo,
+        lugar='ESTACIONAMIENTO',
+        pago = pago,
+        noSocio = noSocio,
+        direccion = direccion,
+        autorizado = autorizado,
+        cicloCaja = cicloCaja
+        )
+    else:
+        proveedor = dato
+        registro = RegistroEstacionamiento(
+        tipo=tipo,
+        lugar='ESTACIONAMIENTO',
+        proveedor = proveedor,
+        pago = pago,
+        direccion = direccion,
+        autorizado = autorizado,
+        cicloCaja = cicloCaja
+        )
+        
+    registro.save()
+    return registro
 
 
 def respuesta(request):
@@ -361,40 +513,28 @@ def respuesta(request):
             if int(tipo) == 0:
                 try:
                     user = Persona.objects.get(nrTarjeta=int(dato))
-                    if user.general:
-                        entrada = RegistroEstacionamiento(
-                            tipo='SOCIO',
-                            lugar='ESTACIONAMIENTO',
-                            persona=user,
-                            direccion=direccion_,
-                            autorizado=tiempoTolerancia(dato),
-                            cicloCaja=cicloCaja_
-                        )
-                        entrada.save()
+                    if user.estacionamiento:
+                        if tiempoTolerancia(dato) == 'FALSE':
+                            registro = registroEstacionamiento('SOCIO', user, direccion_, 'TRUE', cicloCaja_)
+                        else:
+                            registro = registroEstacionamiento('SOCIO', user, direccion_, 'T.T', cicloCaja_)
                         # abrir barrera
                         messages.warning(request, 'Salida Socio Autorizada')
                         rta = '#1' #salida socio
-                        funcionEliminarEstacionado(entrada)
+
 
                     else:
                         resultado = funcionCobros(dato)
-                        if not resultado:
-                            entrada = RegistroEstacionamiento(
-                                tipo='SOCIO-MOROSO',
-                                lugar='ESTACIONAMIENTO',
-                                persona=user,
-                                direccion=direccion_,
-                                autorizado=False,
-                                cicloCaja=cicloCaja_
-                            )
-                            entrada.save()
-                            messages.warning(request, 'Salida Socio-Moroso Autorizada')
-                            rta = '#1'   #salida sociomoroso autorizada
-                            # Registro Socio Moroso Cobro por NoSocio
-                            funcionEliminarEstacionado(entrada)
-                        else:
+                        if resultado == 'FALSE':
+                            registroEstacionamiento('SOCIO-MOROSO', user, direccion_, 'FALSE', cicloCaja_)
                             messages.warning(request, 'Socio-Moroso no pago la Deuda o no Pago el Estacionamiento')
                             rta = '#6'  # SocioMoroso no pago Deuda o no Pago Entrada
+                            
+                        else:
+                            registro = registroEstacionamiento('SOCIO-MOROSO', user, direccion_, resultado, cicloCaja_)
+                            messages.warning(request, 'Salida Socio-Moroso Autorizada '+resultado)
+                            rta = '#1'   #salida sociomoroso autorizada
+                            
                 except:
                     messages.warning(request, 'La Tarjeta no Existe. Ingresar con DNI')
                     rta = '#2'  # El usuario No existe
@@ -402,110 +542,66 @@ def respuesta(request):
             elif int(tipo) == 1:
                 try:
                     user = Persona.objects.get(dni=int(dato))
-                    if user.general:
-                        entrada = RegistroEstacionamiento(
-                            tipo='SOCIO',
-                            lugar='ESTACIONAMIENTO',
-                            persona=user,
-                            direccion=direccion_,
-                            autorizado=tiempoTolerancia(dato),
-                            cicloCaja=cicloCaja_
-                        )
-                        entrada.save()
+                    if user.estacionamiento:
+                        if tiempoTolerancia(dato) == 'FALSE':
+                            registro = registroEstacionamiento('SOCIO', user, direccion_, 'TRUE', cicloCaja_)
+                        else:
+                            registro = registroEstacionamiento('SOCIO', user, direccion_, 'T.T', cicloCaja_)
                         messages.warning(request, 'Salida Socio Autorizada por DNI')
                         rta = '#1' #salida socio autorizada por dni
-                        funcionEliminarEstacionado(entrada)
 
                     else:
                         resultado = funcionCobros(dato)
-                        if not resultado:
-                            entrada = RegistroEstacionamiento(
-                                tipo='SOCIO-MOROSO',
-                                lugar='ESTACIONAMIENTO',
-                                persona=user,
-                                direccion=direccion_,
-                                autorizado=False,
-                                cicloCaja=cicloCaja_
-                            )
-                            entrada.save()
-                            messages.warning(request, 'Salida Socio-Moroso Autorizada por DNI')
-                            rta = '#1' #salida socio moroso autorizada  
-                            # Registro Socio Moroso Cobro por NoSocio
-                            funcionEliminarEstacionado(entrada)
+                        if resultado == 'FALSE':
+                            registroEstacionamiento('SOCIO-MOROSO', user, direccion_, 'FALSE', cicloCaja_)
+                            messages.warning(request, 'Socio-Moroso no pago la Deuda o no Pago el Estacionamiento')
+                            rta = '#6'  # SocioMoroso no pago Deuda o no Pago Entrada
+                            
                         else:
-                            messages.warning(request, 'Salida Socio-Moroso No Autorizada Dirigirse a Portería')
-                            rta = '#6'  # NoSocio no pago Deuda o no Pago Entrada
+                            registro = registroEstacionamiento('SOCIO-MOROSO', user, direccion_, resultado, cicloCaja_)
+                            messages.warning(request, 'Salida Socio-Moroso Autorizada '+resultado)
+                            rta = '#1'   #salida sociomoroso autorizada
 
                 except:
-                    if not funcionCobros(dato):
-                        entrada = RegistroEstacionamiento(
-                            tipo='NOSOCIO',
-                            lugar='ESTACIONAMIENTO',
-                            noSocio=dato,
-                            direccion=direccion_,
-                            autorizado=True,
-                            cicloCaja=cicloCaja_
-                        )
-                        entrada.save()
-                        messages.warning(request, 'Salida NoSocio Autorizada')
-                        rta = '#1' #salida no socio autorizada
-                        funcionEliminarEstacionado(entrada)
-                    else:
+                    resultado = funcionCobros(dato)
+                    if resultado == 'FALSE':
+                        registroEstacionamiento('NOSOCIO', dato, direccion_, 'FALSE', cicloCaja_)
                         messages.warning(request, 'El No Socio no Pagó y Excedió Tiempo Tolerancia')
                         rta = '#5' #no puede salir
-                        # El No Socio no pagó y excedió
-                        # el tiempo de tolerancia
-
+                        
+                    else:
+                        registro = registroEstacionamiento('NOSOCIO', dato, direccion_, resultado, cicloCaja_)
+                        messages.warning(request, 'Salida NoSocio Autorizada '+resultado)
+                        rta = '#1' #salida no socio autorizada            
             else:
                 try:
                     proveedor_ = Proveedor.objects.get(idProveedor=int(dato))
-                    entrada = RegistroEstacionamiento(
-                        tipo='PROVEEDOR',
-                        lugar='ESTACIONAMIENTO',
-                        proveedor=proveedor_,
-                        direccion=direccion_,
-                        autorizado=True,
-                        cicloCaja=cicloCaja_
-                    )
-                    entrada.save()
-                    # Abrir barrera
+                    registro = registroEstacionamiento('PROVEEDOR', proveedor_, direccion_, 'TRUE', cicloCaja_)
                     messages.warning(request, 'Salida Proveedor Autorizada')
                     rta = '#1' #salida proveedores autorizada
-                    funcionEliminarEstacionado(entrada)
+                    funcionEliminarEstacionado(registro)
 
                 except:
                     messages.warning(request, 'El Codigo que digitó es incorrecto')
                     rta = '#4'  # Error Proveedor no encontrado
+            try:
+                funcionEliminarEstacionado(registro)
+            except:
+                pass
 
         else:
             direccion_ = 'ENTRADA'
             if int(tipo) == 0:
                 try:
                     user = Persona.objects.get(nrTarjeta=int(dato))
-                    if user.general:
-                        entrada = RegistroEstacionamiento(
-                            tipo='SOCIO',
-                            lugar='ESTACIONAMIENTO',
-                            persona=user,
-                            direccion=direccion_,
-                            autorizado=True,
-                            cicloCaja=cicloCaja_
-                        )
-                        entrada.save()
+                    if user.estacionamiento:
+                        registro = registroEstacionamiento('SOCIO', user, direccion_, 'TRUE', cicloCaja_)
                         messages.warning(request, 'Entrada Socio Registrada')
-                        # Abrir barrera
+                        #Abrir barrera
                         rta = '#1' #Registro Socio
 
                     else:
-                        #entrada = RegistroEstacionamiento(
-                        #    tipo='SOCIO-MOROSO',
-                        #    lugar='ESTACIONAMIENTO',
-                        #    persona=user,
-                        #    direccion=direccion_,
-                        #    autorizado=False,
-                        #    cicloCaja=cicloCaja_
-                        #)
-                        #entrada.save()
+                        registroEstacionamiento('SOCIO-MOROSO',user, direccion_, 'FALSE', cicloCaja_)
                         messages.warning(request, 'Usted es Socio Moroso, debe Ingresar con su DNI')
                         rta = '#7'  # Registro Socio Moroso el usuario debe dirigirse a la cabina de portería
 
@@ -514,70 +610,39 @@ def respuesta(request):
                     rta = '#2'  # El usuario No existe ingresar DNI
 
             elif int(tipo) == 1:
-                '''try:
+                try:
                     user = Persona.objects.get(dni=int(dato))
-                    if user.general:
-                        entrada = RegistroEstacionamiento(
-                            tipo='SOCIO',
-                            lugar='ESTACIONAMIENTO',
-                            persona=user,
-                            direccion=direccion_,
-                            autorizado=True,
-                            cicloCaja=cicloCaja_
-                        )
-                        entrada.save()
+                    if user.estacionamiento:
+                        registro = registroEstacionamiento('SOCIO', user, direccion_, 'TRUE', cicloCaja_)
                         messages.warning(request, 'Entrada Registrada por DNI. Acercarse a Portería')
                         rta = '#3' #Registro Socio 
 
                     else:
-                        entrada = RegistroEstacionamiento(
-                            tipo='SOCIO-MOROSO',
-                            lugar='ESTACIONAMIENTO',
-                            persona=user,
-                            direccion=direccion_,
-                            autorizado=False,
-                            cicloCaja=cicloCaja_
-                        )
-                        entrada.save()
+                        registro = registroEstacionamiento('SOCIO-MOROSO', user, direccion_, 'FALSE', cicloCaja_)
                         # Abrir barrera
                         messages.warning(request, 'Entrada Registrada por DNI. Acercarse a Portería')
                         rta = '#3'  # Registro Socio Moroso el usuario debe dirigirse a la cabina de portería
 
-                except:'''
-                entrada = RegistroEstacionamiento(
-                    tipo='NOSOCIO',
-                    lugar='ESTACIONAMIENTO',
-                    noSocio=int(dato),
-                    direccion=direccion_,
-                    autorizado=True,
-                    cicloCaja=cicloCaja_
-                )
-                entrada.save()
-                messages.warning(request, 'Entrada Registrada por DNI. Acercarse a Portería.')
-                rta = '#3'  # NoSocio registrado el usuarios debe dirigirse a la cabina de portería
+                except:
+                    registro = registroEstacionamiento('NOSOCIO', int(dato), direccion_, 'TRUE', cicloCaja_)
+                    messages.warning(request, 'Entrada Registrada por DNI. Acercarse a Portería.')
+                    rta = '#3'  # NoSocio registrado el usuarios debe dirigirse a la cabina de portería
 
             else:
                 try:
                     proveedor_ = Proveedor.objects.get(idProveedor=int(dato))
-                    entrada = RegistroEstacionamiento(
-                        tipo='PROVEEDOR',
-                        lugar='ESTACIONAMIENTO',
-                        proveedor=proveedor_,
-                        direccion=direccion_,
-                        autorizado=True,
-                        cicloCaja=cicloCaja_
-                    )
-                    entrada.save()
+                    registro = registroEstacionamiento('PROVEEDOR', int(dato), direccion_, 'TRUE', cicloCaja_)
                     # Abrir barrera
                     messages.warning(request, 'Entrada Proveedor Registrada')
                     rta = '#1'  #Entrada autorizada
 
                 except:
+                    registroEstacionamiento('PROVEEDOR', int(dato), direccion_, 'FALSE', cicloCaja_)
                     messages.warning(request, 'El Codigo que digitó es incorrecto')
                     rta = '#4'  # Error Proveedor no encontrado
             try:
-                funcionEliminarEstacionado(entrada)
-                estacionado = Estacionado(registroEstacionamiento=entrada)
+                funcionEliminarEstacionado(registro)
+                estacionado = Estacionado(registroEstacionamiento=registro)
                 estacionado.save()
             except:
                 pass
@@ -718,7 +783,7 @@ def editar_estacionamiento(request, id):
                     # pero el socio sigue teniendo deuda, que la entrada cambie
                     # por la fuerza a socio-moroso nuevamente y se asegure
                     # que el autorizado se mantenga en False.
-                    if (not per.general and
+                    if (not per.estacionamiento and
                        form.cleaned_data['tipo'] == 'SOCIO'):
                         form.cleaned_data['tipo'] = 'SOCIO-MOROSO'
                         form.cleaned_data['autorizado'] = funcionCobros(dni)
@@ -726,10 +791,10 @@ def editar_estacionamiento(request, id):
                                          cambiada a SOCIO-MOROSO por tener \
                                          deuda')
 
-                    if (per.general and
+                    if (per.estacionamiento and
                        form.cleaned_data['tipo'] == 'SOCIO-MOROSO'):
                         form.cleaned_data['tipo'] = 'SOCIO'
-                        form.cleaned_data['autorizado'] = True
+                        form.cleaned_data['autorizado'] = 'TRUE'
                         messages.warning(request, 'El tipo de entrada fue \
                                          cambiada a SOCIO por no tener deuda')
 
