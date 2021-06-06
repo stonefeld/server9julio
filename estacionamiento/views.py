@@ -5,6 +5,7 @@ from threading import Thread
 import os
 
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.core.paginator import Paginator
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
@@ -13,7 +14,6 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.utils.timezone import now
 from django.views.decorators.csrf import csrf_exempt
-
 from django_tables2 import RequestConfig
 
 from .models import (
@@ -317,8 +317,8 @@ def emision_resumen_mensual_get(request):
 def cierre_caja(request):
     if request.method == 'GET':
         cicloCaja_ = CicloCaja.objects.all().last()
-        cobros = Cobros.objects.values("registroEstacionamiento__identificador", "precio", "usuarioCaja").filter(registroEstacionamiento__cicloCaja=cicloCaja_, deuda=False) #Trae todo los cobros realizados en este ciclo
-        personas = Cobros.objects.values("usuarioCaja").filter(registroEstacionamiento__cicloCaja=cicloCaja_, deuda=False).distinct() #Trae los usuarios que hicieron los cobros
+        cobros = Cobros.objects.values("registroEstacionamiento__identificador", "precio", "usuarioCobro", "registroEstacionamiento__tipo").filter(registroEstacionamiento__cicloCaja=cicloCaja_, deuda=False) #Trae todo los cobros realizados en este ciclo
+        personas = Cobros.objects.values("usuarioCobro").filter(registroEstacionamiento__cicloCaja=cicloCaja_, deuda=False).distinct() #Trae los usuarios que hicieron los cobros
         if not cobros: #Si no hay cobros devolver 0
             resp = {
                 "dinero": '0.0',
@@ -332,17 +332,21 @@ def cierre_caja(request):
         dineroPersonas = []
         for cobro in cobros:
             #Crear un dictionary con todos los cobros poniendo a quien se realizo el cobro, cual es el precio y que usuario del sistema lo realizo
-            cobrosDic.append({"persona":cobro['registroEstacionamiento__identificador'],"precio":cobro['precio'], "usuarioCaja": cobro["usuarioCaja"]}) 
+            user = User.objects.filter(id = cobro["usuarioCobro"]).last()
+            cobrosDic.append({"persona":cobro['registroEstacionamiento__identificador'],"precio":cobro['precio'], "usuarioCobro": User.get_username(user), "tipo":cobro['registroEstacionamiento__tipo']}) 
         
         recaudado = Cobros.objects.filter(
             registroEstacionamiento__cicloCaja=cicloCaja_, deuda=False).\
             aggregate(recaudacion=Sum('precio')) #Trae lo reacuadado en la caja total 
-        for persona in personas['usuarioCaja']:
+        for persona in personas:
             #Esto sirve para saber cuanto tiene que pagar cada uno de los usuarios del sistema
-            recaudadoPersona = Cobros.objects.filter(registroEstacionamiento__cicloCaja=cicloCaja_, deuda=False, usuarioCaja = persona)
+            recaudadoPersona =  Cobros.objects.filter(
+            registroEstacionamiento__cicloCaja=cicloCaja_, deuda=False, usuarioCobro = persona['usuarioCobro']).\
+            aggregate(recaudacion=Sum('precio'))
+            user = User.objects.filter(id = persona['usuarioCobro']).last()
             dineroDic = {
-                    'Recaudado' : recaudadoPersona,
-                    'Persona' : persona,
+                    'Recaudado' : recaudadoPersona['recaudacion'],
+                    'Persona' : User.get_username(user),
                 }
             dineroPersonas.append(dineroDic)
              
@@ -359,6 +363,7 @@ def cierre_caja(request):
             "cobros": cobrosDic,
             "dineroPersonas":dineroPersonas
         }
+
         return JsonResponse(resp, safe=False)
         #context ={'recaudado':dinero}
         #messages.warning(request, 'Lo recaudado en esta caja fue de $'+ f'{dinero}')

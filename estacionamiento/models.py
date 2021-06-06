@@ -224,4 +224,4 @@ class TarifaEspecial(models.Model):
     precio = models.FloatField(default=250.0)
 
 class TiempoTolerancia(models.Model):
-    tiempo = models.DecimalField(verbose_name='tiempo', default=15, max_digits=3, decimal_places=2)
+    tiempo = models.IntegerField(verbose_name='tiempo', default=15)

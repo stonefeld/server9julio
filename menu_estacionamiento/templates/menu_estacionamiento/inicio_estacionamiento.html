@@ -5,10 +5,11 @@
 {% endblock subtitle %}
 
 {% block content %}
+
   <div class="content-area" style="padding-left:30px; padding-right:30px; padding-bottom:30px;" >
     <div  class="wrapper">
       <h2>Instrucciones ESTACIONAMIENTO</h2>
-      
+
       <div class="form-group" style="padding:20px;">
         <!--<a style="text-decoration:none" href={% url 'estacionamiento:cierre-caja' %}>-->
         <a style="text-decoration:none">
@@ -32,6 +33,7 @@
         </a>
 
       </div>
+
       <div class="modal fade" id="modalCierreCaja" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
           <div class="modal-content">
@@ -42,7 +44,13 @@
               </button>
             </div>
             <div class="modal-body">
-              <p id = 'recaudadoTexto'>Lo recaudado en esta Caja Fue: ${{ recaudado }}</p>
+              <p id = 'recaudadoTexto'>Lo recaudado en esta Caja Fue: $</p>
+              <table class="table">
+                <tbody id="users"></tbody>
+              </table>
+              <table class="table">
+                <tbody id="cobros"></tbody>
+              </table>
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-primary" id = "cerrarCaja">Cerrar Caja</button>
@@ -51,6 +59,7 @@
           </div>
         </div>
       </div>
+
       <div class="modal fade" id="modalMensual" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
           <div class="modal-content">
@@ -70,8 +79,11 @@
           </div>
         </div>
       </div>
+
       <script type="text/javascript">
-        const loadCaja = async () =>{
+        const cobrosTable = document.getElementById('cobros');
+        const usersTable = document.getElementById('users');
+        const loadCaja = async () => {
           try {
             const res = await fetch('/estacionamiento/cierre-caja');
             var caja = await res.json();
@@ -80,50 +92,84 @@
             console.error(err);
           }
         };
-        const load = async (caja) =>{
-          const recolectado = caja.dinero
-          const cobros = caja.cobros
-          document.getElementById("recaudadoTexto").innerHTML = `Lo recaudado en la caja fue : $${recolectado} `
+        const load = async (caja) => {
+          const recolectado = caja.dinero;
+          const cobros = caja.cobros;
+          const users = caja.dineroPersonas
+          document.getElementById("recaudadoTexto").innerHTML = `Lo recaudado en la caja fue : $${recolectado}`;
+          console.log(users);
+          drawRows(cobros);
+          drawUsers(users);
         };
-        const cerrarCaja = async () =>{
-          try{
-          const options = {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
+        const drawRows = (cobros) => {
+          const returnString = cobros.map((cobro) => {
+            if (cobro.tipo == 'SOCIO' || cobro.tipo == 'SOCIO-MOROSO') {
+              return `
+                <tr>
+                  <td>Cobro a Socio ${cobro.persona} por $${cobro.precio} realizado por ${cobro.usuarioCobro}</td>
+                </tr>
+              `;
+            } else if (cobro.tipo == 'NOSOCIO') {
+              return `
+                <tr>
+                  <td>Cobro a NoSocio DNI: ${cobro.persona} por $${cobro.precio} realizado por ${cobro.usuarioCobro}</td>
+                </tr>
+              `;
+            } else if (cobro.tipo == 'PROVEEDOR') {
+              return `
+                <tr>
+                  <td>Cobro a Proveedor ID: ${cobro.persona} por $${cobro.precio} realizado por ${cobro.usuarioCobro}</td>
+                </tr>
+              `;
             }
-          };
-          const res = await fetch('/estacionamiento/cierre-caja/',options);
-          var caja = await res.json()
-          location.href = "/menu_estacionamiento/menu_estacionamiento"
-          }catch(err){
+          }).join('');
+          cobrosTable.innerHTML = returnString;
+        };
+        const drawUsers = (users) => {
+          const returnString = users.map((user) => {
+            return `<tr>
+                      <td>La plata recaudada por ${user.Persona} fue de $${user.Recaudado}</td>
+                    <tr>`
+          }).join('');
+          usersTable.innerHTML = returnString;
+        };
+        const cerrarCaja = async () => {
+          try {
+            const options = {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' }
+            };
+            const res = await fetch('/estacionamiento/cierre-caja/', options);
+            var caja = await res.json();
+            location.href = "/menu_estacionamiento/menu_estacionamiento";
+          } catch(err) {
             console.error(err);
           }
         };
-        const resumenMensual = async () =>{
+        const resumenMensual = async () => {
           try {
             const res = await fetch('/estacionamiento/emision-resumen-get');
             var mes = await res.json();
+            console.log(mes);
             loadmes(mes);
           } catch (err) {
             console.error(err);
           }
         };
-        const loadmes = async (mes) =>{
+        const loadmes = async (mes) => {
           const inicio = mes.inicio
           const final = mes.final
           const cerrarCaja = mes.caja
-          if (cerrarCaja == ''){
-            document.getElementById("tiempoTexto").innerHTML = `El mes comienza el ${inicio} y finaliza ${final} `
-          }
-          else{
+          if (cerrarCaja == '') {
+            document.getElementById("tiempoTexto").innerHTML = `El mes comienza el ${inicio} y finaliza ${final}`
+          } else {
             document.getElementById("tiempoTexto").innerHTML = cerrarCaja
           }
         };
         const emitirMes = async () => {
           location.href = "/estacionamiento/emision-resumen"
         };
-        document.getElementById('CajaCerrar').addEventListener('click', () =>{
+        document.getElementById('CajaCerrar').addEventListener('click', () => {
           loadCaja();
         });
         document.getElementById('cerrarCaja').addEventListener('click', () =>{
@@ -136,6 +182,7 @@
           emitirMes();
         });
       </script>
+
       <p style="font-size:18px; margin-top:20px;">
         Bienvenido al Sistema de Control de Acceso ESTACIONAMIENTO de la <strong>Sociedad Alemana de Gimnasia de Villa Ballester</strong> - 
         <strong>SAGVB</strong>.<br><br>
@@ -168,4 +215,5 @@
       </p>
     </div>
   </div>
+
 {% endblock content%}
