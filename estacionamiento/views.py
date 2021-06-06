@@ -708,8 +708,6 @@ def editar_estacionamiento(request, id):
     obj = RegistroEstacionamiento.objects.get(id=id)
     form = EstacionamientoForm(request.POST or None, instance=obj)
 
-    # Cargo el form y el objeto del registro para poder renderizar ciertos
-    # datos en el html.
     context = {
         'form': form,
         'obj': obj,
@@ -718,81 +716,52 @@ def editar_estacionamiento(request, id):
 
     if request.method == 'POST':
         if form.is_valid():
-            # Recibo las variables de ID y DNI para asignar al proveedor o
-            # socio en los respectivos casos.
             idProveedor = request.POST.get('idProveedor')
             dni = request.POST.get('noSocio')
 
-            # Chequeo el tipo de entrada que se selecciono al hacer la edicion.
             if form.cleaned_data['tipo'] == 'NOSOCIO':
-                # En caso de que el tipo seleccionado haya sido NOSOCIO me
-                # aseguro de eliminar cualquier proveedor o persona previamente
-                # asignada en el form para evitar conflictos.
-                form.cleaned_data['persona'] = None
-                form.cleaned_data['proveedor'] = None
-                # Realizo lo mismo pero para el objeto en particular para
-                # eliminar cualquier persona o proveedor previamente guardado.
                 obj.persona = None
                 obj.proveedor = None
-                obj.save()
 
             elif (form.cleaned_data['tipo'] == 'SOCIO' or
                   form.cleaned_data['tipo'] == 'SOCIO-MOROSO'):
-                # En caso de que el tipo seleccionado sea SOCIO o SOCIO-MOROSO
-                # y no haya ninguna persona seleccionada en el form, es decir,
-                # asegura que es un socio pero no especifica cual, lo
-                # redirecciona a la misma pagina para reiniciar el formulario.
                 if not form.cleaned_data['persona']:
                     messages.warning(request, 'El formulario no fue \
                                      completado correctamente')
                     return redirect('estacionamiento:editar', id)
 
                 else:
-                    # Utilizando el DNI ingresado y la persona asociada para
-                    # guardar el DNI del socio en la DB.
                     per = Persona.objects.get(id=obj.persona.id)
                     if dni:
                         per.dni = dni
                         per.save()
 
-                    # Por ultimo chequeo que si el tipo seleccionado fue socio
-                    # pero el socio sigue teniendo deuda, que la entrada cambie
-                    # por la fuerza a socio-moroso nuevamente y se asegure
-                    # que el autorizado se mantenga en False.
                     if (not per.general and
                        form.cleaned_data['tipo'] == 'SOCIO'):
-                        form.cleaned_data['tipo'] = 'SOCIO-MOROSO'
-                        form.cleaned_data['autorizado'] = funcionCobros(dni)
+                        obj.tipo = 'SOCIO-MOROSO'
+                        obj.autorizado = funcionCobros(dni)
                         messages.warning(request, 'El tipo de entrada fue \
                                          cambiada a SOCIO-MOROSO por tener \
                                          deuda')
 
                     if (per.general and
                        form.cleaned_data['tipo'] == 'SOCIO-MOROSO'):
-                        form.cleaned_data['tipo'] = 'SOCIO'
-                        form.cleaned_data['autorizado'] = True
+                        obj.tipo = 'SOCIO'
+                        obj.autorizado = True
                         messages.warning(request, 'El tipo de entrada fue \
                                          cambiada a SOCIO por no tener deuda')
 
                     if (not obj.tipo == 'SOCIO-MOROSO' and
                        form.cleaned_data['tipo'] == 'SOCIO-MOROSO'):
-                        # Si el tipo original no era socio-moroso, y se lo
-                        # cambio a socio-moroso, por default no debe estar
-                        # autorizado.
-                        form.cleaned_data['autorizado'] = funcionCobros(dni)
+                        obj.autorizado = funcionCobros(dni)
 
             elif form.cleaned_data['tipo'] == 'PROVEEDOR':
-                # Idem anterior pero en el caso de que el tipo seleccionado sea
-                # proveedor y no haya proveedor asociado en el form.
                 if not form.cleaned_data['proveedor']:
                     messages.warning(request, 'El formulario no fue \
                                      completado correctamente')
                     return redirect('estacionamiento:editar', id)
 
                 elif idProveedor:
-                    # Utilizando las variables recibidas del form, chequeo que
-                    # haya un ID ingresado y un proveedor asociado para guardar
-                    # el correspondiente ID al proveedor en cuestion.
                     prov = Proveedor.objects.get(id=obj.proveedor.id)
                     prov.idProveedor = idProveedor
                     prov.save()
@@ -803,8 +772,6 @@ def editar_estacionamiento(request, id):
             return redirect('estacionamiento:historial')
 
         else:
-            # Si existe algun error en el formulario, reinicia la pagina con
-            # un mensaje de advertencia.
             messages.warning(request, 'El formulario no fue completado \
                              correctamente')
             return render(request, 'estacionamiento/editar_historial.html',
@@ -816,8 +783,8 @@ def editar_estacionamiento(request, id):
 
 
 # La unica funcion de este view es la de que el codigo de js pueda hacer un
-# a estos datos para renderizarlos en tiempo real sin tener que hacer otro
-# request.
+# fetch a estos datos para renderizarlos en tiempo real sin tener que hacer
+# otro request.
 def fetch_proveedores(request):
     # Dentro del GET recibe como datos:
     page = request.GET.get('page')  # La pagina que quiere visualizar.
