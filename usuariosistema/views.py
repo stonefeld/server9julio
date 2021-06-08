@@ -1,8 +1,12 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.http.response import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render, redirect
-
+import json
+from django.contrib.auth.models import User
 from .forms import FormRegistroUsuario
+from django.contrib.auth import authenticate
 
 @login_required
 def home(request):
@@ -21,3 +25,27 @@ def registro(request):
         form = FormRegistroUsuario()
 
     return render(request, 'usuariosistema/register.html', { 'form': form })
+
+@csrf_exempt
+@login_required
+def cambiarContrasena(request):
+    if request.method == 'POST':
+        r = request.body
+        data = json.loads(r.decode())
+        actual = data['act']
+        nueva = data['new']
+        username = User.get_username(request.user)
+        user = authenticate(username = username ,password = actual)
+        if user is not None:
+            u = request.user
+            u.set_password(nueva)
+            u.save()
+            messages.warning(request, 'La contraseña fue cambiada correctamente')
+            return JsonResponse('Ok', safe=False)
+        else:
+            messages.warning(request, 'Error al cambiar la contraseña, contraseña actual equivocada')
+            return JsonResponse('False', safe=False)
+    else:
+        return redirect('')
+        
+         

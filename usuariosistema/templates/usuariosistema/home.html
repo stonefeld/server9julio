@@ -8,6 +8,31 @@
   <div class="content-area" style="padding-left:30px; padding-right:30px; padding-bottom:30px;" >
     <div  class="wrapper">
       <h2>Instrucciones</h2>
+        <a style="text-decoration:none">
+          <button style="text-decoration:none" class="btn btn-outline-info btn-lg" data-toggle="modal" data-target="#setearPassword">Cambiar Contraseña</button>
+        </a>
+        <div class="modal fade" id="setearPassword" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="exampleModalLabel">Cambio Contraseña</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <label for="Acontraseña">Contraseña Actual:</label>
+              <input type="password" id="Acontraseña" name="Acontraseña"><br><br>
+              <label for="Ncontraseña">Contraseña Nueva:</label>
+              <input type="password" id="Ncontraseña" name="Ncontraseña"><br><br>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-primary" id = "cambiarContra" data-dismiss="modal">Confirmar Cambio</button>
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+            </div>
+          </div>
+        </div>
+      </div>
       <p style="font-size:18px; margin-top:20px;">
         Bienvenido al Sistema de Control de Acceso de la <strong>Sociedad Alemana de Gimnasia de Villa Ballester</strong> - 
         <strong>SAGVB</strong>.<br><br>
@@ -37,6 +62,31 @@
             a las instalaciones.
           </li>
         </ul><br>
+        <script type="text/javascript">
+          const cambiarContraseña = async () =>{
+            try {
+              var actual = document.getElementById('Acontraseña').value;
+              var nueva = document.getElementById('Ncontraseña').value;
+              const cuerpo = {
+                act: actual,
+                new: nueva
+              }
+              const options = {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(cuerpo)
+              };
+              const res = await fetch('/cambiarContrasena/', options);
+              var caja = await res.json();
+              location.href = "/";
+            } catch(err) {
+              console.error(err);
+            }
+          };
+          document.getElementById('cambiarContra').addEventListener('click', () =>{
+            cambiarContraseña();
+          });
+      </script>
       </p>
     </div>
   </div>
