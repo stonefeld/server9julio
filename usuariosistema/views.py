@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.http.response import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render, redirect
+from estacionamiento.models import CicloCaja
 import json
 from django.contrib.auth.models import User
 from .forms import FormRegistroUsuario
@@ -46,6 +47,14 @@ def cambiarContrasena(request):
             messages.warning(request, 'Error al cambiar la contraseña, contraseña actual equivocada')
             return JsonResponse('False', safe=False)
     else:
-        return redirect('')
-        
+        return redirect('/')
+    
+def logout(request):
+    cicloCaja_ = CicloCaja.objects.all().last()
+    if cicloCaja_.recaudado is not None:
+        messages.warning(request, 'Seción cerrada correctamente')
+        return redirect('/logout/')
+    else:
+        messages.warning(request, 'Error la caja no fue cerrada')
+        return redirect('/')
          

@@ -50,7 +50,9 @@
 
             <div class="navbar-nav">
               {% if user.is_authenticated %}
-                <a class="nav-item nav-link" href="{% url 'logout' %}">Cerrar sesión</a>
+    
+                <!-- <a class="nav-item nav-link" href="{% url 'logout' %}">Cerrar sesión</a>-->
+                <a class="nav-item nav-link" href="/logoutSis">Cerrar sesión</a>
               {% else %}
                 <a class="nav-item nav-link" href="{% url 'login' %}">Iniciar sesión</a>
               {% endif %}
@@ -77,7 +79,31 @@
 
     {% block content %}{% endblock content %}
     
-
+    <script type="text/javascript">
+          const cambiarContraseña = async () =>{
+            try {
+              var actual = document.getElementById('Acontraseña').value;
+              var nueva = document.getElementById('Ncontraseña').value;
+              const cuerpo = {
+                act: actual,
+                new: nueva
+              }
+              const options = {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(cuerpo)
+              };
+              const res = await fetch('/cambiarContrasena/', options);
+              var caja = await res.json();
+              location.href = "/";
+            } catch(err) {
+              console.error(err);
+            }
+          };
+          document.getElementById('cambiarContra').addEventListener('click', () =>{
+            cambiarContraseña();
+          });
+      </script>
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
