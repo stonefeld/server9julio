@@ -620,16 +620,21 @@ def respuesta(request):
                 funcionEliminarEstacionado(entrada)
                 estacionado = Estacionado(registroEstacionamiento=entrada)
                 estacionado.save()
+
             except:
                 pass
 
-        return JsonResponse(rta,safe=False)
+        return JsonResponse(rta, safe=False)
 
 
 @login_required
 def historial_estacionamiento(request):
     if request.method == 'GET':
         estacionamiento = RegistroEstacionamiento.objects.all()
+
+        if request.GET.get('descargar'):
+            response = descargar_historial(request, estacionamiento)
+            return response
 
         busqueda = request.GET.get('buscar')
         fecha = request.GET.get('fecha')
@@ -677,13 +682,48 @@ def historial_estacionamiento(request):
         RequestConfig(request).configure(table)
 
         return render(
-            request,
-            'estacionamiento/historial.html',
+            request, 'estacionamiento/historial.html',
             {'table': table, 'title': 'Historial',
              'anual': ciclo_anual, 'mensual': ciclo_mensual,
              'caja': ciclo_caja, 'viscaja': caja_input,
-             'vismes': mensual_input}
+             'vismes': mensual_input, 'busqueda': busqueda}
         )
+
+
+def descargar_historial(request, estacionamiento):
+    busqueda = request.GET.get('busqueda-previous')
+    caja = request.GET.get('caja')
+    mes = request.GET.get('caja_mensual')
+
+    if busqueda:
+        estacionamiento = estacionamiento.filter(
+            Q(identificador__icontains=busqueda),
+        ).distinct()
+
+    if caja:
+        estacionamiento = estacionamiento.filter(
+            Q(cicloCaja=caja)
+        ).distinct()
+
+    if mes:
+        estacionamiento = estacionamiento.filter(
+            Q(cicloCaja__cicloMensual=mes)
+        ).distinct()
+
+    response = HttpResponse(content_type='text/csv')
+    writer = csv.writer(response)
+    writer.writerow(['Identificador', 'Tipo de entrada', 'Lugar',
+                     'Fecha y Hora', 'Dirección', 'Ciclo Caja',
+                     'Ciclo Mensual', 'Ciclo Anual', 'Autorizado'])
+
+    for est in estacionamiento.values_list(
+        'identificador', 'tipo', 'lugar', 'tiempo', 'direccion',
+        'cicloCaja__cicloCaja', 'cicloCaja__cicloMensual__cicloMensual',
+            'cicloCaja__cicloMensual__cicloAnual__cicloAnual', 'autorizado'):
+        writer.writerow(est)
+
+    response['Content-Disposition'] = 'attachment; filename="historial_estacionamiento.csv"'
+    return response
 
 
 @login_required
@@ -866,6 +906,7 @@ def fetch_Events(request):
                 strftime('%d/%m/%Y').split('/')
             if date_splitted[0][0] == '0':
                 day = date_splitted[0][1]
+
             else:
                 day = date_splitted[0]
 
@@ -879,7 +920,9 @@ def fetch_Events(request):
             final_date = f'{day}/{month}/{year}'
             diction = {'date': final_date}
             listeventos.append(diction)
+
         return JsonResponse(listeventos, safe=False)
+
     else:
         r = request.body
         data = json.loads(r.decode())
@@ -889,6 +932,8 @@ def fetch_Events(request):
         if data['accion'] == "add":
             evento = Dia_Especial(dia_Especial=fecha)
             evento.save()
+
         elif data['accion'] == 'delete':
             Dia_Especial.objects.filter(dia_Especial=fecha).delete()
+
         return JsonResponse('Ok', safe=False)
