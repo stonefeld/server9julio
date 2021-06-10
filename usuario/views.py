@@ -275,7 +275,8 @@ def fetch_usuarios(request):
     # socio.
     for filter in parsed_filter:
         personas = Persona.objects.all().filter(
-            Q(nombre_apellido__icontains=filter) &
+            Q(nombre_apellido__icontains=filter) |
+            Q(dni__icontains=filter),
             ~Q(nombre_apellido='NOSOCIO')
         ).order_by('nombre_apellido')
 

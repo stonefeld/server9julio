@@ -69,16 +69,33 @@
                     </div>
                   </div>
                 </div>
-              </div>
-            </form>
+              </form>
+            </div>
           </div>
+
+          {% if busqueda or viscaja or vismes %}
+            <div class="p-2">
+              <form method="GET">
+                {% if viscaja %}
+                  <input name="caja" value="{{ viscaja }}" style="display:none"></input>
+                {% elif vismes %}
+                  <input name="caja_mensual" value="{{ vismes }}" style="display:none"></input>
+                {% endif %}
+                {% if busqueda %}
+                  <input name="busqueda-previous" value="{{ busqueda }}" style="display:none"></input>
+                {% endif %}
+                <input name="descargar" value="1" style="display:none"></input>
+                <button type="submit" class="btn btn-outline-info">Descargar datos</button>
+              </form>
+            </div>
+          {% endif %}
 
           <div class="p-2">
             <button class="openbtn btn btn-outline-info" onclick="openNav()" id="openbtn">☰ Ciclos</button>
           </div>
 
           <div class="p-2">
-            <button type="button" class="btn btn-outline-info"  data-toggle="modal" data-target="#exampleModal">Filtro avanzado</button>
+            <button type="button" class="btn btn-outline-info" data-toggle="modal" data-target="#exampleModal">Filtro avanzado</button>
           </div>
         </div>
 
@@ -153,7 +170,7 @@
         </div>
 
         <div style="padding-top:40px; padding-left:10px; padding-right:10px; padding-bottom:10px">
-          {% render_table table %}
+            {% render_table table %}
         </div>
 
       </div>

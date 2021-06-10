@@ -46,7 +46,7 @@ const drawRows = () => {
     return `
       <tr class="usuario">
         <td>${usuario.nrSocio}</td>
-        <td><a href="${usuario.id}">${usuario.nombre_apellido}</a></td>
+        <td><a href="/usuario/lista/${usuario.id}">${usuario.nombre_apellido}</a></td>
         <td>${usuario.nrTarjeta}</td>
         <td>${usuario.dni}</td>
         <td>${usuario.general}</td>

@@ -11,9 +11,9 @@ urlpatterns = [
          name='seleccionarCalendario'),
     path('resumen_tiempo/', views.resumenTiempoReal, name='resumenTiempoReal'),
     path('proveedores/', views.proveedores, name='proveedores'),
+    path('socios/', views.listaUsuarios, name='lista_socios'),
     path('historial/', historial_estacionamiento, name='historial'),
     path('historialCajas/', views.historial_cajas, name='historialCajas'),
     path('tarifaEspecial/', views.tarifasEspeciales, name='tarifaEspecial'),
     path('playground/', views.playground, name='playground'),
-    
 ]

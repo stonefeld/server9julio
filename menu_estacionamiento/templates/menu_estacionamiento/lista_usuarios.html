@@ -1,0 +1,57 @@
+{% extends "menu_estacionamiento.html" %}
+
+{% load static %}
+{% load crispy_forms_tags %}
+{% load render_table from django_tables2 %}
+
+{% block subtitle %}
+  <h1>Lista de Socios</h1>
+{% endblock subtitle %}
+
+{% block content %}
+  <div class="content-section" style="padding:20px;">
+    <div id="form_card" class="card-panel col s12">
+
+      <div class="input-group mx-auto" style="margin-bottom: 25px;">
+        <input type="text" placeholder="Buscar..." name="buscar" id="buscar" value="">
+        <div>
+          <button id="clear-button" class="btn btn-secondary" type="button" style="padding: 10px; margin: 0px 5px 0px 5px">
+            <i>Borrar búsqueda</i>
+          </button>
+        </div>
+        </input>
+      </div>
+
+      <table class="table">
+        <thead>
+          <tr>
+            <th class="orderable">
+              <a href="" style="text-decoration: none">Nr. Socio</a>
+            </th>
+            <th class="orderable">
+              <a href="" style="text-decoration: none">Nombre y Apellido</a>
+            </th>
+            <th class="orderable">
+              <a href="" style="text-decoration: none">Nr. Tarjeta</a>
+            </th>
+            <th class="orderable">
+              <a href="" style="text-decoration: none">DNI</a>
+            </th>
+            <th class="orderable">
+              <a href="" style="text-decoration: none">Autorización</a>
+            </th>
+            <th class="orderable">
+              <a href="" style="text-decoration: none">Deuda</a>
+            </th>
+        </thead>
+
+        <tbody id="usuarios"></tbody>
+      </table>
+
+      <div id="navbuttons"></div>
+
+    </div>
+  </div>
+
+  <script src="{% static 'usuariosistema/usuario.js' %}"></script>
+{% endblock %}
