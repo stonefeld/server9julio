@@ -6,6 +6,11 @@ from .models import (
     Horarios_Precio, Cobros, TiempoTolerancia
 )
 
+
+class CobrosAdmin(admin.ModelAdmin):
+    search_fields = ('usuarioCobro')
+
+
 admin.site.register(RegistroEstacionamiento)
 admin.site.register(Proveedor)
 admin.site.register(CicloCaja)
@@ -14,5 +19,5 @@ admin.site.register(CicloAnual)
 admin.site.register(TarifaEspecial)
 admin.site.register(Dia_Especial)
 admin.site.register(Horarios_Precio)
-admin.site.register(Cobros)
+admin.site.register(Cobros, CobrosAdmin)
 admin.site.register(TiempoTolerancia)
