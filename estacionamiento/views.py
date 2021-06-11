@@ -519,7 +519,7 @@ def registroEstacionamiento(tipo, dato, direccion,autorizado,cicloCaja):
         autorizado = autorizado,
         cicloCaja = cicloCaja
         )
-        
+
     registro.save()
     return registro
 
@@ -558,12 +558,12 @@ def respuesta(request):
                             registroEstacionamiento('SOCIO-MOROSO', user, direccion_, 'FALSE', cicloCaja_)
                             messages.warning(request, 'Socio-Moroso no pago la Deuda o no Pago el Estacionamiento')
                             rta = '#6'  # SocioMoroso no pago Deuda o no Pago Entrada
-                            
+
                         else:
                             registro = registroEstacionamiento('SOCIO-MOROSO', user, direccion_, resultado, cicloCaja_)
                             messages.warning(request, 'Salida Socio-Moroso Autorizada '+resultado)
                             rta = '#1'   #salida sociomoroso autorizada
-                            
+
                 except:
                     messages.warning(request, 'La Tarjeta no Existe. Ingresar con DNI')
                     rta = '#2'  # El usuario No existe
@@ -585,7 +585,7 @@ def respuesta(request):
                             registroEstacionamiento('SOCIO-MOROSO', user, direccion_, 'FALSE', cicloCaja_)
                             messages.warning(request, 'Socio-Moroso no pago la Deuda o no Pago el Estacionamiento')
                             rta = '#6'  # SocioMoroso no pago Deuda o no Pago Entrada
-                            
+
                         else:
                             registro = registroEstacionamiento('SOCIO-MOROSO', user, direccion_, resultado, cicloCaja_)
                             messages.warning(request, 'Salida Socio-Moroso Autorizada '+resultado)
@@ -597,7 +597,7 @@ def respuesta(request):
                         registroEstacionamiento('NOSOCIO', dato, direccion_, 'FALSE', cicloCaja_)
                         messages.warning(request, 'El No Socio no Pagó y Excedió Tiempo Tolerancia')
                         rta = '#5' #no puede salir
-                        
+
                     else:
                         registro = registroEstacionamiento('NOSOCIO', dato, direccion_, resultado, cicloCaja_)
                         messages.warning(request, 'Salida NoSocio Autorizada '+resultado)
@@ -660,13 +660,12 @@ def respuesta(request):
             else:
                 try:
                     proveedor_ = Proveedor.objects.get(idProveedor=int(dato))
-                    registro = registroEstacionamiento('PROVEEDOR', int(dato), direccion_, 'TRUE', cicloCaja_)
+                    registro = registroEstacionamiento('PROVEEDOR', proveedor_, direccion_, 'TRUE', cicloCaja_)
                     # Abrir barrera
                     messages.warning(request, 'Entrada Proveedor Registrada')
                     rta = '#1'  #Entrada autorizada
 
                 except:
-                    registroEstacionamiento('PROVEEDOR', int(dato), direccion_, 'FALSE', cicloCaja_)
                     messages.warning(request, 'El Codigo que digitó es incorrecto')
                     rta = '#4'  # Error Proveedor no encontrado
             try:
