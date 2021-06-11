@@ -263,4 +263,4 @@ class TiempoTolerancia(models.Model):
         verbose_name_plural = 'Tiempos de Tolerancia'
 
     def __str__(self):
-        return f'Tiempo de tolerancia: {self.timpo}'
+        return f'Tiempo de tolerancia: {self.tiempo}'
