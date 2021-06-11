@@ -127,8 +127,8 @@ class RegistroEstacionamiento(models.Model):
                          ('SALIDA', 'SALIDA'))
 
     AUTORIZADO_CHOICES = (('TRUE', 'TRUE'),
-                            ('FALSE', 'FALSE'),
-                            ('TIEMPO TOLERANCIA','T.T'))
+                          ('FALSE', 'FALSE'),
+                          ('TIEMPO TOLERANCIA', 'T.T'))
 
     tipo = models.CharField(
             max_length=30, verbose_name='Tipo',
@@ -151,17 +151,19 @@ class RegistroEstacionamiento(models.Model):
     direccion = models.CharField(
             max_length=30, choices=DIRECCION_CHOICES,
             verbose_name='Dirección', default='ENTRADA')
-    autorizado = models.CharField( max_length=30, choices=AUTORIZADO_CHOICES,
-            verbose_name='Autorización', default='FALSE')
+    autorizado = models.CharField(
+        max_length=30, choices=AUTORIZADO_CHOICES,
+        verbose_name='Autorización', default='FALSE')
     cicloCaja = models.ForeignKey(
             CicloCaja, on_delete=models.CASCADE, verbose_name='cicloCaja')
     aperturaManual = models.ForeignKey(
             AperturaManual, on_delete=models.CASCADE,
             verbose_name='AperturaManual', null=True, blank=True)
-    usuarioEditor = models.ForeignKey(User,
-            on_delete=models.CASCADE, null=True, blank=True)
-    pago = models.CharField(max_length=30, verbose_name = 'pago',
-            null=True, blank=True)
+    usuarioEditor = models.ForeignKey(
+        User, on_delete=models.CASCADE, null=True, blank=True)
+    pago = models.CharField(
+        max_length=30, verbose_name='pago', null=True, blank=True)
+
     def __str__(self):
         return f'{self.tiempo} - {self.identificador}'
 
@@ -252,5 +254,13 @@ class TarifaEspecial(models.Model):
     def __str__(self):
         return f'Tarifa especial: {self.precio}'
 
+
 class TiempoTolerancia(models.Model):
     tiempo = models.IntegerField(verbose_name='tiempo', default=15)
+
+    class Meta:
+        verbose_name = 'Tiempo de Tolerancia'
+        verbose_name_plural = 'Tiempos de Tolerancia'
+
+    def __str__(self):
+        return f'Tiempo de tolerancia: {self.timpo}'
