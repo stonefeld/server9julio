@@ -829,14 +829,16 @@ def editar_estacionamiento(request, id):
                         per.dni = dni
                         per.save()
 
-                    # Por ultimo chequeo que si el tipo seleccionado fue socio
-                    # pero el socio sigue teniendo deuda, que la entrada cambie
-                    # por la fuerza a socio-moroso nuevamente y se asegure
-                    # que el autorizado se mantenga en False.
                     if (not per.estacionamiento and
                        form.cleaned_data['tipo'] == 'SOCIO'):
                         obj.tipo = 'SOCIO-MOROSO'
-                        obj.autorizado = funcionCobros(dni)
+                        if (funcionCobros(dni) == 'T.T' or
+                                funcionCobros(dni) == 'FALSE'):
+                            obj.autorizado = 'FALSE'
+
+                        else:
+                            obj.autorizado = 'TRUE'
+
                         messages.warning(request, 'El tipo de entrada fue \
                                          cambiada a SOCIO-MOROSO por tener \
                                          deuda')
@@ -850,7 +852,11 @@ def editar_estacionamiento(request, id):
 
                     if (not obj.tipo == 'SOCIO-MOROSO' and
                        form.cleaned_data['tipo'] == 'SOCIO-MOROSO'):
-                        obj.autorizado = funcionCobros(dni)
+                        if funcionCobros(dni) == 'T.T' or funcionCobros(dni) == 'FALSE':
+                            obj.autorizado = 'FALSE'
+
+                        else:
+                            obj.autorizado = 'TRUE'
 
             elif form.cleaned_data['tipo'] == 'PROVEEDOR':
                 if not form.cleaned_data['proveedor']:

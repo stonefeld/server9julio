@@ -8,7 +8,7 @@ from .models import (
 
 
 class CobrosAdmin(admin.ModelAdmin):
-    search_fields = ('usuarioCobro__username')
+    list_display = ('usuarioCobro', 'registroEstacionamiento', 'precio')
 
 
 admin.site.register(RegistroEstacionamiento)
