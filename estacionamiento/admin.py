@@ -8,7 +8,7 @@ from .models import (
 
 
 class CobrosAdmin(admin.ModelAdmin):
-    search_fields = ('usuarioCobro')
+    search_fields = ('usuarioCobro__username')
 
 
 admin.site.register(RegistroEstacionamiento)
