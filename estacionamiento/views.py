@@ -165,13 +165,20 @@ def emision_resumen_anterior(request, id):
             order_by("persona__nombre_apellido").\
             exclude(persona__isnull=True).\
             filter(direccion='SALIDA', cicloCaja__cicloMensual__cicloMensual = cicloCajaR.cicloMensual.cicloMensual,
-                   autorizado='TRUE',)
+                   autorizado='TRUE', tipo='SOCIO')
         for entrada in entradas:
             print(entrada)
         diaEspeciales = Dia_Especial.objects.values("dia_Especial").filter(Q(dia_Especial__range=(cicloMensualActual.inicioMes, cicloMensualActual.finalMes)))
         numeroSocioant = 0
+
+        #  _   _ _             ____           _
+        # | \ | (_) ___ ___   / ___|___   ___| | __
+        # |  \| | |/ __/ _ \ | |   / _ \ / __| |/ /
+        # | |\  | | (_|  __/ | |__| (_) | (__|   <
+        # |_| \_|_|\___\___|  \____\___/ \___|_|\_\
+
         entradadic = {}
-        
+
         for entrada in entradas:
             if entrada['persona__nrSocio'] != numeroSocioant or numeroSocioant == 0:
                 numeroSocioant = entrada['persona__nrSocio']
@@ -185,12 +192,12 @@ def emision_resumen_anterior(request, id):
                 resumen_mensual.append(entradadic)
             else:
                 entradadic['Entradas'] = entradadic['Entradas'] + 1
-            
+
             if entrada['tiempo'] in diaEspeciales:
                 entradadic['Especiales'] = entradadic['Especiales'] + 1
             else:
                 entradadic['Normales'] = entradadic['Normales'] + 1
-       
+
         output = []
         response = HttpResponse(content_type='text/csv')
         writer = csv.writer(response)
@@ -222,7 +229,7 @@ def emision_resumen_mensual(request):  # Falta testing
             order_by("persona__nombre_apellido").\
             exclude(persona__isnull=True).\
             filter(direccion='SALIDA', cicloCaja__cicloMensual__cicloMensual=cicloCaja_.cicloMensual.cicloMensual,
-                   autorizado='TRUE',)
+                   autorizado='TRUE', tipo='SOCIO')
         diaEspeciales = Dia_Especial.objects.values("dia_Especial").filter(Q(dia_Especial__range=(cicloMensual_.inicioMes, now())))
         numeroSocioant = 0
         entradadic = {}
@@ -239,7 +246,7 @@ def emision_resumen_mensual(request):  # Falta testing
                 resumen_mensual.append(entradadic)
             else:
                 entradadic['Entradas'] = entradadic['Entradas'] + 1
-            
+
             if entrada['tiempo'] in diaEspeciales:
                 entradadic['Especiales'] = entradadic['Especiales'] + 1
             else:
@@ -258,27 +265,6 @@ def emision_resumen_mensual(request):  # Falta testing
                            entrada['Entradas'],
                            entrada['Normales'],
                            entrada['Especiales']])
-        
-        '''resumen_mensual = RegistroEstacionamiento.objects.\
-            values("persona__nombre_apellido", "persona__nrSocio").\
-            annotate(cantidad_Entradas=Count("id")).\
-            order_by("persona__nombre_apellido").\
-            exclude(persona__isnull=True).\
-            filter(direccion='SALIDA', cicloCaja__cicloMensual=cicloMensual_,
-                   autorizado='TRUE')
-
-        output = []
-        cicloMensual_.finalMes = now()
-        cicloMensual_.save()
-        response = HttpResponse(content_type='text/csv')
-        writer = csv.writer(response)
-        output.append(['NrSocio', 'Persona', 'Cantidad_Entradas', 'Entradas_Especiales', 'Entradas_Normales'])
-
-        for entrada in resumen_mensual:
-            output.append([entrada['persona__nrSocio'],
-                           entrada['persona__nombre_apellido'],
-                           entrada['cantidad_Entradas']])
-        '''
         writer.writerows(output)
         response['Content-Disposition'] = \
             'attachment; filename="resumen_mensual_'\
