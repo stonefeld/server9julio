@@ -10,14 +10,9 @@ class AperturaManual(models.Model):
     DIRECCION_CHOICES = (('ENTRADA', 'ENTRADA'),
                          ('SALIDA', 'SALIDA'))
 
-    razon = models.CharField(max_length=30,
-                             verbose_name='razon',
-                             choices=RAZON_CHOICES)
-    comentario = models.CharField(max_length=300,
-                                  verbose_name='comentario',
-                                  null=True, blank=True)
-    direccion = models.CharField(max_length=30, choices=DIRECCION_CHOICES,
-                                 verbose_name='Dirección', default='ENTRADA')
+    razon = models.CharField(max_length=30, verbose_name='razon', choices=RAZON_CHOICES)
+    comentario = models.CharField(max_length=300, verbose_name='comentario', null=True, blank=True)
+    direccion = models.CharField(max_length=30, choices=DIRECCION_CHOICES, verbose_name='Dirección', default='ENTRADA')
 
     def __str__(self):
         return str(self.razon)
@@ -41,8 +36,7 @@ class AperturaManual(models.Model):
 
 class Proveedor(models.Model):
     idProveedor = models.CharField(max_length=30, verbose_name='ID')
-    nombre_proveedor = models.CharField(
-            max_length=30, verbose_name='Proveedor')
+    nombre_proveedor = models.CharField(max_length=30, verbose_name='Proveedor')
 
     class Meta:
         verbose_name = 'Proveedor'
@@ -75,12 +69,9 @@ class CicloAnual(models.Model):
 
 class CicloMensual(models.Model):
     cicloMensual = models.IntegerField(verbose_name='cicloMensual')
-    cicloAnual = models.ForeignKey(CicloAnual, on_delete=models.CASCADE,
-                                   verbose_name='cicloAnual')
-    inicioMes = models.DateTimeField(verbose_name='inicio',
-                                     null=True, blank=True)
-    finalMes = models.DateTimeField(verbose_name='final',
-                                    null=True, blank=True)
+    cicloAnual = models.ForeignKey(CicloAnual, on_delete=models.CASCADE, verbose_name='cicloAnual')
+    inicioMes = models.DateTimeField(verbose_name='inicio', null=True, blank=True)
+    finalMes = models.DateTimeField(verbose_name='final', null=True, blank=True)
 
     # Todo debe de hacerse desde el view.
     class Meta:
@@ -93,17 +84,11 @@ class CicloMensual(models.Model):
 
 class CicloCaja(models.Model):
     cicloCaja = models.IntegerField(verbose_name='cicloCaja')
-    recaudado = models.IntegerField(
-            null=True, blank=True, verbose_name='recaudado')
-    cicloMensual = models.ForeignKey(
-            CicloMensual, on_delete=models.CASCADE,
-            verbose_name='cicloMensual')
-    inicioCaja = models.DateTimeField(verbose_name='inicio',
-                                      null=True, blank=True)
-    finalCaja = models.DateTimeField(verbose_name='final',
-                                     null=True, blank=True)
-    usuarioCaja = models.ForeignKey(User, on_delete=models.CASCADE,
-                                    null=True, blank=True)
+    recaudado = models.IntegerField(null=True, blank=True, verbose_name='recaudado')
+    cicloMensual = models.ForeignKey(CicloMensual, on_delete=models.CASCADE, verbose_name='cicloMensual')
+    inicioCaja = models.DateTimeField(verbose_name='inicio', null=True, blank=True)
+    finalCaja = models.DateTimeField(verbose_name='final', null=True, blank=True)
+    usuarioCaja = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
 
     class Meta:
         verbose_name = 'Ciclo Caja'
@@ -127,41 +112,23 @@ class RegistroEstacionamiento(models.Model):
                          ('SALIDA', 'SALIDA'))
 
     AUTORIZADO_CHOICES = (('TRUE', 'TRUE'),
-                            ('FALSE', 'FALSE'),
-                            ('TIEMPO TOLERANCIA','T.T'))
+                          ('FALSE', 'FALSE'),
+                          ('TIEMPO TOLERANCIA', 'T.T'))
 
-    tipo = models.CharField(
-            max_length=30, verbose_name='Tipo',
-            choices=TIPO_CHOICES, default='SOCIO')
-    identificador = models.CharField(
-            max_length=30, verbose_name='Identificador',
-            null=True, blank=True, default="Error")
-    persona = models.ForeignKey(
-            Persona, on_delete=models.CASCADE,
-            verbose_name='Persona', null=True, blank=True)
-    noSocio = models.IntegerField(
-            verbose_name='DNI', null=True, blank=True)
-    proveedor = models.ForeignKey(
-            Proveedor, on_delete=models.CASCADE,
-            verbose_name='Proveedor', null=True, blank=True)
-    lugar = models.CharField(
-            max_length=30, verbose_name='Lugar')
-    tiempo = models.DateTimeField(
-            verbose_name='Fecha y Hora', default=now)
-    direccion = models.CharField(
-            max_length=30, choices=DIRECCION_CHOICES,
-            verbose_name='Dirección', default='ENTRADA')
-    autorizado = models.CharField( max_length=30, choices=AUTORIZADO_CHOICES,
-            verbose_name='Autorización', default='FALSE')
-    cicloCaja = models.ForeignKey(
-            CicloCaja, on_delete=models.CASCADE, verbose_name='cicloCaja')
-    aperturaManual = models.ForeignKey(
-            AperturaManual, on_delete=models.CASCADE,
-            verbose_name='AperturaManual', null=True, blank=True)
-    usuarioEditor = models.ForeignKey(User,
-            on_delete=models.CASCADE, null=True, blank=True)
-    pago = models.CharField(max_length=30, verbose_name = 'pago',
-            null=True, blank=True)
+    tipo = models.CharField(max_length=30, verbose_name='Tipo', choices=TIPO_CHOICES, default='SOCIO')
+    identificador = models.CharField(max_length=30, verbose_name='Identificador', null=True, blank=True, default='Error')
+    persona = models.ForeignKey(Persona, on_delete=models.CASCADE, verbose_name='Persona', null=True, blank=True)
+    noSocio = models.IntegerField(verbose_name='DNI', null=True, blank=True)
+    proveedor = models.ForeignKey(Proveedor, on_delete=models.CASCADE, verbose_name='Proveedor', null=True, blank=True)
+    lugar = models.CharField(max_length=30, verbose_name='Lugar')
+    tiempo = models.DateTimeField(verbose_name='Fecha y Hora', default=now)
+    direccion = models.CharField(max_length=30, choices=DIRECCION_CHOICES, verbose_name='Dirección', default='ENTRADA')
+    autorizado = models.CharField(max_length=30, choices=AUTORIZADO_CHOICES, verbose_name='Autorización', default='FALSE')
+    cicloCaja = models.ForeignKey(CicloCaja, on_delete=models.CASCADE, verbose_name='Ciclo Caja')
+    aperturaManual = models.ForeignKey(AperturaManual, on_delete=models.CASCADE, verbose_name='Apertura Manual', null=True, blank=True)
+    usuarioEditor = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    pago = models.CharField(max_length=30, verbose_name='Pago', null=True, blank=True)
+
     def __str__(self):
         return f'{self.tiempo} - {self.identificador}'
 
@@ -192,11 +159,8 @@ class RegistroEstacionamiento(models.Model):
 class Cobros(models.Model):
     precio = models.FloatField(verbose_name='precio')
     deuda = models.BooleanField(default=False, verbose_name='deuda')
-    usuarioCobro = models.ForeignKey(User, on_delete=models.CASCADE,
-                                     null=True, blank=True)
-    registroEstacionamiento = models.ForeignKey(
-            RegistroEstacionamiento, on_delete=models.CASCADE,
-            verbose_name='registroEstacionamiento')
+    usuarioCobro = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    registroEstacionamiento = models.ForeignKey(RegistroEstacionamiento, on_delete=models.CASCADE, verbose_name='registroEstacionamiento')
 
     class Meta:
         verbose_name = "Cobro"
@@ -207,9 +171,7 @@ class Cobros(models.Model):
 
 
 class Estacionado(models.Model):
-    registroEstacionamiento = models.ForeignKey(
-                RegistroEstacionamiento, on_delete=models.CASCADE,
-                verbose_name='Registro Estacionamiento')
+    registroEstacionamiento = models.ForeignKey(RegistroEstacionamiento, on_delete=models.CASCADE, verbose_name='Registro Estacionamiento')
 
     def __str__(self):
         return f'{self.registroEstacionamiento.tiempo} - {self.registroEstacionamiento.identificador}'
@@ -251,6 +213,7 @@ class TarifaEspecial(models.Model):
 
     def __str__(self):
         return f'Tarifa especial: {self.precio}'
+
 
 class TiempoTolerancia(models.Model):
     tiempo = models.IntegerField(verbose_name='tiempo', default=15)
