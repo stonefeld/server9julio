@@ -163,6 +163,13 @@ def emision_resumen_anterior(request, id):
 
         diaEspeciales = Dia_Especial.objects.values("dia_Especial").filter(Q(dia_Especial__range=(cicloMensualActual.inicioMes, cicloMensualActual.finalMes)))
         numeroSocioant = 0
+
+        #  _   _ _             ____           _
+        # | \ | (_) ___ ___   / ___|___   ___| | __
+        # |  \| | |/ __/ _ \ | |   / _ \ / __| |/ /
+        # | |\  | | (_|  __/ | |__| (_) | (__|   <
+        # |_| \_|_|\___\___|  \____\___/ \___|_|\_\
+
         entradadic = {}
 
         for entrada in entradas:
@@ -637,13 +644,12 @@ def respuesta(request):
             else:
                 try:
                     proveedor_ = Proveedor.objects.get(idProveedor=int(dato))
-                    registro = registroEstacionamiento('PROVEEDOR', int(dato), direccion_, 'TRUE', cicloCaja_)
+                    registro = registroEstacionamiento('PROVEEDOR', proveedor_, direccion_, 'TRUE', cicloCaja_)
                     # Abrir barrera
                     messages.warning(request, 'Entrada Proveedor Registrada')
                     rta = '#1'  # Entrada autorizada
 
                 except:
-                    registroEstacionamiento('PROVEEDOR', int(dato), direccion_, 'FALSE', cicloCaja_)
                     messages.warning(request, 'El Codigo que digitó es incorrecto')
                     rta = '#4'  # Error Proveedor no encontrado
             try:
@@ -806,7 +812,11 @@ def editar_estacionamiento(request, id):
 
                     if (not obj.tipo == 'SOCIO-MOROSO' and
                        form.cleaned_data['tipo'] == 'SOCIO-MOROSO'):
-                        obj.autorizado = funcionCobros(dni)
+                        if funcionCobros(dni) == 'T.T' or funcionCobros(dni) == 'FALSE':
+                            obj.autorizado = 'FALSE'
+
+                        else:
+                            obj.autorizado = 'TRUE'
 
             elif form.cleaned_data['tipo'] == 'PROVEEDOR':
                 if not form.cleaned_data['proveedor']:

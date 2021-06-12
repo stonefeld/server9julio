@@ -34,6 +34,27 @@
               </div>
             </div>
 
+            {% if datos.persona %}
+              <div class="input-group mb-3">
+                <p class="form-control">{{ datos.persona.dni }}</p>
+                <div class="input-group-append">
+                  <span class="input-group-text" id="basic-addon2">DNI</span>
+                </div>
+              </div>
+              <div class="input-group mb-3">
+                <p class="form-control">{{ datos.persona.nrTarjeta }}</p>
+                <div class="input-group-append">
+                  <span class="input-group-text" id="basic-addon2">Nr. Tarjeta</span>
+                </div>
+              </div>
+              <div class="input-group mb-3">
+                <p class="form-control">{{ datos.persona.nrSocio }}</p>
+                <div class="input-group-append">
+                  <span class="input-group-text" id="basic-addon2">Nr. Socio</span>
+                </div>
+              </div>
+            {% endif %}
+
             <div class="input-group mb-3">
               <p class="form-control">{{ datos.tiempo }}</p>
               <div class="input-group-append">

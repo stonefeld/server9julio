@@ -217,3 +217,10 @@ class TarifaEspecial(models.Model):
 
 class TiempoTolerancia(models.Model):
     tiempo = models.IntegerField(verbose_name='tiempo', default=15)
+
+    class Meta:
+        verbose_name = 'Tiempo de Tolerancia'
+        verbose_name_plural = 'Tiempos de Tolerancia'
+
+    def __str__(self):
+        return f'Tiempo de tolerancia: {self.tiempo}'
