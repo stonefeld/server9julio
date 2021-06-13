@@ -37,6 +37,4 @@ class ProveedoresTable(tables.Table):
         template_name = 'table_template.html'
         order_by = '-tiempo'
         empty_text = 'No hay ninguna entrada registrada'
-        row_attrs = {
-            'id': 'proveedores'
-        }
+        row_attrs = {'id': 'proveedores'}

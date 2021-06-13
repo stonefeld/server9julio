@@ -11,39 +11,41 @@
 
   <div id="mySidebar" class="sidebar">
     <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">x</a>
-    {% if not anual %}
-      <a href="#">No hay ciclos.</a>
-    {% else %}
-      <a href="{% url 'estacionamiento:historial' %}">Todos</a>
-    {% endif %}
-    {% for ca in anual %}
-      <button class="dropdown-btn">Ciclo Anual {{ ca.cicloAnual }}
-        <i class="caret fa fa-caret-down" style="display: none"></i>
-      </button>
-      <div class="dropdown-container">
-        {% for cm in mensual %}
-          {% if cm.cicloAnual_id == ca.id %}
-            <button class="dropdown-btn">Ciclo Mensual {{ cm.cicloMensual }}
-              <i class="caret fa fa-caret-down" style="display: none"></i>
-            </button>
-            <div class="dropdown-container">
-              <form method="GET">
-                <input style="display:none" value="{{ cm.id }}" name="caja_mensual"></input>
-                <button class="dropdown-btn" type="submit">Todos</button>
-              </form>
-              {% for cc in caja %}
-                {% if cc.cicloMensual_id == cm.id %}
-                  <form method="GET">
-                    <input style="display:none" value="{{ cc.id }}" name="caja"></input>
-                    <button class="dropdown-btn" type="submit">Ciclo Caja {{ cc.cicloCaja }}</button>
-                  </form>
-                {% endif %}
-              {% endfor %}
-            </div>
-          {% endif %}
-        {% endfor %}
-      </div>
-    {% endfor %}
+    <div class="sidebar-content">
+      {% if not anual %}
+        <a href="#">No hay ciclos.</a>
+      {% else %}
+        <a href="{% url 'estacionamiento:historial' %}">Todos</a>
+      {% endif %}
+      {% for ca in anual %}
+        <button class="dropdown-btn">Ciclo Anual {{ ca.cicloAnual }}
+          <i class="caret fa fa-caret-down" style="display: none"></i>
+        </button>
+        <div class="dropdown-container">
+          {% for cm in mensual %}
+            {% if cm.cicloAnual_id == ca.id %}
+              <button class="dropdown-btn">Ciclo Mensual {{ cm.cicloMensual }}
+                <i class="caret fa fa-caret-down" style="display: none"></i>
+              </button>
+              <div class="dropdown-container">
+                <form method="GET">
+                  <input style="display:none" value="{{ cm.id }}" name="caja_mensual"></input>
+                  <button class="dropdown-btn" type="submit">Todos</button>
+                </form>
+                {% for cc in caja %}
+                  {% if cc.cicloMensual_id == cm.id %}
+                    <form method="GET">
+                      <input style="display:none" value="{{ cc.id }}" name="caja"></input>
+                      <button class="dropdown-btn" type="submit">Ciclo Caja {{ cc.cicloCaja }}</button>
+                    </form>
+                  {% endif %}
+                {% endfor %}
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+      {% endfor %}
+    </div>
   </div>
 
   <div id="main">

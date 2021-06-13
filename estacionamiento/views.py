@@ -20,7 +20,7 @@ from .models import (
     RegistroEstacionamiento, Proveedor,
     CicloCaja, CicloMensual, Persona, CicloAnual,
     Cobros, Estacionado, TarifaEspecial,
-    Horarios_Precio, Dia_Especial, TiempoTolerancia
+    HorariosPrecio, DiaEspecial, TiempoTolerancia
 )
 from .forms import EstacionamientoForm, AperturaManualForm, ProveedorForm
 from .tables import HistorialEstacionamientoTable
@@ -62,7 +62,7 @@ def cobrarEntrada(request, id):
     if request.method == 'GET':
         entradaCobrar = RegistroEstacionamiento.objects.get(id=id)
         today = datetime.date(datetime.now())
-        dia_Especial = Dia_Especial.objects.filter(Q(dia_Especial=today)).distinct()
+        dia_Especial = DiaEspecial.objects.filter(Q(dia_Especial=today)).distinct()
 
         if dia_Especial:
             # Hoy es día Especial
@@ -70,7 +70,7 @@ def cobrarEntrada(request, id):
             return JsonResponse(tarifaEspacial.precio, safe=False)
 
         time = datetime.time(datetime.now())
-        horarios = Horarios_Precio.objects.all()
+        horarios = HorariosPrecio.objects.all()
         i = 0
 
         for horario in horarios:
@@ -84,7 +84,7 @@ def cobrarEntrada(request, id):
     else:
         entradaCobrar = RegistroEstacionamiento.objects.get(id=id)
         today = datetime.date(datetime.now())
-        dia_Especial = Dia_Especial.objects.filter(Q(dia_Especial=today)).distinct()
+        dia_Especial = DiaEspecial.objects.filter(Q(dia_Especial=today)).distinct()
 
         if dia_Especial:
             # Hoy es día Especial
@@ -96,7 +96,7 @@ def cobrarEntrada(request, id):
             return JsonResponse("Ok", safe=False)
 
         time = datetime.time(datetime.now())
-        horarios = Horarios_Precio.objects.all()
+        horarios = HorariosPrecio.objects.all()
         i = 0
         for horario in horarios:
             i = i + 1
@@ -161,7 +161,7 @@ def emision_resumen_anterior(request, id):
         for entrada in entradas:
             print(entrada)
 
-        diaEspeciales = Dia_Especial.objects.values("dia_Especial").filter(Q(dia_Especial__range=(cicloMensualActual.inicioMes, cicloMensualActual.finalMes)))
+        diaEspeciales = DiaEspecial.objects.values("dia_Especial").filter(Q(dia_Especial__range=(cicloMensualActual.inicioMes, cicloMensualActual.finalMes)))
         numeroSocioant = 0
 
         #  _   _ _             ____           _
@@ -222,7 +222,7 @@ def emision_resumen_mensual(request):  # Falta testing
             exclude(persona__isnull=True).\
             filter(direccion='SALIDA', cicloCaja__cicloMensual__cicloMensual=cicloCaja_.cicloMensual.cicloMensual, autorizado='TRUE')
 
-        diaEspeciales = Dia_Especial.objects.values("dia_Especial").filter(Q(dia_Especial__range=(cicloMensual_.inicioMes, now())))
+        diaEspeciales = DiaEspecial.objects.values("dia_Especial").filter(Q(dia_Especial__range=(cicloMensual_.inicioMes, now())))
         numeroSocioant = 0
         entradadic = {}
         for entrada in entradas:
@@ -389,7 +389,7 @@ def cierre_caja(request):
         return JsonResponse('Ok', safe=False)
 
 
-def funcionCobros(dato):
+def funcion_cobros(dato):
     today = now()
     ayer = today - timedelta(days=1)
     cobro = Cobros.objects.filter(
@@ -535,7 +535,7 @@ def respuesta(request):
                         rta = '#1'  # Salida socio
 
                     else:
-                        resultado = funcionCobros(dato)
+                        resultado = funcion_cobros(dato)
                         if resultado == 'FALSE':
                             registroEstacionamiento('SOCIO-MOROSO', user, direccion_, 'FALSE', cicloCaja_)
                             messages.warning(request, 'Socio-Moroso no pago la Deuda o no Pago el Estacionamiento')
@@ -562,7 +562,7 @@ def respuesta(request):
                         rta = '#1'  # Salida socio autorizada por dni
 
                     else:
-                        resultado = funcionCobros(dato)
+                        resultado = funcion_cobros(dato)
                         if resultado == 'FALSE':
                             registroEstacionamiento('SOCIO-MOROSO', user, direccion_, 'FALSE', cicloCaja_)
                             messages.warning(request, 'Socio-Moroso no pago la Deuda o no Pago el Estacionamiento')
@@ -574,7 +574,7 @@ def respuesta(request):
                             rta = '#1'  # Salida sociomoroso autorizada
 
                 except:
-                    resultado = funcionCobros(dato)
+                    resultado = funcion_cobros(dato)
                     if resultado == 'FALSE':
                         registroEstacionamiento('NOSOCIO', dato, direccion_, 'FALSE', cicloCaja_)
                         messages.warning(request, 'El No Socio no Pagó y Excedió Tiempo Tolerancia')
@@ -716,14 +716,8 @@ def historial_estacionamiento(request):
         RequestConfig(request).configure(table)
 
         context = {
-            'title': 'Historial',
-            'table': table,
-            'anual': ciclo_anual,
-            'mensual': ciclo_mensual,
-            'caja': ciclo_caja,
-            'viscaja': caja_input,
-            'vismes': mensual_input,
-            'busqueda': busqueda
+            'title': 'Historial', 'table': table, 'anual': ciclo_anual, 'mensual': ciclo_mensual,
+            'caja': ciclo_caja, 'viscaja': caja_input, 'vismes': mensual_input, 'busqueda': busqueda
         }
 
         return render(request, 'estacionamiento/historial.html', context)
@@ -790,8 +784,7 @@ def editar_estacionamiento(request, id):
 
             elif form.cleaned_data['tipo'] == 'SOCIO' or form.cleaned_data['tipo'] == 'SOCIO-MOROSO':
                 if not form.cleaned_data['persona']:
-                    messages.warning(request, 'El formulario no fue \
-                                     completado correctamente')
+                    messages.warning(request, 'El formulario no fue completado correctamente')
                     return redirect('estacionamiento:editar', id)
 
                 else:
@@ -802,7 +795,7 @@ def editar_estacionamiento(request, id):
 
                     if not per.estacionamiento and form.cleaned_data['tipo'] == 'SOCIO':
                         obj.tipo = 'SOCIO-MOROSO'
-                        obj.autorizado = funcionCobros(dni)
+                        obj.autorizado = funcion_cobros(dni)
                         messages.warning(request, 'El tipo de entrada fue cambiada a SOCIO-MOROSO por tener deuda')
 
                     if per.estacionamiento and form.cleaned_data['tipo'] == 'SOCIO-MOROSO':
@@ -810,9 +803,8 @@ def editar_estacionamiento(request, id):
                         obj.autorizado = 'TRUE'
                         messages.warning(request, 'El tipo de entrada fue cambiada a SOCIO por no tener deuda')
 
-                    if (not obj.tipo == 'SOCIO-MOROSO' and
-                       form.cleaned_data['tipo'] == 'SOCIO-MOROSO'):
-                        if funcionCobros(dni) == 'T.T' or funcionCobros(dni) == 'FALSE':
+                    if not obj.tipo == 'SOCIO-MOROSO' and form.cleaned_data['tipo'] == 'SOCIO-MOROSO':
+                        if funcion_cobros(dni) == 'T.T' or funcion_cobros(dni) == 'FALSE':
                             obj.autorizado = 'FALSE'
 
                         else:
@@ -913,9 +905,9 @@ def editar_proveedor(request, id):
 
 
 @csrf_exempt
-def fetch_Events(request):
+def fetch_events(request):
     if request.method == 'GET':
-        eventos = Dia_Especial.objects.values("dia_Especial").all()
+        eventos = DiaEspecial.objects.values("dia_Especial").all()
         listeventos = []
         for evento in eventos:
             date_splitted = evento['dia_Especial'].strftime('%d/%m/%Y').split('/')
@@ -945,10 +937,10 @@ def fetch_Events(request):
         fecha = fecha.strftime('%Y-%m-%d')
         fecha = datetime.strptime(fecha, '%Y-%m-%d')
         if data['accion'] == "add":
-            evento = Dia_Especial(dia_Especial=fecha)
+            evento = DiaEspecial(dia_Especial=fecha)
             evento.save()
 
         elif data['accion'] == 'delete':
-            Dia_Especial.objects.filter(dia_Especial=fecha).delete()
+            DiaEspecial.objects.filter(dia_Especial=fecha).delete()
 
         return JsonResponse('Ok', safe=False)

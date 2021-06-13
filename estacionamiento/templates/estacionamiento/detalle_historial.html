@@ -160,9 +160,11 @@
                   console.error(err);
                 }
               };
+
               const load = (precio) => {
                 document.getElementById("recaudadoTexto").innerHTML = `Tarifa a pagar es : $${precio} `
               };
+
               const cobrarTarifa = async () =>{
                 try {
                   const options = {
@@ -180,6 +182,7 @@
                   console.error(err);
                 }
               };
+
               const loadDeuda = async () =>{
                 try {
                   const res = await fetch('pago_deuda');
@@ -189,9 +192,11 @@
                   console.error(err);
                 }
               };
+
               const deudaLoad = (deuda) =>{
                 document.getElementById('deuda_a_Pagar').innerHTML = `La deuda del socio es: $${deuda}`
               };
+
               const regularizarDeuda = async () =>{
                 try {
                   const options = {
@@ -209,15 +214,19 @@
                   console.error(err);
                 }
               };
+
               document.getElementById('cobrarEntrada').addEventListener('click', () =>{
                 loadPrecio();
               });
+
               document.getElementById('cobrarDinero').addEventListener('click', () =>{
                 cobrarTarifa();
               });
+
               document.getElementById('pagarDeuda').addEventListener('click', () => {
                 loadDeuda();
               });
+
               document.getElementById('regularizar').addEventListener('click', () => {
                 regularizarDeuda();
               });
