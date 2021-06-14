@@ -116,7 +116,7 @@ def cobrarEntrada(request, id):
             usuarioCobro = request.user
         )
         cobro.save()
-        entradaCobrar.pago = 'OK'
+        entradaCobrar.pago = 'TRUE'
         entradaCobrar.save()
         messages.warning(request, 'Cobro por $' + f'{tarifaNormal}')
         # return redirect("estacionamiento:historial")
@@ -138,7 +138,7 @@ def pago_deuda(request, id):
         cobroDeuda.save()
         entradaMoroso.tipo = 'SOCIO'
         entradaMoroso.autorizado = 'TRUE'
-        entradaMoroso.pago = 'OK'
+        entradaMoroso.pago = 'TRUE'
         entradaMoroso.save()
         messages.warning(request, f'Pago de deuda por ${salida} dirigirse hacia administración para realizar el pago')
         return JsonResponse("Ok", safe=False)
@@ -461,11 +461,11 @@ def funcionEliminarEstacionado(entrada):
 
 def pagoEstacionamiento(tipo, autorizado, direccion):
     if tipo == 'SOCIO' or tipo == 'PROVEEDOR':
-        return 'OK'
+        return 'TRUE'
     else:
         if direccion == 'SALIDA':
             if autorizado == 'TRUE':
-                return 'OK'
+                return 'TRUE'
             else:
                 return 'FALSE'
         else:
@@ -647,7 +647,7 @@ def respuesta(request):
                         rta = '#3' #Registro Socio 
 
                     else:
-                        registro = registroEstacionamiento('SOCIO-MOROSO', user, direccion_, 'FALSE', cicloCaja_)
+                        registro = registroEstacionamiento('SOCIO-MOROSO', user, direccion_, 'TRUE', cicloCaja_)
                         # Abrir barrera
                         messages.warning(request, 'Entrada Registrada por DNI. Acercarse a Portería')
                         rta = '#3'  # Registro Socio Moroso el usuario debe dirigirse a la cabina de portería
@@ -836,7 +836,10 @@ def editar_estacionamiento(request, id):
                     if (not per.estacionamiento and
                        form.cleaned_data['tipo'] == 'SOCIO'):
                         obj.tipo = 'SOCIO-MOROSO'
-                        obj.autorizado = funcionCobros(dni)
+                        if funcionCobros(dni) == 'T.T' or funcionCobros(dni) == 'FALSE':
+                            obj.autorizado = 'FALSE'
+                        else:
+                            obj.autorizado = 'TRUE'
                         messages.warning(request, 'El tipo de entrada fue \
                                          cambiada a SOCIO-MOROSO por tener \
                                          deuda')
@@ -850,7 +853,10 @@ def editar_estacionamiento(request, id):
 
                     if (not obj.tipo == 'SOCIO-MOROSO' and
                        form.cleaned_data['tipo'] == 'SOCIO-MOROSO'):
-                        obj.autorizado = funcionCobros(dni)
+                        if funcionCobros(dni) == 'T.T' or funcionCobros(dni) == 'FALSE':
+                            obj.autorizado = 'FALSE'
+                        else:
+                            obj.autorizado = 'TRUE'
 
             elif form.cleaned_data['tipo'] == 'PROVEEDOR':
                 if not form.cleaned_data['proveedor']:

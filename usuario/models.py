@@ -7,7 +7,7 @@ class Persona(models.Model):
     nrTarjeta = models.IntegerField(null=True, blank=True, verbose_name='Nr. de Tarjeta')
     nrSocio = models.IntegerField(null=True, blank=True, verbose_name='Nr. de Socio')
     general = models.BooleanField(default=False, verbose_name='General')
-    estacionamiento = models.BooleanField(default=False, verbose_name='Pileta')
+    estacionamiento = models.BooleanField(default=False, verbose_name='Estacionamiento')
     tenis = models.BooleanField(default=False, verbose_name='Tenis')
     deuda = models.FloatField(null=True, verbose_name='Deuda', default=0)
 
