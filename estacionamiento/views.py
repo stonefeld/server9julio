@@ -793,13 +793,13 @@ def editar_estacionamiento(request, id):
 
                     if not per.estacionamiento and form.cleaned_data['tipo'] == 'SOCIO':
                         obj.tipo = 'SOCIO-MOROSO'
-                        if funcionCobros(dni) == 'T.T' or funcionCobros(dni) == 'FALSE':
+                        if funcion_cobros(dni) == 'T.T' or funcion_cobros(dni) == 'FALSE':
                             obj.autorizado = 'FALSE'
+
                         else:
                             obj.autorizado = 'TRUE'
-                        messages.warning(request, 'El tipo de entrada fue \
-                                         cambiada a SOCIO-MOROSO por tener \
-                                         deuda')
+
+                        messages.warning(request, 'El tipo de entrada fue cambiada a SOCIO-MOROSO por tener deuda')
 
                     if per.estacionamiento and form.cleaned_data['tipo'] == 'SOCIO-MOROSO':
                         obj.tipo = 'SOCIO'
@@ -810,10 +810,6 @@ def editar_estacionamiento(request, id):
                         if funcion_cobros(dni) == 'T.T' or funcion_cobros(dni) == 'FALSE':
                             obj.autorizado = 'FALSE'
 
-                    if (not obj.tipo == 'SOCIO-MOROSO' and
-                       form.cleaned_data['tipo'] == 'SOCIO-MOROSO'):
-                        if funcionCobros(dni) == 'T.T' or funcionCobros(dni) == 'FALSE':
-                            obj.autorizado = 'FALSE'
                         else:
                             obj.autorizado = 'TRUE'
 
