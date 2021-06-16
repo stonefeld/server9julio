@@ -38,10 +38,15 @@ const drawRows = () => {
   const returnString = usuarios.map((usuario) => {
     if (usuario.dni == null) { usuario.dni = 'No establecido'; }
     if (usuario.nrTarjeta == null) { usuario.nrTarjeta = 'No establecido'; }
-    if (usuario.general == true) {
+    if (usuario.general) {
       usuario.general = '✔';
     } else {
       usuario.general = '✘';
+    }
+    if (usuario.estacionamiento) {
+      usuario.estacionamiento = '✔';
+    } else {
+      usuario.estacionamiento = '✘';
     }
     return `
       <tr class="usuario">
@@ -50,6 +55,7 @@ const drawRows = () => {
         <td>${usuario.nrTarjeta}</td>
         <td>${usuario.dni}</td>
         <td>${usuario.general}</td>
+        <td>${usuario.estacionamiento}</td>
         <td>$ ${usuario.deuda}</td>
       </tr>
     `;

@@ -849,10 +849,11 @@ def fetch_proveedores(request):
     # Separa el string para filtrar en un list con cada palabra ingresada.
     parsed_filter = filter_string.split(' ')
 
+    proveedores = Proveedor.objects.all()
     # Filtra todos los proveedores con el string recibido por nombre de
     # proveedor.
     for filter in parsed_filter:
-        proveedores = Proveedor.objects.all().filter(Q(nombre_proveedor__icontains=filter_string)).order_by('nombre_proveedor')
+        proveedores = proveedores.filter(Q(nombre_proveedor__icontains=filter_string)).order_by('nombre_proveedor')
 
     # Realiza la paginacion de los datos con un maximo de 20 proveedores por
     # pagina y especifica la pagina que quiere visualizar.
