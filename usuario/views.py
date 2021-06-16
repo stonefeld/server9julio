@@ -16,7 +16,6 @@ import pandas as pd
 
 from .models import Persona, Deuda
 from .forms import PersonaForm
-from .tables import PersonaTable
 from registroGeneral.models import EntradaGeneral
 from registroGeneral.tables import HistorialTable
 
@@ -185,7 +184,6 @@ def cargarDBAsync(df):
             persona.general = False
             persona.save()
 
-
     try:
         noSocio = personas.get(nombre_apellido='NOSOCIO')
         noSocio.general = True
@@ -271,10 +269,11 @@ def fetch_usuarios(request):
     # Separa el string para filtrar en un list con cada palabra ingresada.
     parsed_filter = filter_string.split(' ')
 
+    personas = Persona.objects.all()
     # Filtra todos los socios con el string recibido por nombre de
     # socio.
     for filter in parsed_filter:
-        personas = Persona.objects.all().filter(
+        personas = personas.filter(
             Q(nombre_apellido__icontains=filter) |
             Q(dni__icontains=filter),
             ~Q(nombre_apellido='NOSOCIO')
