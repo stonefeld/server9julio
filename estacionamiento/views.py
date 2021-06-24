@@ -471,6 +471,17 @@ def pagoEstacionamiento(tipo, autorizado, direccion):
         else:
             return 'FALSE'
 
+def funcionEntradas(dato):
+    today = now()
+    ayer = today - timedelta(days=1)
+    registro = RegistroEstacionamiento.objects.filter(
+        Q(registroEstacionamiento__noSocio=int(dato)),
+        Q(registroEstacionamiento__tiempo__range=(ayer, today))
+    ).distinct()
+    if registro:
+        return True
+    return False
+
 
 def registroEstacionamiento(tipo, dato, direccion,autorizado,cicloCaja):
     pago = pagoEstacionamiento(tipo, autorizado, direccion)
@@ -594,7 +605,11 @@ def respuesta(request):
                 except:
                     resultado = funcionCobros(dato)
                     if resultado == 'FALSE':
-                        registroEstacionamiento('NOSOCIO', dato, direccion_, 'FALSE', cicloCaja_)
+                        res = funcionEntradas(dato)
+                        if res:
+                            registroEstacionamiento('NOSOCIO', dato, direccion_, 'FALSE', cicloCaja_)
+                        else:
+                            registro = registroEstacionamiento('NOSOCIO', dato, direccion_, 'TRUE', cicloCaja_)
                         messages.warning(request, 'El No Socio no Pagó y Excedió Tiempo Tolerancia')
                         rta = '#5' #no puede salir
                         
