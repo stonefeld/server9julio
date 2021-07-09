@@ -29,7 +29,7 @@ with open('/etc/config.json') as config_file:
 SECRET_KEY = config['SECRET_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['192.168.0.180', 'server9julio.ddns.net', '172.20.0.114', 'localhost']
 
@@ -56,14 +56,8 @@ INSTALLED_APPS = [
 
     # Third party apps
     'crispy_forms',
-    'django_tables2',
-
+    'django_tables2'
 ]
-
-CRONJOBS = [
-    ('20 4 * * *', 'usuario.cron.my_scheduled_job')
-]
-
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -109,7 +103,6 @@ DATABASES = {
         'PORT': 3306,
     }
 }
-
 
 
 # Password validation

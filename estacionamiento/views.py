@@ -145,68 +145,54 @@ def pago_deuda(request, id):
 
 @login_required
 def emision_resumen_anterior(request, id):
-    cicloCajaR = CicloCaja.objects.get(id=id)
     cicloMensualActual = CicloMensual.objects.all().last()
-    if cicloMensualActual.cicloMensual == cicloCajaR.cicloMensual.cicloMensual:
-        return redirect('menu_estacionamiento:menu_estacionamiento')
+    ciclo_mensual = CicloMensual.objects.get(id=id)
+    resumen_mensual = []
+    entradas = RegistroEstacionamiento.objects.\
+        values('persona__nombre_apellido', 'persona__nrSocio', 'tiempo').\
+        order_by('persona__nombre_apellido').\
+        exclude(persona__isnull=True).\
+        filter(direccion='SALIDA', cicloCaja__cicloMensual__cicloMensual=ciclo_mensual.cicloMensual, autorizado='TRUE', cicloCaja__usuarioCaja__isnull=False)
 
-    else:
-        resumen_mensual = []
-        entradas = RegistroEstacionamiento.objects.\
-            values("persona__nombre_apellido", "persona__nrSocio", 'tiempo').\
-            order_by("persona__nombre_apellido").\
-            exclude(persona__isnull=True).\
-            filter(direccion='SALIDA', cicloCaja__cicloMensual__cicloMensual=cicloCajaR.cicloMensual.cicloMensual, autorizado='TRUE',)
+    diaEspeciales = DiaEspecial.objects.values('dia_Especial').filter(Q(dia_Especial__range=(cicloMensualActual.inicioMes, cicloMensualActual.finalMes)))
+    numeroSocioant = 0
+    entradadic = {}
 
-        for entrada in entradas:
-            print(entrada)
+    for entrada in entradas:
+        if entrada['persona__nrSocio'] != numeroSocioant or numeroSocioant == 0:
+            numeroSocioant = entrada['persona__nrSocio']
+            entradadic = {
+                'NrSocio': entrada['persona__nrSocio'],
+                'Persona': entrada['persona__nombre_apellido'],
+                'Entradas': 1,
+                'Normales': 0,
+                'Especiales': 0
+            }
+            resumen_mensual.append(entradadic)
 
-        diaEspeciales = DiaEspecial.objects.values("dia_Especial").filter(Q(dia_Especial__range=(cicloMensualActual.inicioMes, cicloMensualActual.finalMes)))
-        numeroSocioant = 0
+        else:
+            entradadic['Entradas'] = entradadic['Entradas'] + 1
 
-        #  _   _ _             ____           _
-        # | \ | (_) ___ ___   / ___|___   ___| | __
-        # |  \| | |/ __/ _ \ | |   / _ \ / __| |/ /
-        # | |\  | | (_|  __/ | |__| (_) | (__|   <
-        # |_| \_|_|\___\___|  \____\___/ \___|_|\_\
+        if entrada['tiempo'] in diaEspeciales:
+            entradadic['Especiales'] = entradadic['Especiales'] + 1
 
-        entradadic = {}
+        else:
+            entradadic['Normales'] = entradadic['Normales'] + 1
 
-        for entrada in entradas:
-            if entrada['persona__nrSocio'] != numeroSocioant or numeroSocioant == 0:
-                numeroSocioant = entrada['persona__nrSocio']
-                entradadic = {
-                    'NrSocio': entrada['persona__nrSocio'],
-                    'Persona': entrada['persona__nombre_apellido'],
-                    'Entradas': 1,
-                    'Normales': 0,
-                    'Especiales': 0
-                }
-                resumen_mensual.append(entradadic)
+    output = []
+    response = HttpResponse(content_type='text/csv')
+    writer = csv.writer(response)
+    output.append(['NrSocio', 'Persona', 'Cantidad_Entradas', 'Entradas_Normales', 'Entradas_Especiales'])
+    for entrada in resumen_mensual:
+        output.append([entrada['NrSocio'],
+                       entrada['Persona'],
+                       entrada['Entradas'],
+                       entrada['Normales'],
+                       entrada['Especiales']])
 
-            else:
-                entradadic['Entradas'] = entradadic['Entradas'] + 1
-
-            if entrada['tiempo'] in diaEspeciales:
-                entradadic['Especiales'] = entradadic['Especiales'] + 1
-
-            else:
-                entradadic['Normales'] = entradadic['Normales'] + 1
-
-        output = []
-        response = HttpResponse(content_type='text/csv')
-        writer = csv.writer(response)
-        output.append(['NrSocio', 'Persona', 'Cantidad_Entradas', 'Entradas_Normales', 'Entradas_Especiales'])
-        for entrada in resumen_mensual:
-            output.append([entrada['NrSocio'],
-                           entrada['Persona'],
-                           entrada['Entradas'],
-                           entrada['Normales'],
-                           entrada['Especiales']])
-
-        writer.writerows(output)
-        response['Content-Disposition'] = f'attachment; filename="resumen_mensual_{cicloCajaR.cicloMensual.cicloMensual}_año_{cicloCajaR.cicloMensual.cicloAnual.cicloAnual}.csv"'
-        return response
+    writer.writerows(output)
+    response['Content-Disposition'] = f'attachment; filename="resumen_mensual_{ciclo_mensual.cicloMensual}_año_{ciclo_mensual.cicloAnual.cicloAnual}.csv"'
+    return response
 
 
 @login_required

@@ -2,6 +2,7 @@ from datetime import date, time
 import json
 
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import render
@@ -9,7 +10,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 from django_tables2 import RequestConfig
 
-from estacionamiento.models import Proveedor, CicloCaja, Estacionado, HorariosPrecio, TarifaEspecial
+from estacionamiento.models import Proveedor, CicloCaja, CicloMensual, Estacionado, HorariosPrecio, TarifaEspecial
 from estacionamiento.tables import EstacionadosTable, ProveedoresTable
 from .tables import HistorialCajas
 
@@ -112,7 +113,22 @@ def historial(request):
 
 @login_required
 def historial_cajas(request):
-    cajas = CicloCaja.objects.all()
-    table = HistorialCajas(cajas)
+    ciclos_mensual = CicloMensual.objects.all()
+    table = HistorialCajas(ciclos_mensual)
     RequestConfig(request).configure(table)
-    return render(request, 'menu_estacionamiento/historialCajas.html', {'table': table, 'title': 'HistorialCajas'})
+    return render(request, 'menu_estacionamiento/historialCajas.html', {'table': table, 'title': 'Historial Cajas'})
+
+
+def fetch_ciclo_caja(request):
+    ciclo_mensual = request.GET.get('mes')
+    ciclos_caja = []
+    for ciclo in list(CicloCaja.objects.all().filter(cicloMensual__cicloMensual=ciclo_mensual).values()):
+        if ciclo['usuarioCaja_id'] is not None:
+            ciclo['user'] = User.objects.get(id=ciclo['usuarioCaja_id']).username
+
+        else:
+            ciclo['user'] = None
+
+        ciclos_caja.append(ciclo)
+
+    return JsonResponse(ciclos_caja, safe=False)
