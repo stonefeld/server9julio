@@ -37,14 +37,18 @@ const drawCiclosCaja = () => {
         timeZone: 'America/Argentina/Buenos_Aires'
       });
     }
-    if (caja.recaudado === null) caja.recaudado = 0;
+    if (caja.recaudado === null) {
+      caja.recaudado = 'No cerró';
+    } else {
+      caja.recaudado = `$${caja.recaudado}`;
+    }
     if (caja.user === null) caja.user = 'No cerró';
     return `
       <tr class="ciclo-caja">
         <td>${caja.cicloCaja}</td>
         <td>${inicioFecha}</td>
         <td>${finalFecha}</td>
-        <td>$${caja.recaudado}</td>
+        <td>${caja.recaudado}</td>
         <td>${caja.user}</td>
       </tr>
     `;
