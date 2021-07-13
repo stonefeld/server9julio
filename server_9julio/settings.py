@@ -32,7 +32,7 @@ SECRET_KEY = config['SECRET_KEY']
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['192.168.0.180', 'server9julio.net']
+ALLOWED_HOSTS = ['192.168.0.180', 'server9julio.net', '192.168.49.30']
 
 
 # Application definition
