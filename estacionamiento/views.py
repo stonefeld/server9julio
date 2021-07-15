@@ -145,22 +145,35 @@ def pago_deuda(request, id):
 
 @login_required
 def emision_resumen_anterior(request, id):
-    cicloMensualActual = CicloMensual.objects.all().last()
     ciclo_mensual = CicloMensual.objects.get(id=id)
     resumen_mensual = []
+
     entradas = RegistroEstacionamiento.objects.\
         values('persona__nombre_apellido', 'persona__nrSocio', 'tiempo').\
         order_by('persona__nombre_apellido').\
         exclude(persona__isnull=True).\
         filter(direccion='SALIDA', cicloCaja__cicloMensual__cicloMensual=ciclo_mensual.cicloMensual, autorizado='TRUE', cicloCaja__usuarioCaja__isnull=False)
 
-    diaEspeciales = DiaEspecial.objects.values('dia_Especial').filter(Q(dia_Especial__range=(cicloMensualActual.inicioMes, cicloMensualActual.finalMes)))
-    numeroSocioant = 0
+    # Hago un query pero que me devuelva unicamente los valores y no los campos.
+    dias_especiales_query = list(DiaEspecial.objects.values_list('dia_Especial').filter(Q(dia_Especial__range=(ciclo_mensual.inicioMes, ciclo_mensual.finalMes))))
+    dias_especiales = []
+
+    # Como necesito conocer la fecha en formato string y no datetime.date creo un nuevo array.
+    for dia in dias_especiales_query:
+        dias_especiales.append(str(dia[0]))
+
+    nrsocio_anterior = 0
     entradadic = {}
+    first = True  # Declaro first_time para que la primera vuelta no se agregue una entrada vacia.
 
     for entrada in entradas:
-        if entrada['persona__nrSocio'] != numeroSocioant or numeroSocioant == 0:
-            numeroSocioant = entrada['persona__nrSocio']
+        if entrada['persona__nrSocio'] != nrsocio_anterior or nrsocio_anterior == 0:
+            if not first:
+                # Agrego la entrada generada en la vuelta del loop anterior cada vez que el nr de socio es distinto.
+                # De esta forma todos los datos modificados anteriormente se agregan.
+                resumen_mensual.append(entradadic)
+
+            nrsocio_anterior = entrada['persona__nrSocio']
             entradadic = {
                 'NrSocio': entrada['persona__nrSocio'],
                 'Persona': entrada['persona__nombre_apellido'],
@@ -168,16 +181,24 @@ def emision_resumen_anterior(request, id):
                 'Normales': 0,
                 'Especiales': 0
             }
+
+        else:
+            entradadic['Entradas'] += 1
+
+        # entrda['tiempo'] tiene formato 'YY-MM-DD HH:mm' y solo necesito la fecha.
+        if str(entrada['tiempo']).split(' ')[0] in dias_especiales:
+            entradadic['Especiales'] += 1
+
+        else:
+            entradadic['Normales'] += 1
+
+        if first:
+            first = False
+
+        # Como la entrada es agregada al principio del loop cuando el usuario es distinto necesito agregar
+        # la ultima entrada de forma forzosa.
+        if entrada == entradas.last():
             resumen_mensual.append(entradadic)
-
-        else:
-            entradadic['Entradas'] = entradadic['Entradas'] + 1
-
-        if entrada['tiempo'] in diaEspeciales:
-            entradadic['Especiales'] = entradadic['Especiales'] + 1
-
-        else:
-            entradadic['Normales'] = entradadic['Normales'] + 1
 
     output = []
     response = HttpResponse(content_type='text/csv')
@@ -196,24 +217,34 @@ def emision_resumen_anterior(request, id):
 
 
 @login_required
-def emision_resumen_mensual(request):  # Falta testing
-    cicloCaja_ = CicloCaja.objects.all().last()
-    if cicloCaja_.recaudado is not None:
-        cicloMensual_ = CicloMensual.objects.all().last()
+def emision_resumen_mensual(request):
+    ciclo_caja = CicloCaja.objects.all().last()
+    if ciclo_caja.recaudado is not None:
+        ciclo_mensual = CicloMensual.objects.all().last()
         resumen_mensual = []
 
         entradas = RegistroEstacionamiento.objects.\
             values('persona__nombre_apellido', 'persona__nrSocio', 'tiempo').\
             order_by('persona__nombre_apellido').\
             exclude(persona__isnull=True).\
-            filter(direccion='SALIDA', cicloCaja__cicloMensual__cicloMensual=cicloCaja_.cicloMensual.cicloMensual, autorizado='TRUE')
+            filter(direccion='SALIDA', cicloCaja__cicloMensual__cicloMensual=ciclo_caja.cicloMensual.cicloMensual, autorizado='TRUE')
 
-        diaEspeciales = DiaEspecial.objects.values("dia_Especial").filter(Q(dia_Especial__range=(cicloMensual_.inicioMes, now())))
-        numeroSocioant = 0
+        dias_especiales_query = list(DiaEspecial.objects.values_list('dia_Especial').filter(Q(dia_Especial__range=(ciclo_mensual.inicioMes, now()))))
+        dias_especiales = []
+
+        for dia in dias_especiales_query:
+            dias_especiales.append(str(dia[0]))
+
+        nrsocio_anterior = 0
         entradadic = {}
+        first_time = True
+
         for entrada in entradas:
-            if entrada['persona__nrSocio'] != numeroSocioant or numeroSocioant == 0:
-                numeroSocioant = entrada['persona__nrSocio']
+            if entrada['persona__nrSocio'] != nrsocio_anterior or nrsocio_anterior == 0:
+                if not first_time:
+                    resumen_mensual.append(entradadic)
+
+                nrsocio_anterior = entrada['persona__nrSocio']
                 entradadic = {
                     'NrSocio': entrada['persona__nrSocio'],
                     'Persona': entrada['persona__nombre_apellido'],
@@ -221,22 +252,29 @@ def emision_resumen_mensual(request):  # Falta testing
                     'Normales': 0,
                     'Especiales': 0
                 }
+
+            else:
+                entradadic['Entradas'] += 1
+
+            if str(entrada['tiempo']).split(' ')[0] in dias_especiales:
+                entradadic['Especiales'] += 1
+
+            else:
+                entradadic['Normales'] += 1
+
+            if first_time:
+                first_time = False
+
+            if entrada == entradas.last():
                 resumen_mensual.append(entradadic)
 
-            else:
-                entradadic['Entradas'] = entradadic['Entradas'] + 1
+        ciclo_mensual.finalMes = now()
+        ciclo_mensual.save()
 
-            if entrada['tiempo'] in diaEspeciales:
-                entradadic['Especiales'] = entradadic['Especiales'] + 1
-
-            else:
-                entradadic['Normales'] = entradadic['Normales'] + 1
-
-        output = []
-        cicloMensual_.finalMes = now()
-        cicloMensual_.save()
         response = HttpResponse(content_type='text/csv')
         writer = csv.writer(response)
+
+        output = []
         output.append(['NrSocio', 'Persona', 'Cantidad_Entradas', 'Entradas_Normales', 'Entradas_Especiales'])
 
         for entrada in resumen_mensual:
@@ -247,26 +285,26 @@ def emision_resumen_mensual(request):  # Falta testing
                            entrada['Especiales']])
 
         writer.writerows(output)
-        response['Content-Disposition'] = f'attachment; filename="resumen_mensual_{cicloMensual_.cicloMensual}_año_{cicloMensual_.cicloAnual.cicloAnual}.csv"'
-        cicloAnual_ = CicloAnual.objects.all().last()
+        response['Content-Disposition'] = f'attachment; filename="resumen_mensual_{ciclo_mensual.cicloMensual}_año_{ciclo_mensual.cicloAnual.cicloAnual}.csv"'
+        ciclo_anual = CicloAnual.objects.all().last()
 
-        if cicloMensual_.cicloMensual >= 12:
-            cicloAnual_ = CicloAnual(cicloAnual=(cicloAnual_.cicloAnual + 1))
-            cicloAnual_.save()
-            cicloAnual_ = CicloAnual.objects.all().last()
-            cicloMensual_ = CicloMensual(cicloMensual=1, cicloAnual=cicloAnual_, inicioMes=now())
-            cicloMensual_.save()
+        if ciclo_mensual.cicloMensual >= 12:
+            ciclo_anual = CicloAnual(cicloAnual=(ciclo_anual.cicloAnual + 1))
+            ciclo_anual.save()
+            ciclo_anual = CicloAnual.objects.all().last()
+            ciclo_mensual = CicloMensual(cicloMensual=1, cicloAnual=ciclo_anual, inicioMes=now())
+            ciclo_mensual.save()
 
         else:
-            cicloMensual_ = CicloMensual(
-                cicloMensual=(cicloMensual_.cicloMensual + 1),
-                cicloAnual=cicloAnual_, inicioMes=now()
+            ciclo_mensual = CicloMensual(
+                cicloMensual=(ciclo_mensual.cicloMensual + 1),
+                cicloAnual=ciclo_anual, inicioMes=now()
             )
-            cicloMensual_.save()
+            ciclo_mensual.save()
 
-        cicloMensual_ = CicloMensual.objects.all().last()
-        cicloCaja_ = CicloCaja(cicloCaja=1, cicloMensual=cicloMensual_, inicioCaja=now())
-        cicloCaja_.save()
+        ciclo_mensual = CicloMensual.objects.all().last()
+        ciclo_caja = CicloCaja(cicloCaja=1, cicloMensual=ciclo_mensual, inicioCaja=now())
+        ciclo_caja.save()
         return response
 
     else:
@@ -287,9 +325,9 @@ def emision_resumen_mensual_get(request):
 
     else:
         resp = {
-            "inicio": '',
-            "final": '',
-            "caja": 'Error debe cerrar caja primero'
+            'inicio': '',
+            'final': '',
+            'caja': 'Error debe cerrar caja primero'
         }
         return JsonResponse(resp, safe=False)
 
