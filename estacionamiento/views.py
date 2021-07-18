@@ -124,12 +124,12 @@ def pago_deuda(request, id):
     if request.method == "POST":
         entradaMoroso = RegistroEstacionamiento.objects.get(id=id)
         salida = str(entradaMoroso.persona.deuda)
-        cobroDeuda = Cobros(precio=entradaMoroso.persona.deuda, registroEstacionamiento=entradaMoroso, deuda=True)
+        # cobroDeuda = Cobros(precio=entradaMoroso.persona.deuda, registroEstacionamiento=entradaMoroso, deuda=True)
+        # cobroDeuda.save()
         socioMoroso = entradaMoroso.persona
         socioMoroso.deuda = 0.0
         socioMoroso.estacionamiento = True
         socioMoroso.save()
-        cobroDeuda.save()
         entradaMoroso.tipo = 'SOCIO'
         entradaMoroso.autorizado = 'TRUE'
         entradaMoroso.pago = 'TRUE'
@@ -337,7 +337,7 @@ def emision_resumen_mensual_get(request):
 def cierre_caja(request):
     if request.method == 'GET':
         cicloCaja_ = CicloCaja.objects.all().last()
-        cobros = Cobros.objects.values('registroEstacionamiento__identificador', 'precio', 'usuarioCobro', 'registroEstacionamiento__tipo').filter(registroEstacionamiento__cicloCaja=cicloCaja_, deuda=False)  # Trae todo los cobros realizados en este ciclo
+        cobros = Cobros.objects.values('registroEstacionamiento__identificador', 'precio', 'usuarioCobro', 'registroEstacionamiento__tipo').filter(registroEstacionamiento__cicloCaja=cicloCaja_, deuda=False)  # Trae todos los cobros realizados en este ciclo
         personas = Cobros.objects.values('usuarioCobro').filter(registroEstacionamiento__cicloCaja=cicloCaja_, deuda=False).distinct()  # Trae los usuarios que hicieron los cobros
 
         if not cobros:  # Si no hay cobros devolver 0
