@@ -152,7 +152,7 @@ def emision_resumen_anterior(request, id):
         values('persona__nombre_apellido', 'persona__nrSocio', 'tiempo').\
         order_by('persona__nombre_apellido').\
         exclude(persona__isnull=True).\
-        filter(direccion='SALIDA', cicloCaja__cicloMensual__cicloMensual=ciclo_mensual.cicloMensual, autorizado='TRUE', cicloCaja__usuarioCaja__isnull=False)
+        filter(direccion='SALIDA', tipo='SOCIO', cicloCaja__cicloMensual__cicloMensual=ciclo_mensual.cicloMensual, autorizado='TRUE', cicloCaja__usuarioCaja__isnull=False)
 
     # Hago un query pero que me devuelva unicamente los valores y no los campos.
     dias_especiales_query = list(DiaEspecial.objects.values_list('dia_Especial').filter(Q(dia_Especial__range=(ciclo_mensual.inicioMes, ciclo_mensual.finalMes))))
@@ -227,7 +227,7 @@ def emision_resumen_mensual(request):
             values('persona__nombre_apellido', 'persona__nrSocio', 'tiempo').\
             order_by('persona__nombre_apellido').\
             exclude(persona__isnull=True).\
-            filter(direccion='SALIDA', cicloCaja__cicloMensual__cicloMensual=ciclo_caja.cicloMensual.cicloMensual, autorizado='TRUE')
+            filter(direccion='SALIDA', tipo='SOCIO', cicloCaja__cicloMensual__cicloMensual=ciclo_caja.cicloMensual.cicloMensual, autorizado='TRUE')
 
         dias_especiales_query = list(DiaEspecial.objects.values_list('dia_Especial').filter(Q(dia_Especial__range=(ciclo_mensual.inicioMes, now()))))
         dias_especiales = []
