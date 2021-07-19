@@ -182,8 +182,8 @@ class Estacionado(models.Model):
 
 
 class HorariosPrecio(models.Model):
-    inicio = models.TimeField(default='00:00:00', verbose_name='Inicio')
-    final = models.TimeField(default='00:00:00', verbose_name='Fín')
+    inicio = models.TimeField(default='00:00:00', verbose_name='Horario de inicio')
+    final = models.TimeField(default='00:00:00', verbose_name='Horario de finalización')
     precio = models.FloatField(default=250.0, verbose_name='Precio')
 
     class Meta:
@@ -206,7 +206,7 @@ class DiaEspecial(models.Model):
 
 
 class TarifaEspecial(models.Model):
-    precio = models.FloatField(default=250.0, verbose_name='Precio')
+    precio = models.FloatField(default=250.0, verbose_name='Precio de la tarifa especial')
 
     class Meta:
         verbose_name = 'Tarifa especial'
