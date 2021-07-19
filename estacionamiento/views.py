@@ -58,7 +58,7 @@ def apertura_manual(request):
 
 @csrf_exempt
 @login_required
-def cobrarEntrada(request, id):
+def cobrar_entrada(request, id):
     if request.method == 'GET':
         entradaCobrar = RegistroEstacionamiento.objects.get(id=id)
         today = datetime.date(datetime.now())
@@ -124,8 +124,8 @@ def pago_deuda(request, id):
     if request.method == "POST":
         entradaMoroso = RegistroEstacionamiento.objects.get(id=id)
         salida = str(entradaMoroso.persona.deuda)
-        # cobroDeuda = Cobros(precio=entradaMoroso.persona.deuda, registroEstacionamiento=entradaMoroso, deuda=True)
-        # cobroDeuda.save()
+        cobroDeuda = Cobros(precio=entradaMoroso.persona.deuda, registroEstacionamiento=entradaMoroso, deuda=True)
+        cobroDeuda.save()
         socioMoroso = entradaMoroso.persona
         socioMoroso.deuda = 0.0
         socioMoroso.estacionamiento = True
@@ -427,10 +427,10 @@ def funcion_cobros(dato):
         return 'SI'
 
     else:
-        return tiempoTolerancia(dato)
+        return tiempo_tolerancia(dato)
 
 
-def tiempoTolerancia(dato):
+def tiempo_tolerancia(dato):
     today = now()
     tiempo = TiempoTolerancia.objects.all().last().tiempo
     tolerancia = today - timedelta(minutes=tiempo)
@@ -449,7 +449,7 @@ def tiempoTolerancia(dato):
         return 'NO'
 
 
-def funcionEliminarEstacionado(entrada):
+def funcion_eliminar_estacionado(entrada):
     try:
         estacionado = Estacionado.objects.all()
         estacionado.filter(
@@ -461,7 +461,7 @@ def funcionEliminarEstacionado(entrada):
         return 1
 
 
-def pagoEstacionamiento(tipo, autorizado, direccion):
+def pago_estacionamiento(tipo, autorizado, direccion):
     if tipo == 'SOCIO' or tipo == 'PROVEEDOR':
         return 'SI'
 
@@ -477,8 +477,8 @@ def pagoEstacionamiento(tipo, autorizado, direccion):
             return 'NO'
 
 
-def registroEstacionamiento(tipo, dato, direccion, autorizado, ciclo_caja, mensaje='No hay descripción'):
-    pago = pagoEstacionamiento(tipo, autorizado, direccion)
+def registro_estacionamiento(tipo, dato, direccion, autorizado, ciclo_caja, mensaje='No hay descripción'):
+    pago = pago_estacionamiento(tipo, autorizado, direccion)
     if tipo == 'SOCIO' or tipo == 'SOCIO-MOROSO':
         persona = dato
         no_socio = None
@@ -528,11 +528,11 @@ def respuesta(request):
                 try:
                     user = Persona.objects.get(nrTarjeta=int(dato))
                     if user.estacionamiento:
-                        if tiempoTolerancia(dato) == 'NO':
-                            registro = registroEstacionamiento('SOCIO', user, direccion, 'SI', ciclo_caja, 'El socio no tiene deuda e intentó egresar ingresando el número de socio. Salió fuera del tiempo de tolerancia. Se la autorizó la salida.')
+                        if tiempo_tolerancia(dato) == 'NO':
+                            registro = registro_estacionamiento('SOCIO', user, direccion, 'SI', ciclo_caja, 'El socio no tiene deuda e intentó egresar ingresando el número de socio. Salió fuera del tiempo de tolerancia. Se la autorizó la salida.')
 
                         else:
-                            registro = registroEstacionamiento('SOCIO', user, direccion, 'T. TOLERANCIA', ciclo_caja, 'El socio no tiene deuda e intentó egresar ingresando el número de socio. Salió dentro del tiempo de tolerancia. Se le autorizó la salida.')
+                            registro = registro_estacionamiento('SOCIO', user, direccion, 'T. TOLERANCIA', ciclo_caja, 'El socio no tiene deuda e intentó egresar ingresando el número de socio. Salió dentro del tiempo de tolerancia. Se le autorizó la salida.')
 
                         # Abrir barrera
                         messages.warning(request, 'Salida Socio autorizada')
@@ -541,12 +541,12 @@ def respuesta(request):
                     else:
                         resultado = funcion_cobros(dato)
                         if resultado == 'NO':
-                            registroEstacionamiento('SOCIO-MOROSO', user, direccion, 'NO', ciclo_caja, 'El socio tiene deuda e intentó egresar ingresando el número de socio. Al no regularizar la deuda ni pagar la tarifa correspondiente, no se le autorizó la salida.')
+                            registro_estacionamiento('SOCIO-MOROSO', user, direccion, 'NO', ciclo_caja, 'El socio tiene deuda e intentó egresar ingresando el número de socio. Al no regularizar la deuda ni pagar la tarifa correspondiente, no se le autorizó la salida.')
                             messages.warning(request, 'Socio-Moroso no pagó la deuda o no pagó el estacionamiento')
                             rta = '#6'  # SocioMoroso no pago Deuda o no Pago Entrada
 
                         else:
-                            registro = registroEstacionamiento('SOCIO-MOROSO', user, direccion, resultado, ciclo_caja, 'El socio tiene deuda e intentó egresar ingresando el número de socio. Al haber pagado la tarifa correspondiente se le autorizó la salida.')
+                            registro = registro_estacionamiento('SOCIO-MOROSO', user, direccion, resultado, ciclo_caja, 'El socio tiene deuda e intentó egresar ingresando el número de socio. Al haber pagado la tarifa correspondiente se le autorizó la salida.')
                             messages.warning(request, 'Salida Socio-Moroso autorizada')
                             rta = '#1'   # Salida sociomoroso autorizada
 
@@ -558,11 +558,11 @@ def respuesta(request):
                 try:
                     user = Persona.objects.get(dni=int(dato))
                     if user.estacionamiento:
-                        if tiempoTolerancia(dato) == 'NO':
-                            registro = registroEstacionamiento('SOCIO', user, direccion, 'SI', ciclo_caja, 'El socio no tiene deuda e intentó egresar ingresando el DNI. Salió fuera del tiempo de tolerancia. Se le autorizó la salida.')
+                        if tiempo_tolerancia(dato) == 'NO':
+                            registro = registro_estacionamiento('SOCIO', user, direccion, 'SI', ciclo_caja, 'El socio no tiene deuda e intentó egresar ingresando el DNI. Salió fuera del tiempo de tolerancia. Se le autorizó la salida.')
 
                         else:
-                            registro = registroEstacionamiento('SOCIO', user, direccion, 'T. TOLERANCIA', ciclo_caja, 'El socio no tiene deuda en intentó egresar ingresando el DNI. Salió dentro del tiempo de tolerancia. Se le autorizó la salida.')
+                            registro = registro_estacionamiento('SOCIO', user, direccion, 'T. TOLERANCIA', ciclo_caja, 'El socio no tiene deuda en intentó egresar ingresando el DNI. Salió dentro del tiempo de tolerancia. Se le autorizó la salida.')
 
                         messages.warning(request, 'Salida Socio autorizada por DNI')
                         rta = '#1'  # Salida socio autorizada por dni
@@ -570,50 +570,50 @@ def respuesta(request):
                     else:
                         resultado = funcion_cobros(dato)
                         if resultado == 'NO':
-                            registroEstacionamiento('SOCIO-MOROSO', user, direccion, 'NO', ciclo_caja, 'El socio tiene deuda e intentó egresar ingresando el DNI. Al no regularizar la deuda ni pagar la tarifa correspondiente, no se le autorizó la salida.')
+                            registro_estacionamiento('SOCIO-MOROSO', user, direccion, 'NO', ciclo_caja, 'El socio tiene deuda e intentó egresar ingresando el DNI. Al no regularizar la deuda ni pagar la tarifa correspondiente, no se le autorizó la salida.')
                             messages.warning(request, 'Socio-Moroso no pagó la deuda o no pagó el estacionamiento')
                             rta = '#6'  # SocioMoroso no pago Deuda o no Pago Entrada
 
                         elif resultado == 'SI':
-                            registro = registroEstacionamiento('SOCIO-MOROSO', user, direccion, resultado, ciclo_caja, 'El socio tiene deuda e intentó egresar ingresando el DNI. El socio salió fuera del tiempo de tolerancia. Al haber pagado la tarifa correspondiente se le autorizó la salida.')
+                            registro = registro_estacionamiento('SOCIO-MOROSO', user, direccion, resultado, ciclo_caja, 'El socio tiene deuda e intentó egresar ingresando el DNI. El socio salió fuera del tiempo de tolerancia. Al haber pagado la tarifa correspondiente se le autorizó la salida.')
                             messages.warning(request, 'Salida Socio-Moroso autorizada')
                             rta = '#1'  # Salida sociomoroso autorizada
 
                         else:
-                            registro = registroEstacionamiento('SOCIO-MOROSO', user, direccion, resultado, ciclo_caja, 'El socio tiene deuda e intentó egresar ingresando el DNI. El socio salió dentro del tiempo de tolerancia. Se le autorizó la salida.')
+                            registro = registro_estacionamiento('SOCIO-MOROSO', user, direccion, resultado, ciclo_caja, 'El socio tiene deuda e intentó egresar ingresando el DNI. El socio salió dentro del tiempo de tolerancia. Se le autorizó la salida.')
                             messages.warning(request, 'Salida Socio-Moroso autorizada')
                             rta = '#1'  # Salida sociomoroso autorizada
 
                 except:
                     resultado = funcion_cobros(dato)
                     if resultado == 'NO':
-                        registroEstacionamiento('NOSOCIO', dato, direccion, 'NO', ciclo_caja, 'El No-Socio intentó egresar ingresando el DNI. El No-Socio no pagó la tarifa correspondiente y excedió el tiempo de tolerancia. Se le rechazó la salida.')
+                        registro_estacionamiento('NOSOCIO', dato, direccion, 'NO', ciclo_caja, 'El No-Socio intentó egresar ingresando el DNI. El No-Socio no pagó la tarifa correspondiente y excedió el tiempo de tolerancia. Se le rechazó la salida.')
                         messages.warning(request, 'El No-Socio no pagó y excedió tiempo de tolerancia')
                         rta = '#5'  # No puede salir
 
                     elif resultado == 'SI':
-                        registro = registroEstacionamiento('NOSOCIO', dato, direccion, resultado, ciclo_caja, 'El No-Socio intentó egresar ingresando el DNI. El No-Socio salió fuera del tiempo de tolerancia. Al haber pagado la tarifa correspondiente se le autorizó la salida.')
+                        registro = registro_estacionamiento('NOSOCIO', dato, direccion, resultado, ciclo_caja, 'El No-Socio intentó egresar ingresando el DNI. El No-Socio salió fuera del tiempo de tolerancia. Al haber pagado la tarifa correspondiente se le autorizó la salida.')
                         messages.warning(request, 'Salida No-Socio autorizada')
                         rta = '#1'  # Salida no socio autorizada
 
                     else:
-                        registro = registroEstacionamiento('NOSOCIO', dato, direccion, resultado, ciclo_caja, 'El No-Socio intentó egresar ingresando el DNI. El No-Socio salió dentro del tiempo de tolerancia. Se le autorizó la salida.')
+                        registro = registro_estacionamiento('NOSOCIO', dato, direccion, resultado, ciclo_caja, 'El No-Socio intentó egresar ingresando el DNI. El No-Socio salió dentro del tiempo de tolerancia. Se le autorizó la salida.')
                         messages.warning(request, 'Salida No-Socio autorizada')
                         rta = '#1'  # Salida no socio autorizada
 
             else:
                 try:
                     proveedor_ = Proveedor.objects.get(idProveedor=int(dato))
-                    registro = registroEstacionamiento('PROVEEDOR', proveedor_, direccion, 'SI', ciclo_caja)
+                    registro = registro_estacionamiento('PROVEEDOR', proveedor_, direccion, 'SI', ciclo_caja)
                     messages.warning(request, 'Salida Proveedor autorizada')
                     rta = '#1'  # Salida proveedores autorizada
-                    funcionEliminarEstacionado(registro)
+                    funcion_eliminar_estacionado(registro)
 
                 except:
                     messages.warning(request, 'El código que digitó es incorrecto')
                     rta = '#4'  # Error Proveedor no encontrado
             try:
-                funcionEliminarEstacionado(registro)
+                funcion_eliminar_estacionado(registro)
 
             except:
                 pass
@@ -624,13 +624,13 @@ def respuesta(request):
                 try:
                     user = Persona.objects.get(nrTarjeta=int(dato))
                     if user.estacionamiento:
-                        registro = registroEstacionamiento('SOCIO', user, direccion, 'SI', ciclo_caja, 'El socio no tiene deuda e intentó ingresar con el número de socio. Se le autorizó la entrada.')
+                        registro = registro_estacionamiento('SOCIO', user, direccion, 'SI', ciclo_caja, 'El socio no tiene deuda e intentó ingresar con el número de socio. Se le autorizó la entrada.')
                         messages.warning(request, 'Entrada Socio registrada')
                         # Abrir barrera
                         rta = '#1'  # Registro Socio
 
                     else:
-                        registroEstacionamiento('SOCIO-MOROSO', user, direccion, 'NO', ciclo_caja, 'El socio tiene deuda e intentó ingresar con el número de socio. Al tener deuda debe ingresar con el DNI. Se le rechazó la entrada.')
+                        registro_estacionamiento('SOCIO-MOROSO', user, direccion, 'NO', ciclo_caja, 'El socio tiene deuda e intentó ingresar con el número de socio. Al tener deuda debe ingresar con el DNI. Se le rechazó la entrada.')
                         messages.warning(request, 'Usted es Socio-Moroso, debe ingresar con su DNI')
                         rta = '#7'  # Registro Socio Moroso el usuario debe dirigirse a la cabina de portería
 
@@ -642,25 +642,25 @@ def respuesta(request):
                 try:
                     user = Persona.objects.get(dni=int(dato))
                     if user.estacionamiento:
-                        registro = registroEstacionamiento('SOCIO', user, direccion, 'SI', ciclo_caja, 'El socio no tiene deuda e intentó ingresar con el DNI. Se le autorizó la entrada.')
+                        registro = registro_estacionamiento('SOCIO', user, direccion, 'SI', ciclo_caja, 'El socio no tiene deuda e intentó ingresar con el DNI. Se le autorizó la entrada.')
                         messages.warning(request, 'Entrada registrada por DNI. Acercarse a portería')
                         rta = '#3'  # Registro Socio
 
                     else:
-                        registro = registroEstacionamiento('SOCIO-MOROSO', user, direccion, 'SI', ciclo_caja, 'El socio tiene deuda e intentó ingresar con el DNI. Se le autorizó la entrada.')
+                        registro = registro_estacionamiento('SOCIO-MOROSO', user, direccion, 'SI', ciclo_caja, 'El socio tiene deuda e intentó ingresar con el DNI. Se le autorizó la entrada.')
                         # Abrir barrera
                         messages.warning(request, 'Entrada registrada por DNI. Acercarse a portería')
                         rta = '#3'  # Registro Socio Moroso el usuario debe dirigirse a la cabina de portería
 
                 except:
-                    registro = registroEstacionamiento('NOSOCIO', int(dato), direccion, 'SI', ciclo_caja, 'El No-Socio intentó ingresar con el DNI. Se le autorizó la entrada.')
+                    registro = registro_estacionamiento('NOSOCIO', int(dato), direccion, 'SI', ciclo_caja, 'El No-Socio intentó ingresar con el DNI. Se le autorizó la entrada.')
                     messages.warning(request, 'Entrada registrada por DNI. Acercarse a portería')
                     rta = '#3'  # NoSocio registrado el usuarios debe dirigirse a la cabina de portería
 
             else:
                 try:
                     proveedor_ = Proveedor.objects.get(idProveedor=int(dato))
-                    registro = registroEstacionamiento('PROVEEDOR', proveedor_, direccion, 'SI', ciclo_caja)
+                    registro = registro_estacionamiento('PROVEEDOR', proveedor_, direccion, 'SI', ciclo_caja)
                     # Abrir barrera
                     messages.warning(request, 'Entrada Proveedor registrada')
                     rta = '#1'  # Entrada autorizada
@@ -669,7 +669,7 @@ def respuesta(request):
                     messages.warning(request, 'El Codigo que digitó es incorrecto')
                     rta = '#4'  # Error Proveedor no encontrado
             try:
-                funcionEliminarEstacionado(registro)
+                funcion_eliminar_estacionado(registro)
                 estacionado = Estacionado(registroEstacionamiento=registro)
                 estacionado.save()
 
@@ -871,7 +871,7 @@ def fetch_proveedores(request):
     # Filtra todos los proveedores con el string recibido por nombre de
     # proveedor.
     for filter in parsed_filter:
-        proveedores = proveedores.filter(Q(nombre_proveedor__icontains=filter_string)).order_by('nombre_proveedor')
+        proveedores = proveedores.filter(Q(nombre_proveedor__icontains=filter)).order_by('nombre_proveedor')
 
     # Realiza la paginacion de los datos con un maximo de 20 proveedores por
     # pagina y especifica la pagina que quiere visualizar.

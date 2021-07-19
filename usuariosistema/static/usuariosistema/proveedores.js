@@ -24,7 +24,7 @@ searchBar.addEventListener('keyup', (e) => {
 
 const loadProveedores = async () => {
   try {
-    const res = await fetch(`/estacionamiento/fetch?filter-string=${searchString.toLowerCase()}&page=${currentPage}`)
+    const res = await fetch(`/estacionamiento/proveedor/fetch?filter-string=${searchString.toLowerCase()}&page=${currentPage}`)
     proveedores = await res.json();
     buttons = proveedores[proveedores.length - 1]
     proveedores.pop(proveedores.length - 1)

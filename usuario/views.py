@@ -30,13 +30,13 @@ def postpone(function):
 
 
 @login_required
-def listaUsuarios(request):
+def lista_usuarios(request):
     return render(request, 'usuario/lista_usuarios.html',
                   {'title': 'Lista de socios'})
 
 
 @login_required
-def editarUsuario(request, id):
+def editar_usuario(request, id):
     obj = Persona.objects.get(id=id)
     form = PersonaForm(request.POST or None, instance=obj)
     if form.is_valid():
@@ -73,7 +73,7 @@ def historial(request):
 
 
 @login_required
-def cargarDB(request):
+def cargar_db(request):
     media_root = settings.MEDIA_ROOT
     location = os.path.join(media_root, 'saldos.csv')
 
@@ -115,14 +115,14 @@ def cargarDB(request):
     df = df.dropna(thresh=2)
     df['Deuda'] = df['Deuda'].fillna(0)
 
-    cargarDBAsync(df)
+    cargar_db_async(df)
 
     messages.success(request, 'La carga de datos ha iniciado con éxito')
     return redirect('usuariosistema:home')
 
 
 @postpone
-def cargarDBAsync(df):
+def cargar_db_async(df):
     deudaMax = Deuda.objects.all().last().deuda
     listaUsuarios = []
     for ind in df.index:
