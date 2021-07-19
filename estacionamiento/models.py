@@ -111,9 +111,9 @@ class RegistroEstacionamiento(models.Model):
     DIRECCION_CHOICES = (('ENTRADA', 'ENTRADA'),
                          ('SALIDA', 'SALIDA'))
 
-    AUTORIZADO_CHOICES = (('TRUE', 'TRUE'),
-                          ('FALSE', 'FALSE'),
-                          ('TIEMPO TOLERANCIA', 'T.T'))
+    AUTORIZADO_CHOICES = (('SI', 'SI'),
+                          ('NO', 'NO'),
+                          ('TIEMPO TOLERANCIA', 'T. TOLERANCIA'))
 
     tipo = models.CharField(max_length=30, verbose_name='Tipo', choices=TIPO_CHOICES, default='SOCIO')
     identificador = models.CharField(max_length=30, verbose_name='Identificador', null=True, blank=True, default='Error')
@@ -123,11 +123,12 @@ class RegistroEstacionamiento(models.Model):
     lugar = models.CharField(max_length=30, verbose_name='Lugar')
     tiempo = models.DateTimeField(verbose_name='Fecha y hora', default=now)
     direccion = models.CharField(max_length=30, choices=DIRECCION_CHOICES, verbose_name='Dirección', default='ENTRADA')
-    autorizado = models.CharField(max_length=30, choices=AUTORIZADO_CHOICES, verbose_name='Autorización', default='FALSE')
+    autorizado = models.CharField(max_length=30, choices=AUTORIZADO_CHOICES, verbose_name='Autorización', default='NO')
     cicloCaja = models.ForeignKey(CicloCaja, on_delete=models.CASCADE, verbose_name='Ciclo caja')
     aperturaManual = models.ForeignKey(AperturaManual, on_delete=models.CASCADE, verbose_name='Apertura manual', null=True, blank=True)
     usuarioEditor = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, verbose_name='Usuario que editó el registro')
     pago = models.CharField(max_length=30, verbose_name='Pago', null=True, blank=True)
+    mensaje = models.CharField(max_length=250, verbose_name='Descripción', blank=False, default='No hay descripción')
 
     def __str__(self):
         return f'{self.tiempo} - {self.identificador}'

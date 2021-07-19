@@ -77,15 +77,20 @@
             </div>
 
             <div class="input-group mb-3">
-              {% if datos.autorizado %}
-                <p class="form-control">Si</p>
-              {% else %}
-                <p class="form-control">No</p>
-              {% endif %}
+              <p class="form-control">{{ datos.autorizado }}</p>
               <div class="input-group-append">
                 <span class="input-group-text" id="basic-addon2">Autorizado</span>
               </div>
             </div>
+
+            {% if datos.mensaje %}
+              <div class="input-group mb-3">
+                <p class="form-control">{{ datos.mensaje }}</p>
+                <div class="input-group-append">
+                  <span class="input-group-text" id="basic-addon2">Descripción</span>
+                </div>
+              </div>
+            {% endif %}
 
             <div>
               <a href="{% url 'estacionamiento:historial' %}" style="text-decoration:none" class="btn btn-outline-info">Cancelar</a>
@@ -93,21 +98,20 @@
               {% if datos.direccion == 'ENTRADA' %}
                 {% if cobrado == 'False' %}
                   {% if datos.tipo == 'NOSOCIO' or datos.tipo == 'SOCIO-MOROSO' %}
-                    <!--<a href="{% url 'estacionamiento:cobrarEntrada' datos.id %}" style="text-decoration:none" class="btn btn-outline-info" id="cobrar">Cobrar</a>-->
-                    <a style="text-decoration:none"></a>
+                    <a style="text-decoration:none">
                       <button style="text-decoration:none" class="btn btn-outline-info" data-toggle="modal" data-target="#modalCobrar" id = "cobrarEntrada">Cobrar</button>
                     </a>
                   {% endif %}
                   {% if datos.tipo == 'SOCIO-MOROSO'%}
-                    <!--<a href="{% url 'estacionamiento:pago_deuda' datos.id %}" style="text-decoration:none" class="btn btn-outline-info" id="pagarDeuda">Regularizar Deuda</a>-->
-                    <a style="text-decoration:none"></a>
+                    <a style="text-decoration:none">
                       <button style="text-decoration:none" class="btn btn-outline-info" data-toggle="modal" data-target="#modalDeuda" id = "pagarDeuda">Regularizar Deuda</button>
                     </a>
                   {% endif %}
                 {% endif %}
               {% endif %}
             </div>
-              <!--ModalCobro-->
+
+            <!-- Inicio ModalCobro -->
             <div class="modal fade" id="modalCobrar" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
               <div class="modal-dialog" role="document">
                 <div class="modal-content">
@@ -127,9 +131,9 @@
                 </div>
               </div>
             </div>
-            <!--ModalCobro-->
+            <!-- Fin ModalCobro -->
 
-            <!--ModalDeuda-->
+            <!-- Inicio ModalDeuda -->
             <div class="modal fade" id="modalDeuda" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
               <div class="modal-dialog" role="document">
                 <div class="modal-content">
@@ -149,7 +153,8 @@
                 </div>
               </div>
             </div>
-            <!--ModalDeuda-->
+            <!-- Fin ModalDeuda -->
+
             <script type="text/javascript">
               const loadPrecio = async () => {
                 try {
