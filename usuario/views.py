@@ -265,6 +265,7 @@ def fetch_usuarios(request):
     # Dentro del GET recibe como datos:
     page = request.GET.get('page')  # La pagina que quiere visualizar.
     filter_string = request.GET.get('filter-string')  # El string de filtro.
+    order_by = request.GET.get('order-by')
 
     # Separa el string para filtrar en un list con cada palabra ingresada.
     parsed_filter = filter_string.split(' ')
@@ -275,9 +276,10 @@ def fetch_usuarios(request):
     for filter in parsed_filter:
         personas = personas.filter(
             Q(nombre_apellido__icontains=filter) |
-            Q(dni__icontains=filter),
+            Q(dni__icontains=filter) |
+            Q(nrSocio__icontains=filter),
             ~Q(nombre_apellido='NOSOCIO')
-        ).order_by('nombre_apellido')
+        ).order_by(order_by)
 
     # Realiza la paginacion de los datos con un maximo de 20 proveedores por
     # pagina y especifica la pagina que quiere visualizar.

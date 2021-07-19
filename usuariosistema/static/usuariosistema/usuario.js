@@ -7,6 +7,70 @@ let usuario = [];
 let buttons = [];
 let searchString = '';
 let currentPage = 1;
+let orderBy = 'nombre_apellido';
+
+document.getElementById('nrSocio').addEventListener('click', () => {
+  if (orderBy !== 'nrSocio') {
+    orderBy = 'nrSocio';
+  } else {
+    orderBy = '-nrSocio';
+  }
+  loadUsuarios();
+});
+
+document.getElementById('nombre_apellido').addEventListener('click', () => {
+  if (orderBy !== 'nombre_apellido') {
+    orderBy = 'nombre_apellido';
+  } else {
+    orderBy = '-nombre_apellido';
+  }
+  loadUsuarios();
+});
+
+document.getElementById('nrTarjeta').addEventListener('click', () => {
+  if (orderBy !== 'nrTarjeta') {
+    orderBy = 'nrTarjeta';
+  } else {
+    orderBy = '-nrTarjeta';
+  }
+  loadUsuarios();
+});
+
+document.getElementById('dni').addEventListener('click', () => {
+  if (orderBy !== 'dni') {
+    orderBy = 'dni';
+  } else {
+    orderBy = '-dni';
+  }
+  loadUsuarios();
+});
+
+document.getElementById('general').addEventListener('click', () => {
+  if (orderBy !== 'general') {
+    orderBy = 'general';
+  } else {
+    orderBy = '-general';
+  }
+  loadUsuarios();
+});
+
+document.getElementById('estacionamiento').addEventListener('click', () => {
+  if (orderBy !== 'estacionamiento') {
+    orderBy = 'estacionamiento';
+  } else {
+    orderBy = '-estacionamiento';
+  }
+  loadUsuarios();
+});
+
+document.getElementById('deuda').addEventListener('click', () => {
+  if (orderBy !== 'deuda') {
+    orderBy = 'deuda';
+  } else {
+    orderBy = '-deuda';
+  }
+  loadUsuarios();
+});
 
 clearButton.addEventListener('click', () => {
   searchBar.value = '';
@@ -23,7 +87,7 @@ searchBar.addEventListener('keyup', (e) => {
 
 const loadUsuarios = async () => {
   try {
-    const res = await fetch(`/usuario/fetch?filter-string=${searchString.toLowerCase()}&page=${currentPage}`)
+    const res = await fetch(`/usuario/fetch?filter-string=${searchString.toLowerCase()}&page=${currentPage}&order-by=${orderBy}`)
     usuarios = await res.json();
     buttons = usuarios[usuarios.length - 1]
     usuarios.pop(usuarios.length - 1)
@@ -39,14 +103,14 @@ const drawRows = () => {
     if (usuario.dni == null) { usuario.dni = 'No establecido'; }
     if (usuario.nrTarjeta == null) { usuario.nrTarjeta = 'No establecido'; }
     if (usuario.general) {
-      usuario.general = '✔';
+      usuario.general = 'SI';
     } else {
-      usuario.general = '✘';
+      usuario.general = 'NO';
     }
     if (usuario.estacionamiento) {
-      usuario.estacionamiento = '✔';
+      usuario.estacionamiento = 'SI';
     } else {
-      usuario.estacionamiento = '✘';
+      usuario.estacionamiento = 'NO';
     }
     return `
       <tr class="usuario">
@@ -91,4 +155,3 @@ const prevPage = () => {
 };
 
 loadUsuarios();
-

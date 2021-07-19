@@ -32,7 +32,7 @@ tipo.addEventListener('change', (e) => {
     // de vincular socio si ya esta el campo de button-vincular visible).
     if (tipoGeneral.innerHTML != 'socio') {
       vincularBtn.style.display = 'inline';
-    }   
+    }
   } else {
     // Si no se selecciono el tipo socio o se cambio a uno distinto hacer desaparecer el boton.
     vincularBtn.style.display = 'none';
@@ -56,7 +56,7 @@ searchBar.addEventListener('keyup', (e) => {
 // Esta funcion chequea que una vez que se hizo el fetch de los proveedores o socios en el modal
 // si se toca algun campo. Como estos campos se renderizan dinamicamente en este js, necesito
 // activar un EventListener que funcione con estos campos. Entonces chqueo si se hizo click
-// en alguna parte del doucmento y si el tag sobre el que se hizo click es un <td> que es el 
+// en alguna parte del doucmento y si el tag sobre el que se hizo click es un <td> que es el
 // campo de cada row en la tabla del modal.
 document.querySelector('body').addEventListener('click', (e) => {
   if (e.target.tagName.toLowerCase() === 'td') {

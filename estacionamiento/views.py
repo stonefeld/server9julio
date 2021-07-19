@@ -808,14 +808,19 @@ def editar_estacionamiento(request, id):
                     if dni:
                         per.dni = dni
                         per.save()
+                        obj.noSocio = dni
+
+                    elif per.dni:
+                        obj.noSocio = per.dni
 
                     if not per.estacionamiento and form.cleaned_data['tipo'] == 'SOCIO':
                         obj.tipo = 'SOCIO-MOROSO'
-                        if funcion_cobros(dni) == 'T. TOLERANCIA' or funcion_cobros(dni) == 'NO':
-                            obj.autorizado = 'NO'
+                        if obj.direccion == 'ENTRADA':
+                            if funcion_cobros(dni) == 'NO':
+                                obj.autorizado = 'NO'
 
-                        else:
-                            obj.autorizado = 'SI'
+                            else:
+                                obj.autorizado = 'SI'
 
                         messages.warning(request, 'El tipo de entrada fue cambiada a SOCIO-MOROSO por tener deuda')
 
@@ -824,8 +829,8 @@ def editar_estacionamiento(request, id):
                         obj.autorizado = 'SI'
                         messages.warning(request, 'El tipo de entrada fue cambiada a SOCIO por no tener deuda')
 
-                    if not obj.tipo == 'SOCIO-MOROSO' and form.cleaned_data['tipo'] == 'SOCIO-MOROSO':
-                        if funcion_cobros(dni) == 'T. TOLERANCIA' or funcion_cobros(dni) == 'NO':
+                    if not obj.tipo == 'SOCIO-MOROSO' and form.cleaned_data['tipo'] == 'SOCIO-MOROSO' and obj.direccion == 'ENTRADA':
+                        if funcion_cobros(dni) == 'NO':
                             obj.autorizado = 'NO'
 
                         else:
@@ -848,12 +853,10 @@ def editar_estacionamiento(request, id):
 
         else:
             messages.warning(request, 'El formulario no fue completado correctamente')
-            return render(request, 'estacionamiento/editar_historial.html',
-                          context)
+            return render(request, 'estacionamiento/editar_historial.html', context)
 
     else:
-        return render(request, 'estacionamiento/editar_historial.html',
-                      context)
+        return render(request, 'estacionamiento/editar_historial.html', context)
 
 
 # La unica funcion de este view es la de que el codigo de js pueda hacer un
