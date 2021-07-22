@@ -7,6 +7,7 @@ from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib import messages
 
 from django_tables2 import RequestConfig
 
@@ -38,7 +39,7 @@ def seleccionar_calendario(request):
             horario.final = tarifa['Final']
             horario.precio = float(tarifa['tarifa'].replace(',', '.'))
             horario.save()
-
+        messages.warning(request, 'Tarifa Normal Cambiada')
         return JsonResponse('Ok', safe=False)
 
     else:
@@ -53,6 +54,7 @@ def tarifas_especiales(request):
     r = request.body
     data = json.loads(r.decode())
     TarifaEspecial(precio=data.replace(',', '.')).save()
+    messages.warning(request, 'Tarifa Especial Cambiada')
     return JsonResponse('Ok', safe=False)
 
 
