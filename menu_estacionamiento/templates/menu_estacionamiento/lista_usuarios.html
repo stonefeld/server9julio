@@ -9,50 +9,65 @@
 {% endblock subtitle %}
 
 {% block content %}
-  <div class="content-section" style="padding:20px;">
+  <div class="content-section" style="padding:36px;">
     <div id="form_card" class="card-panel col s12">
 
-      <div class="input-group mx-auto" style="margin-bottom: 25px;">
-        <input type="text" placeholder="Buscar..." name="buscar" id="buscar" value="">
-        <div>
-          <button id="clear-button" class="btn btn-secondary" type="button" style="padding: 10px; margin: 0px 5px 0px 5px">
-            <i>Borrar búsqueda</i>
-          </button>
+      <div class="d-flex">
+        <div class="mr-auto p-2">
+          <div class="mr-auto">
+            <div class="form-row">
+              <div class="form-group col-12">
+                <div class="input-group">
+                  <input type="text" placeholder="Buscar..." name="buscar" id="buscar" value="" class="form-control"></input>
+                  <button type="button" id="clear-button" class="btn btn-secondary" style="margin-left:20px">
+                    <i>Borrar búsqueda</i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-        </input>
+
+        <div class="p-2">
+          <a href="{% url 'menu_estacionamiento:proveedores' %}" class="btn btn-outline-info">Mostrar proveedores</a>
+        </div>
       </div>
 
-      <table class="table">
-        <thead>
-          <tr>
-            <th class="orderable">
-              <a href="#" id="nrSocio" style="text-decoration:none">Nr. Socio</a>
-            </th>
-            <th class="orderable">
-              <a href="#" id="nombre_apellido" style="text-decoration:none">Nombre y Apellido</a>
-            </th>
-            <th class="orderable">
-              <a href="#" id="nrTarjeta" style="text-decoration:none">Nr. Tarjeta</a>
-            </th>
-            <th class="orderable">
-              <a href="#" id="dni" style="text-decoration:none">DNI</a>
-            </th>
-            <th class="orderable">
-              <a href="#" id="general" style="text-decoration:none">Autorización</a>
-            </th>
-            <th class="orderable">
-              <a href="#" id="estacionamiento" style="text-decoration:none">Permiso para estacionamiento</a>
-            </th>
-            <th class="orderable">
-              <a href="#" id="deuda" style="text-decoration:none">Deuda</a>
-            </th>
-          </tr>
-        </thead>
+      <div style="padding-top:40px; padding-left:10px; padding-right:10px; padding-bottom:10px">
+        <table class="table">
+          <thead>
+            <tr>
+              <th class="orderable">
+                <a href="#" id="nrSocio" style="text-decoration:none">Nr. Socio</a>
+              </th>
+              <th class="orderable">
+                <a href="#" id="nombre_apellido" style="text-decoration:none">Nombre y Apellido</a>
+              </th>
+              <th class="orderable">
+                <a href="#" id="nrTarjeta" style="text-decoration:none">Nr. Tarjeta</a>
+              </th>
+              <th class="orderable">
+                <a href="#" id="dni" style="text-decoration:none">DNI</a>
+              </th>
+              <th class="orderable">
+                <a href="#" id="general" style="text-decoration:none">Autorización</a>
+              </th>
+              <th class="orderable">
+                <a href="#" id="estacionamiento" style="text-decoration:none">Permiso para estacionamiento</a>
+              </th>
+              <th class="orderable">
+                <a href="#" id="deuda" style="text-decoration:none">Deuda</a>
+              </th>
+            </tr>
+          </thead>
 
-        <tbody id="usuarios"></tbody>
-      </table>
+          <tbody id="usuarios"></tbody>
+        </table>
 
-      <div id="navbuttons"></div>
+        <nav aria-label="Table navigation">
+          <ul id="navbuttons" class="pagination justify-content-center"></ul>
+        </nav>
+      </div>
 
     </div>
   </div>

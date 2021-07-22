@@ -15,14 +15,14 @@
           <div class="card-body">
 
             <div class="input-group mb-3">
-              <p class="form-control">{{ datos.tipo }}</p>
+              <p style="text-align:left" class="form-control">{{ datos.tipo }}</p>
               <div class="input-group-append">
                 <span class="input-group-text" id="basic-addon2">Tipo</span>
               </div>
             </div>
 
             <div class="input-group mb-3">
-              <p class="form-control">{{ datos.identificador }}</p>
+              <p style="text-align:left" class="form-control">{{ datos.identificador }}</p>
               <div class="input-group-append">
                 {% if datos.persona %}
                   <span class="input-group-text" id="basic-addon2">Nombre y Apellido</span>
@@ -36,19 +36,19 @@
 
             {% if datos.persona %}
               <div class="input-group mb-3">
-                <p class="form-control">{{ datos.persona.dni }}</p>
+                <p style="text-align:left" class="form-control">{{ datos.persona.dni }}</p>
                 <div class="input-group-append">
                   <span class="input-group-text" id="basic-addon2">DNI</span>
                 </div>
               </div>
               <div class="input-group mb-3">
-                <p class="form-control">{{ datos.persona.nrTarjeta }}</p>
+                <p style="text-align:left" class="form-control">{{ datos.persona.nrTarjeta }}</p>
                 <div class="input-group-append">
                   <span class="input-group-text" id="basic-addon2">Nr. Tarjeta</span>
                 </div>
               </div>
               <div class="input-group mb-3">
-                <p class="form-control">{{ datos.persona.nrSocio }}</p>
+                <p style="text-align:left" class="form-control">{{ datos.persona.nrSocio }}</p>
                 <div class="input-group-append">
                   <span class="input-group-text" id="basic-addon2">Nr. Socio</span>
                 </div>
@@ -56,28 +56,28 @@
             {% endif %}
 
             <div class="input-group mb-3">
-              <p class="form-control">{{ datos.tiempo }}</p>
+              <p style="text-align:left" class="form-control">{{ datos.tiempo }}</p>
               <div class="input-group-append">
                 <span class="input-group-text" id="basic-addon2">Fecha y Hora</span>
               </div>
             </div>
 
             <div class="input-group mb-3">
-              <p class="form-control">{{ datos.direccion }}</p>
+              <p style="text-align:left" class="form-control">{{ datos.direccion }}</p>
               <div class="input-group-append">
                 <span class="input-group-text" id="basic-addon2">Dirección</span>
               </div>
             </div>
 
             <div class="input-group mb-3">
-              <p class="form-control">{{ datos.cicloCaja }}</p>
+              <p style="text-align:left" class="form-control">{{ datos.cicloCaja }}</p>
               <div class="input-group-append">
                 <span class="input-group-text" id="basic-addon2">Ciclo Caja</span>
               </div>
             </div>
 
             <div class="input-group mb-3">
-              <p class="form-control">{{ datos.autorizado }}</p>
+              <p style="text-align:left" class="form-control">{{ datos.autorizado }}</p>
               <div class="input-group-append">
                 <span class="input-group-text" id="basic-addon2">Autorizado</span>
               </div>
@@ -85,7 +85,7 @@
 
             {% if datos.mensaje %}
               <div class="input-group mb-3">
-                <p class="form-control">{{ datos.mensaje }}</p>
+                <p style="text-align:left" class="form-control">{{ datos.mensaje }}</p>
                 <div class="input-group-append">
                   <span class="input-group-text" id="basic-addon2">Descripción</span>
                 </div>

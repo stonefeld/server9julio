@@ -762,7 +762,7 @@ def descargar_historial(request, estacionamiento):
     for est in estacionamiento.values_list(
         'identificador', 'tipo', 'lugar', 'tiempo', 'direccion',
         'cicloCaja__cicloCaja', 'cicloCaja__cicloMensual__cicloMensual',
-            'cicloCaja__cicloMensual__cicloAnual__cicloAnual', 'autorizado', 'mensaje'):
+            'cicloCaja__cicloMensual__cicloAnual__cicloAnual', 'autorizado', 'mensaje').order_by('-tiempo'):
         writer.writerow(est)
 
     response['Content-Disposition'] = 'attachment; filename="historial_estacionamiento.csv"'

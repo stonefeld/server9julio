@@ -1,4 +1,4 @@
-{% extends "menu_estacionamiento.html" %}
+{% extends "base.html" %}
 
 {% load static %}
 {% load render_table from django_tables2 %}
@@ -32,7 +32,7 @@
         </div>
 
         <div class="p-2">
-          <a href="{% url 'menu_estacionamiento:lista_socios' %}" class="btn btn-outline-info">Mostrar socios</a>
+          <a href="{% url 'usuario:lista' %}" class="btn btn-outline-info">Mostrar socios</a>
         </div>
       </div>
 

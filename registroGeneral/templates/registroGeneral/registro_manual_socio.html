@@ -12,21 +12,28 @@
 {% endblock subtitle %}
 
 {% block content %}
-  <div class="content-section" style="padding:20px;">
+  <div class="content-section" style="padding:36px;">
     <div id="form_card" class="card-panel col s12">
 
       {% if not no_autorizado %}
-        <form method="GET">
-          <div class="input-group mx-auto" style="margin-bottom: 25px;">
-            <input type="text" placeholder="Buscar..." name="buscar" value="">
-              <div>
-                <button class="btn btn-secondary" type="submit" style="margin-left: 20px;">
-                  <i>Buscar</i>
-                </button>
-              </div>
-            </input>
+        <div class="d-flex">
+          <div class="mr-auto p-2">
+            <div class="mr-auto">
+              <form method="GET">
+                <div class="form-row">
+                  <div class="form-group col-12">
+                    <div class="input-group">
+                      <input type="text" placeholder="Buscar..." name="buscar" value="" class="form-control"></input>
+                      <button class="btn btn-secondary" type="submit" style="margin-left: 20px;">
+                        <i>Buscar</i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </form>
+            </div>
           </div>
-        </form>
+        </div>
       {% endif %}
 
       <form method="POST">
@@ -38,11 +45,13 @@
           </div>
         {% else %}
           <div class="form-group" style="padding-top:10px">
-            <button class="btn btn-outline-info" type="submit" name="aceptar" value={{ direccion }}>Aceptar</button>
+            <button class="btn btn-outline-info" type="submit" name="aceptar" value="{{ direccion }}">Aceptar</button>
             <button class="btn btn-outline-info" type="submit" name="rechazar">Rechazar</button>
           </div>
         {% endif %}
-        {% render_table table %}
+        <div style="padding-top:40px; padding-left:10px; padding-right:10px; padding-bottom:10px">
+          {% render_table table %}
+        </div>
       </form>
 
     </div>

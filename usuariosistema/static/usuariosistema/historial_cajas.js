@@ -4,10 +4,57 @@ const total = document.getElementById('total-recaudado');
 
 var cajas = [];
 var recaudado = 0;
+var mes = 0;
+var orderBy = 'cicloCaja';
 
-const loadCiclosCaja = async (mes) => {
+document.getElementById('cicloCaja').addEventListener('click', () => {
+  if (orderBy !== 'cicloCaja') {
+    orderBy = 'cicloCaja';
+  } else {
+    orderBy = '-cicloCaja';
+  }
+  loadCiclosCaja();
+});
+
+document.getElementById('inicioCaja').addEventListener('click', () => {
+  if (orderBy !== 'inicioCaja') {
+    orderBy = 'inicioCaja';
+  } else {
+    orderBy = '-inicioCaja';
+  }
+  loadCiclosCaja();
+});
+
+document.getElementById('finalCaja').addEventListener('click', () => {
+  if (orderBy !== 'finalCaja') {
+    orderBy = 'finalCaja';
+  } else {
+    orderBy = '-finalCaja';
+  }
+  loadCiclosCaja();
+});
+
+document.getElementById('recaudado').addEventListener('click', () => {
+  if (orderBy !== 'recaudado') {
+    orderBy = 'recaudado';
+  } else {
+    orderBy = '-recaudado';
+  }
+  loadCiclosCaja();
+});
+
+document.getElementById('usuarioCaja').addEventListener('click', () => {
+  if (orderBy !== 'usuarioCaja') {
+    orderBy = 'usuarioCaja';
+  } else {
+    orderBy = '-usuarioCaja';
+  }
+  loadCiclosCaja();
+});
+
+const loadCiclosCaja = async () => {
   try {
-    const res = await fetch(`/menu_estacionamiento/cicloscaja/fetch?mes=${mes}`);
+    const res = await fetch(`/menu_estacionamiento/cicloscaja/fetch?mes=${mes}&order-by=${orderBy}`);
     cajas = await res.json();
     drawCiclosCaja();
   } catch (err) {
@@ -19,7 +66,8 @@ document.querySelector('body').addEventListener('click', (e) => {
   if (e.target.tagName.toLowerCase() === 'button') {
     if (e.target.innerHTML === '+') {
       recaudado = document.getElementById(`recaudado-${e.target.id}`).innerHTML;
-      loadCiclosCaja(e.target.id);
+      mes = e.target.id;
+      loadCiclosCaja();
     }
   }
 });

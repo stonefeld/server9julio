@@ -76,6 +76,7 @@ clearButton.addEventListener('click', () => {
   searchBar.value = '';
   searchString = '';
   currentPage = 1;
+  orderBy = 'nombre_apellido';
   loadUsuarios();
 });
 
@@ -130,16 +131,16 @@ const drawRows = () => {
 const drawButtons = () => {
   if (buttons.has_previous && buttons.has_next) {
     navButtons.innerHTML = `
-        <a href="javascript:prevPage()" class="btn btn-outline-info mb-4">Anterior</a>
-        <a href="javascript:nextPage()" class="btn btn-outline-info mb-4">Siguiente</a>
+      <li class="previous page-item"><a href="javascript:prevPage()" class="page-link">Anterior</a></li>
+      <li class="next page-item"><a href="javascript:nextPage()" class="page-link">Siguiente</a></li>
     `;
   } else if (buttons.has_previous && ~buttons.has_next) {
     navButtons.innerHTML = `
-        <a href="javascript:prevPage()" class="btn btn-outline-info mb-4">Anterior</a>
+      <li class="page-item"><a href="javascript:prevPage()" class="page-link">Anterior</a></li>
     `;
   } else if (~buttons.has_previous && buttons.has_next) {
     navButtons.innerHTML = `
-        <a href="javascript:nextPage()" id="btn-prev" class="btn btn-outline-info mb-4">Siguiente</a>
+      <li class="page-item"><a href="javascript:nextPage()" id="btn-prev" class="page-link">Siguiente</a></li>
     `;
   } else {
     navButtons.innerHTML = ``;

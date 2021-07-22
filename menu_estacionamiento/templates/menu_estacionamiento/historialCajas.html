@@ -3,57 +3,60 @@
 {% load static %}
 
 {% block subtitle %}
-  <h1>Historial Cajas</h1>
+  <h1>Historial de Resúmenes Mensuales</h1>
 {% endblock subtitle %}
 
 {% block content %}
+  <div class="content-section" style="padding:36px;">
+    <div id="form_card" class="card-panel col s12">
 
-  <div style="padding-top:40px; padding-left:10px; padding-right:10px; padding-bottom:10px">
-      {% render_table table %}
-  </div>
+      <div style="padding-top:40px; padding-left:10px; padding-right:10px; padding-bottom:10px">
+        {% render_table table %}
+      </div>
 
-  <div class="modal fade bd-example-modal-lg" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="exampleModalLabel">Más información</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body">
-          <h5 id="total-recaudado"></h5>
-          <table class="table">
-            <thead>
-              <tr>
-                <th class="orderable">
-                  <a href="#" style="text-decoration:none">Caja</a>
-                </th>
-                <th class="orderable">
-                  <a href="#" style="text-decoration:none">Fecha de inicio</a>
-                </th>
-                <th class="orderable">
-                  <a href="#" style="text-decoration:none">Fecha de cierre</a>
-                </th>
-                <th class="orderable">
-                  <a href="#" style="text-decoration:none">Recaudado</a>
-                </th>
-                <th class="orderable">
-                  <a href="#" style="text-decoration:none">Usuario que cerró la caja</a>
-                </th>
-              </tr>
-            </thead>
+      <div class="modal fade bd-example-modal-lg" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="exampleModalLabel">Más información</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <p id="total-recaudado" style="padding:5px"></p>
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th class="orderable">
+                      <a href="#" id="cicloCaja" style="text-decoration:none">Caja</a>
+                    </th>
+                    <th class="orderable">
+                      <a href="#" id="inicioCaja" style="text-decoration:none">Fecha de inicio</a>
+                    </th>
+                    <th class="orderable">
+                      <a href="#" id="finalCaja" style="text-decoration:none">Fecha de cierre</a>
+                    </th>
+                    <th class="orderable">
+                      <a href="#" id="recaudado" style="text-decoration:none">Recaudado</a>
+                    </th>
+                    <th class="orderable">
+                      <a href="#" id="usuarioCaja" style="text-decoration:none">Usuario que cerró la caja</a>
+                    </th>
+                  </tr>
+                </thead>
 
-            <tbody id="ciclos-caja"></tbody>
-          </table>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                <tbody id="ciclos-caja"></tbody>
+              </table>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
   <script src="{% static 'usuariosistema/historial_cajas.js' %}"></script>
-
 {% endblock content %}

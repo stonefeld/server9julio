@@ -18,6 +18,7 @@ from .models import Persona, Deuda
 from .forms import PersonaForm
 from registroGeneral.models import EntradaGeneral
 from registroGeneral.tables import HistorialTable
+from estacionamiento.models import RegistroEstacionamiento
 
 
 def postpone(function):
@@ -31,24 +32,50 @@ def postpone(function):
 
 @login_required
 def lista_usuarios(request):
-    return render(request, 'usuario/lista_usuarios.html',
-                  {'title': 'Lista de socios'})
+    return render(request, 'usuario/lista_usuarios.html', {'title': 'Lista de socios'})
+
+
+@login_required
+def lista_proveedores(request):
+    return render(request, 'usuario/lista_proveedores.html', {'title': 'Lista de proveedores'})
 
 
 @login_required
 def editar_usuario(request, id):
     obj = Persona.objects.get(id=id)
     form = PersonaForm(request.POST or None, instance=obj)
-    if form.is_valid():
-        form.save()
 
     if request.method == 'POST':
+        if form.is_valid():
+            form.save()
+            estacionamientos = RegistroEstacionamiento.objects.all().filter(
+                Q(identificador=form.cleaned_data['nombre_apellido']) |
+                Q(identificador=form.cleaned_data['dni']) |
+                Q(persona__nombre_apellido=form.cleaned_data['nombre_apellido']) |
+                Q(noSocio=form.cleaned_data['dni'])
+            )
+
+            for estacionamiento in estacionamientos:
+                if estacionamiento.tipo == 'NOSOCIO':
+                    estacionamiento.persona = obj
+                    if obj.estacionamiento:
+                        estacionamiento.tipo = 'SOCIO'
+                        estacionamiento.mensaje += ' Se modificaron los datos del DNI del socio. El socio no tiene deuda y no debe abonar tarifa ni regularizar la deuda.'
+
+                    else:
+                        estacionamiento.tipo = 'SOCIO-MOROSO'
+                        estacionamiento.mensaje += ' Se modificaron los datos del DNI del socio. El socio tiene deuda y debe regularizarla o abonar la tarifa correspondiente.'
+
+                elif estacionamiento.tipo in ('SOCIO', 'SOCIO-MOROSO'):
+                    estacionamiento.noSocio = obj.dni
+
+                estacionamiento.save()
+
         messages.success(request, 'Los datos fueron guardados con éxito')
         return redirect('usuario:lista')
 
     else:
-        return render(request, 'usuario/editar_usuario.html',
-                      {'form': form, 'title': 'Editar socio'})
+        return render(request, 'usuario/editar_usuario.html', {'form': form, 'title': 'Editar socio'})
 
 
 @login_required
@@ -68,8 +95,7 @@ def historial(request):
         table = HistorialTable(entradas)
         RequestConfig(request).configure(table)
 
-        return render(request, 'usuario/historial.html',
-                      {'table': table, 'title': 'Historial'})
+        return render(request, 'usuario/historial.html', {'table': table, 'title': 'Historial'})
 
 
 @login_required
@@ -190,8 +216,7 @@ def cargar_db_async(df):
         noSocio.save()
 
     except:
-        noSocio = Persona(nrSocio=0, nombre_apellido='NOSOCIO',
-                          general=True, deuda=0.0)
+        noSocio = Persona(nrSocio=0, nombre_apellido='NOSOCIO', general=True, deuda=0.0)
         noSocio.save()
 
     deudaMax = Deuda.objects.all().last().deudaEstacionamiento

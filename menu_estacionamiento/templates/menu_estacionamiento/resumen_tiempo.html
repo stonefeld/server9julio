@@ -4,12 +4,12 @@
 {% load render_table from django_tables2 %}
 
 {% block subtitle %}
-  <h1>Resumen Tiempo Real</h1>
+  <h1>Resumen en Tiempo Real</h1>
 {% endblock subtitle %}
 
 {% block content %}
 
-  <div class="content-section" style="padding:20px;">
+  <div class="content-section" style="padding:36px;">
     <div id="form_card" class="card-panel col s12">
 
       <div class="d-flex">
@@ -20,7 +20,7 @@
                 <div class="form-group col-12">
                   <div class="input-group">
                     <input class="form-control" type="text" placeholder="Buscar..." name="buscar" value=""/>
-                    <button class="btn btn-secondary" type="submit" style="margin-left:20px;">
+                    <button class="btn btn-secondary" type="submit" style="margin-left:20px">
                       <i>Buscar</i>
                     </button>
                   </div>
@@ -31,7 +31,7 @@
         </div>
 
         <div class="p-2">
-          <button type="button" class="btn btn-outline-info"  data-toggle="modal" data-target="#exampleModal">Filtro avanzado</button>
+          <a href="{% url 'estacionamiento:historial' %}" class="btn btn-outline-info">Ver historial completo</a>
         </div>
       </div>
 

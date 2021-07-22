@@ -10,9 +10,9 @@ from django.views.decorators.csrf import csrf_exempt
 
 from django_tables2 import RequestConfig
 
-from estacionamiento.models import Proveedor, CicloCaja, CicloMensual, Estacionado, HorariosPrecio, TarifaEspecial
-from estacionamiento.tables import EstacionadosTable, ProveedoresTable
+from estacionamiento.models import CicloCaja, CicloMensual, Estacionado, HorariosPrecio, TarifaEspecial
 from .tables import HistorialCajas
+from estacionamiento.tables import EstacionadosTable
 
 
 @login_required
@@ -95,10 +95,7 @@ def resumen_tiempo_real(request):
 
 @login_required
 def proveedores(request):
-    proveedores = Proveedor.objects.all()
-    table = ProveedoresTable(proveedores)
-    RequestConfig(request).configure(table)
-    return render(request, 'menu_estacionamiento/proveedores.html', {'table': table, 'title': 'Lista de proveedores'})
+    return render(request, 'menu_estacionamiento/proveedores.html', {'title': 'Lista de proveedores'})
 
 
 @login_required
@@ -121,8 +118,10 @@ def historial_cajas(request):
 
 def fetch_ciclo_caja(request):
     ciclo_mensual = request.GET.get('mes')
+    order = request.GET.get('order-by')
     ciclos_caja = []
-    for ciclo in list(CicloCaja.objects.all().filter(cicloMensual__cicloMensual=ciclo_mensual).values()):
+
+    for ciclo in list(CicloCaja.objects.all().filter(cicloMensual__cicloMensual=ciclo_mensual).values().order_by(order)):
         if ciclo['usuarioCaja_id'] is not None:
             ciclo['user'] = User.objects.get(id=ciclo['usuarioCaja_id']).username
 
