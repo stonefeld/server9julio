@@ -4,46 +4,48 @@
 {% load render_table from django_tables2 %}
 
 {% block subtitle %}
-  <h1>Historial</h1>
+  <h1>Historial Completo</h1>
 {% endblock subtitle %}
 
 {% block content %}
 
   <div id="mySidebar" class="sidebar">
     <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">x</a>
-    {% if not anual %}
-      <a href="#">No hay ciclos.</a>
-    {% else %}
-      <a href="{% url 'estacionamiento:historial' %}">Todos</a>
-    {% endif %}
-    {% for ca in anual %}
-      <button class="dropdown-btn">Ciclo Anual {{ ca.cicloAnual }}
-        <i class="caret fa fa-caret-down" style="display: none"></i>
-      </button>
-      <div class="dropdown-container">
-        {% for cm in mensual %}
-          {% if cm.cicloAnual_id == ca.id %}
-            <button class="dropdown-btn">Ciclo Mensual {{ cm.cicloMensual }}
-              <i class="caret fa fa-caret-down" style="display: none"></i>
-            </button>
-            <div class="dropdown-container">
-              <form method="GET">
-                <input style="display:none" value="{{ cm.id }}" name="caja_mensual"></input>
-                <button class="dropdown-btn" type="submit">Todos</button>
-              </form>
-              {% for cc in caja %}
-                {% if cc.cicloMensual_id == cm.id %}
-                  <form method="GET">
-                    <input style="display:none" value="{{ cc.id }}" name="caja"></input>
-                    <button class="dropdown-btn" type="submit">Ciclo Caja {{ cc.cicloCaja }}</button>
-                  </form>
-                {% endif %}
-              {% endfor %}
-            </div>
-          {% endif %}
-        {% endfor %}
-      </div>
-    {% endfor %}
+    <div class="sidebar-content">
+      {% if not anual %}
+        <a href="#">No hay ciclos.</a>
+      {% else %}
+        <a href="{% url 'estacionamiento:historial' %}">Todos</a>
+      {% endif %}
+      {% for ca in anual %}
+        <button class="dropdown-btn">Ciclo Anual {{ ca.cicloAnual }}
+          <i class="caret fa fa-caret-down" style="display: none"></i>
+        </button>
+        <div class="dropdown-container">
+          {% for cm in mensual %}
+            {% if cm.cicloAnual_id == ca.id %}
+              <button class="dropdown-btn">Ciclo Mensual {{ cm.cicloMensual }}
+                <i class="caret fa fa-caret-down" style="display: none"></i>
+              </button>
+              <div class="dropdown-container">
+                <form method="GET">
+                  <input style="display:none" value="{{ cm.id }}" name="caja_mensual"></input>
+                  <button class="dropdown-btn" type="submit">Todos</button>
+                </form>
+                {% for cc in caja %}
+                  {% if cc.cicloMensual_id == cm.id %}
+                    <form method="GET">
+                      <input style="display:none" value="{{ cc.id }}" name="caja"></input>
+                      <button class="dropdown-btn" type="submit">Ciclo Caja {{ cc.cicloCaja }}</button>
+                    </form>
+                  {% endif %}
+                {% endfor %}
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+      {% endfor %}
+    </div>
   </div>
 
   <div id="main">
@@ -73,7 +75,6 @@
             </div>
           </div>
 
-          {% if busqueda or viscaja or vismes %}
             <div class="p-2">
               <form method="GET">
                 {% if viscaja %}
@@ -88,7 +89,6 @@
                 <button type="submit" class="btn btn-outline-info">Descargar datos</button>
               </form>
             </div>
-          {% endif %}
 
           <div class="p-2">
             <button class="openbtn btn btn-outline-info" onclick="openNav()" id="openbtn">☰ Ciclos</button>
@@ -96,6 +96,10 @@
 
           <div class="p-2">
             <button type="button" class="btn btn-outline-info" data-toggle="modal" data-target="#exampleModal">Filtro avanzado</button>
+          </div>
+
+          <div class="p-2">
+            <a href="{% url 'menu_estacionamiento:resumenTiempoReal' %}" class="btn btn-outline-info">Ver en tiempo real</a>
           </div>
         </div>
 
@@ -170,7 +174,7 @@
         </div>
 
         <div style="padding-top:40px; padding-left:10px; padding-right:10px; padding-bottom:10px">
-            {% render_table table %}
+          {% render_table table %}
         </div>
 
       </div>

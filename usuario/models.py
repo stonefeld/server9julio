@@ -2,13 +2,13 @@ from django.db import models
 
 
 class Persona(models.Model):
-    nombre_apellido = models.CharField(max_length=30, verbose_name='Nombre y Apellido')
+    nombre_apellido = models.CharField(max_length=30, verbose_name='Nombre y apellido')
     dni = models.IntegerField(null=True, verbose_name='DNI')
-    nrTarjeta = models.IntegerField(null=True, blank=True, verbose_name='Nr. de Tarjeta')
-    nrSocio = models.IntegerField(null=True, blank=True, verbose_name='Nr. de Socio')
-    general = models.BooleanField(default=False, verbose_name='General')
-    estacionamiento = models.BooleanField(default=False, verbose_name='Estacionamiento')
-    tenis = models.BooleanField(default=False, verbose_name='Tenis')
+    nrTarjeta = models.IntegerField(null=True, blank=True, verbose_name='Nr. de tarjeta')
+    nrSocio = models.IntegerField(null=True, blank=True, verbose_name='Nr. de socio')
+    general = models.BooleanField(default=False, verbose_name='Autorización para entrar')
+    estacionamiento = models.BooleanField(default=False, verbose_name='Autorización para estacionamiento')
+    tenis = models.BooleanField(default=False, verbose_name='Autorización para tenis')
     deuda = models.FloatField(null=True, verbose_name='Deuda', default=0)
 
     def __str__(self):
@@ -17,7 +17,30 @@ class Persona(models.Model):
     def get_absolute_url(self):
         return f'/usuario/lista/{self.id}/'
 
+    def save(self, *args, **kwargs):
+        deuda_max = Deuda.objects.last()
+        if self.deuda < deuda_max.deuda:
+            self.general = True
+
+        else:
+            self.general = False
+
+        if self.deuda < deuda_max.deudaEstacionamiento:
+            self.estacionamiento = True
+
+        else:
+            self.estacionamiento = False
+
+        super().save(*args, **kwargs)
+
 
 class Deuda(models.Model):
-    deuda = models.FloatField(default=300)
-    deudaEstacionamiento = models.FloatField(default=300)
+    deuda = models.FloatField(default=300, verbose_name='Deuda general como socio')
+    deudaEstacionamiento = models.FloatField(default=300, verbose_name='Deuda máxima del estacionamiento')
+
+    class Meta:
+        verbose_name = 'Deuda'
+        verbose_name_plural = 'Deudas'
+
+    def __str__(self):
+        return f'Deuda socio de ${self.deuda} y para estacionamiento de ${self.deudaEstacionamiento}'

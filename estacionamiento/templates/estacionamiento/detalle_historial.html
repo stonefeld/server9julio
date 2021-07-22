@@ -15,14 +15,14 @@
           <div class="card-body">
 
             <div class="input-group mb-3">
-              <p class="form-control">{{ datos.tipo }}</p>
+              <p style="text-align:left" class="form-control">{{ datos.tipo }}</p>
               <div class="input-group-append">
                 <span class="input-group-text" id="basic-addon2">Tipo</span>
               </div>
             </div>
 
             <div class="input-group mb-3">
-              <p class="form-control">{{ datos.identificador }}</p>
+              <p style="text-align:left" class="form-control">{{ datos.identificador }}</p>
               <div class="input-group-append">
                 {% if datos.persona %}
                   <span class="input-group-text" id="basic-addon2">Nombre y Apellido</span>
@@ -34,37 +34,63 @@
               </div>
             </div>
 
+            {% if datos.persona %}
+              <div class="input-group mb-3">
+                <p style="text-align:left" class="form-control">{{ datos.persona.dni }}</p>
+                <div class="input-group-append">
+                  <span class="input-group-text" id="basic-addon2">DNI</span>
+                </div>
+              </div>
+              <div class="input-group mb-3">
+                <p style="text-align:left" class="form-control">{{ datos.persona.nrTarjeta }}</p>
+                <div class="input-group-append">
+                  <span class="input-group-text" id="basic-addon2">Nr. Tarjeta</span>
+                </div>
+              </div>
+              <div class="input-group mb-3">
+                <p style="text-align:left" class="form-control">{{ datos.persona.nrSocio }}</p>
+                <div class="input-group-append">
+                  <span class="input-group-text" id="basic-addon2">Nr. Socio</span>
+                </div>
+              </div>
+            {% endif %}
+
             <div class="input-group mb-3">
-              <p class="form-control">{{ datos.tiempo }}</p>
+              <p style="text-align:left" class="form-control">{{ datos.tiempo }}</p>
               <div class="input-group-append">
                 <span class="input-group-text" id="basic-addon2">Fecha y Hora</span>
               </div>
             </div>
 
             <div class="input-group mb-3">
-              <p class="form-control">{{ datos.direccion }}</p>
+              <p style="text-align:left" class="form-control">{{ datos.direccion }}</p>
               <div class="input-group-append">
                 <span class="input-group-text" id="basic-addon2">Dirección</span>
               </div>
             </div>
 
             <div class="input-group mb-3">
-              <p class="form-control">{{ datos.cicloCaja }}</p>
+              <p style="text-align:left" class="form-control">{{ datos.cicloCaja }}</p>
               <div class="input-group-append">
                 <span class="input-group-text" id="basic-addon2">Ciclo Caja</span>
               </div>
             </div>
 
             <div class="input-group mb-3">
-              {% if datos.autorizado %}
-                <p class="form-control">Si</p>
-              {% else %}
-                <p class="form-control">No</p>
-              {% endif %}
+              <p style="text-align:left" class="form-control">{{ datos.autorizado }}</p>
               <div class="input-group-append">
                 <span class="input-group-text" id="basic-addon2">Autorizado</span>
               </div>
             </div>
+
+            {% if datos.mensaje %}
+              <div class="input-group mb-3">
+                <p style="text-align:left" class="form-control">{{ datos.mensaje }}</p>
+                <div class="input-group-append">
+                  <span class="input-group-text" id="basic-addon2">Descripción</span>
+                </div>
+              </div>
+            {% endif %}
 
             <div>
               <a href="{% url 'estacionamiento:historial' %}" style="text-decoration:none" class="btn btn-outline-info">Cancelar</a>
@@ -72,21 +98,20 @@
               {% if datos.direccion == 'ENTRADA' %}
                 {% if cobrado == 'False' %}
                   {% if datos.tipo == 'NOSOCIO' or datos.tipo == 'SOCIO-MOROSO' %}
-                    <!--<a href="{% url 'estacionamiento:cobrarEntrada' datos.id %}" style="text-decoration:none" class="btn btn-outline-info" id="cobrar">Cobrar</a>-->
-                    <a style="text-decoration:none"></a>
+                    <a style="text-decoration:none">
                       <button style="text-decoration:none" class="btn btn-outline-info" data-toggle="modal" data-target="#modalCobrar" id = "cobrarEntrada">Cobrar</button>
                     </a>
                   {% endif %}
                   {% if datos.tipo == 'SOCIO-MOROSO'%}
-                    <!--<a href="{% url 'estacionamiento:pago_deuda' datos.id %}" style="text-decoration:none" class="btn btn-outline-info" id="pagarDeuda">Regularizar Deuda</a>-->
-                    <a style="text-decoration:none"></a>
+                    <a style="text-decoration:none">
                       <button style="text-decoration:none" class="btn btn-outline-info" data-toggle="modal" data-target="#modalDeuda" id = "pagarDeuda">Regularizar Deuda</button>
                     </a>
                   {% endif %}
                 {% endif %}
               {% endif %}
             </div>
-              <!--ModalCobro-->
+
+            <!-- Inicio ModalCobro -->
             <div class="modal fade" id="modalCobrar" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
               <div class="modal-dialog" role="document">
                 <div class="modal-content">
@@ -106,9 +131,9 @@
                 </div>
               </div>
             </div>
-            <!--ModalCobro-->
+            <!-- Fin ModalCobro -->
 
-            <!--ModalDeuda-->
+            <!-- Inicio ModalDeuda -->
             <div class="modal fade" id="modalDeuda" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
               <div class="modal-dialog" role="document">
                 <div class="modal-content">
@@ -128,7 +153,8 @@
                 </div>
               </div>
             </div>
-            <!--ModalDeuda-->
+            <!-- Fin ModalDeuda -->
+
             <script type="text/javascript">
               const loadPrecio = async () => {
                 try {
@@ -139,9 +165,11 @@
                   console.error(err);
                 }
               };
+
               const load = (precio) => {
                 document.getElementById("recaudadoTexto").innerHTML = `Tarifa a pagar es : $${precio} `
               };
+
               const cobrarTarifa = async () =>{
                 try {
                   const options = {
@@ -159,6 +187,7 @@
                   console.error(err);
                 }
               };
+
               const loadDeuda = async () =>{
                 try {
                   const res = await fetch('pago_deuda');
@@ -168,9 +197,11 @@
                   console.error(err);
                 }
               };
+
               const deudaLoad = (deuda) =>{
                 document.getElementById('deuda_a_Pagar').innerHTML = `La deuda del socio es: $${deuda}`
               };
+
               const regularizarDeuda = async () =>{
                 try {
                   const options = {
@@ -188,15 +219,19 @@
                   console.error(err);
                 }
               };
+
               document.getElementById('cobrarEntrada').addEventListener('click', () =>{
                 loadPrecio();
               });
+
               document.getElementById('cobrarDinero').addEventListener('click', () =>{
                 cobrarTarifa();
               });
+
               document.getElementById('pagarDeuda').addEventListener('click', () => {
                 loadDeuda();
               });
+
               document.getElementById('regularizar').addEventListener('click', () => {
                 regularizarDeuda();
               });

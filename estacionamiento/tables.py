@@ -1,7 +1,7 @@
 import django_tables2 as tables
 
 
-class HistorialEstacionamientoTable(tables.Table):  # Necesita Tipo de dato
+class HistorialEstacionamientoTable(tables.Table):
     identificador = tables.Column(linkify=True)
     tipo = tables.Column()
     tiempo = tables.Column()
@@ -15,11 +15,10 @@ class HistorialEstacionamientoTable(tables.Table):  # Necesita Tipo de dato
         empty_text = 'No hay ninguna entrada registrada'
 
 
-class EstacionadosTable(tables.Table):  # Necesita Tipo de dato
+class EstacionadosTable(tables.Table):
     registroEstacionamiento__identificador = tables.Column(linkify=True)
     registroEstacionamiento__tipo = tables.Column()
     registroEstacionamiento__tiempo = tables.Column()
-    registroEstacionamiento__direccion = tables.Column()
     registroEstacionamiento__autorizado = tables.Column()
     registroEstacionamiento__pago = tables.Column()
 
@@ -37,6 +36,4 @@ class ProveedoresTable(tables.Table):
         template_name = 'table_template.html'
         order_by = '-tiempo'
         empty_text = 'No hay ninguna entrada registrada'
-        row_attrs = {
-            'id': 'proveedores'
-        }
+        row_attrs = {'id': 'proveedores'}

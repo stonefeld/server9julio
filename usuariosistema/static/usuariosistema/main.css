@@ -110,10 +110,15 @@ body {
 
 .sidebar .closebtn {
   position: absolute;
-  top: 0;
+  top: 0%;
   right: 25px;
   font-size: 36px;
   margin-left: 50px;
+}
+
+.sidebar .sidebar-content {
+  position: relative;
+  top: 3%;
 }
 
 #main {

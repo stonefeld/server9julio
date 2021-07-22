@@ -29,35 +29,42 @@
             <form class="form-container" method="POST">
               <div class="form-group">
                 {% csrf_token %}
-                <div class="row">
                   {% if obj.tipo == 'SOCIO' or obj.tipo == 'SOCIO-MOROSO' %}
-                    <div class="col-6">
-
-                      <!-- Esta seccion esta oculta para poder completar el form con los datos desde js. -->
+                    <!-- Esta seccion esta oculta para poder completar el form con los datos desde js. -->
+                    <div style="padding-bottom:20px">
                       <div style="display:none">
                         {{ form.persona|as_crispy_field }}
                       </div>
-
                       <label class="requierField">Socio</label>
                       <button type="button" data-toggle="modal" data-target="#exampleModal" class="button-vincular-socio" style="text-decoration:none" id="button-vincular">{{ obj.persona.nombre_apellido }}</button>
                     </div>
-                    <div class="col-6">
-                      {{ form.noSocio|as_crispy_field }}
+
+                    <div class="row">
+                      <div class="col-6">
+                        {{ form.noSocio|as_crispy_field }}
+                      </div>
+                      <div class="col-6">
+                        {{ form.tipo|as_crispy_field }}
+                      </div>
                     </div>
                   {% elif obj.tipo == 'NOSOCIO' %}
-                    <div class="col-6">
-
-                      <!-- Esta seccion esta oculta para poder completar el form con los datos desde js. -->
-                      <div style="display:none">
-                        {{ form.persona|as_crispy_field }}
-                      </div>
-
-                      {{ form.noSocio|as_crispy_field }}
-                    </div>
-                    <div class="col-6">
-                      <div id="form-persona" style="display:none">
+                    <div id="form-persona" style="display:none">
+                      <div style="padding-bottom:20px">
                         <label class="requierField">Socio</label>
                         <button type="button" data-toggle="modal" data-target="#exampleModal" class="button-vincular-socio" style="text-decoration:none" id="button-vincular">{{ obj.persona.nombre_apellido }}</button>
+                      </div>
+                    </div>
+
+                    <div class="row">
+                      <div class="col-6">
+                        <!-- Esta seccion esta oculta para poder completar el form con los datos desde js. -->
+                        <div style="display:none">
+                          {{ form.persona|as_crispy_field }}
+                        </div>
+                        {{ form.noSocio|as_crispy_field }}
+                      </div>
+                      <div class="col-6">
+                        {{ form.tipo|as_crispy_field }}
                       </div>
                     </div>
                   {% elif obj.tipo == 'PROVEEDOR' %}
@@ -77,31 +84,8 @@
                     </div>
                   {% endif %}
                 </div>
+                {{ form.mensaje|as_crispy_field }}
 
-                <div class="row">
-                  <div class="col-6">
-                    {{ form.tiempo|as_crispy_field }}
-                  </div>
-                  <div class="col-6">
-                    {{ form.tipo|as_crispy_field }}
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col-6">
-                    {{ form.cicloCaja|as_crispy_field }}
-                  </div>
-                  <div class="col-6">
-                    {{ form.direccion|as_crispy_field }}
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col-6">
-                    {{ form.lugar|as_crispy_field }}
-                  </div>
-                  <div class="col-6" style="padding:40px">
-                    {{ form.autorizado|as_crispy_field }}
-                  </div>
-                </div>
                 <div class="form-group" style="padding-top:10px">
                   <a href="{% url 'estacionamiento:detalle' obj.id %}" style="text-decoration:none" class="btn btn-outline-info">Cancelar</a>
                   <button type="button" data-toggle="modal" data-target="#exampleModal" class="btn btn-outline-info" style="text-decoration:none; display:none" id="vincular">Vincular socio</button>

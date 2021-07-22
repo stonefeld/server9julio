@@ -16,9 +16,9 @@ import pandas as pd
 
 from .models import Persona, Deuda
 from .forms import PersonaForm
-from .tables import PersonaTable
 from registroGeneral.models import EntradaGeneral
 from registroGeneral.tables import HistorialTable
+from estacionamiento.models import RegistroEstacionamiento
 
 
 def postpone(function):
@@ -31,25 +31,51 @@ def postpone(function):
 
 
 @login_required
-def listaUsuarios(request):
-    return render(request, 'usuario/lista_usuarios.html',
-                  {'title': 'Lista de socios'})
+def lista_usuarios(request):
+    return render(request, 'usuario/lista_usuarios.html', {'title': 'Lista de socios'})
 
 
 @login_required
-def editarUsuario(request, id):
+def lista_proveedores(request):
+    return render(request, 'usuario/lista_proveedores.html', {'title': 'Lista de proveedores'})
+
+
+@login_required
+def editar_usuario(request, id):
     obj = Persona.objects.get(id=id)
     form = PersonaForm(request.POST or None, instance=obj)
-    if form.is_valid():
-        form.save()
 
     if request.method == 'POST':
+        if form.is_valid():
+            form.save()
+            estacionamientos = RegistroEstacionamiento.objects.all().filter(
+                Q(identificador=form.cleaned_data['nombre_apellido']) |
+                Q(identificador=form.cleaned_data['dni']) |
+                Q(persona__nombre_apellido=form.cleaned_data['nombre_apellido']) |
+                Q(noSocio=form.cleaned_data['dni'])
+            )
+
+            for estacionamiento in estacionamientos:
+                if estacionamiento.tipo == 'NOSOCIO':
+                    estacionamiento.persona = obj
+                    if obj.estacionamiento:
+                        estacionamiento.tipo = 'SOCIO'
+                        estacionamiento.mensaje += ' Se modificaron los datos del DNI del socio. El socio no tiene deuda y no debe abonar tarifa ni regularizar la deuda.'
+
+                    else:
+                        estacionamiento.tipo = 'SOCIO-MOROSO'
+                        estacionamiento.mensaje += ' Se modificaron los datos del DNI del socio. El socio tiene deuda y debe regularizarla o abonar la tarifa correspondiente.'
+
+                elif estacionamiento.tipo in ('SOCIO', 'SOCIO-MOROSO'):
+                    estacionamiento.noSocio = obj.dni
+
+                estacionamiento.save()
+
         messages.success(request, 'Los datos fueron guardados con éxito')
         return redirect('usuario:lista')
 
     else:
-        return render(request, 'usuario/editar_usuario.html',
-                      {'form': form, 'title': 'Editar socio'})
+        return render(request, 'usuario/editar_usuario.html', {'form': form, 'title': 'Editar socio'})
 
 
 @login_required
@@ -69,12 +95,11 @@ def historial(request):
         table = HistorialTable(entradas)
         RequestConfig(request).configure(table)
 
-        return render(request, 'usuario/historial.html',
-                      {'table': table, 'title': 'Historial'})
+        return render(request, 'usuario/historial.html', {'table': table, 'title': 'Historial'})
 
 
 @login_required
-def cargarDB(request):
+def cargar_db(request):
     media_root = settings.MEDIA_ROOT
     location = os.path.join(media_root, 'saldos.csv')
 
@@ -116,14 +141,14 @@ def cargarDB(request):
     df = df.dropna(thresh=2)
     df['Deuda'] = df['Deuda'].fillna(0)
 
-    cargarDBAsync(df)
+    cargar_db_async(df)
 
     messages.success(request, 'La carga de datos ha iniciado con éxito')
     return redirect('usuariosistema:home')
 
 
 @postpone
-def cargarDBAsync(df):
+def cargar_db_async(df):
     deudaMax = Deuda.objects.all().last().deuda
     listaUsuarios = []
     for ind in df.index:
@@ -185,15 +210,13 @@ def cargarDBAsync(df):
             persona.general = False
             persona.save()
 
-
     try:
         noSocio = personas.get(nombre_apellido='NOSOCIO')
         noSocio.general = True
         noSocio.save()
 
     except:
-        noSocio = Persona(nrSocio=0, nombre_apellido='NOSOCIO',
-                          general=True, deuda=0.0)
+        noSocio = Persona(nrSocio=0, nombre_apellido='NOSOCIO', general=True, deuda=0.0)
         noSocio.save()
 
     deudaMax = Deuda.objects.all().last().deudaEstacionamiento
@@ -267,18 +290,21 @@ def fetch_usuarios(request):
     # Dentro del GET recibe como datos:
     page = request.GET.get('page')  # La pagina que quiere visualizar.
     filter_string = request.GET.get('filter-string')  # El string de filtro.
+    order_by = request.GET.get('order-by')
 
     # Separa el string para filtrar en un list con cada palabra ingresada.
     parsed_filter = filter_string.split(' ')
 
+    personas = Persona.objects.all()
     # Filtra todos los socios con el string recibido por nombre de
     # socio.
     for filter in parsed_filter:
-        personas = Persona.objects.all().filter(
+        personas = personas.filter(
             Q(nombre_apellido__icontains=filter) |
-            Q(dni__icontains=filter),
+            Q(dni__icontains=filter) |
+            Q(nrSocio__icontains=filter),
             ~Q(nombre_apellido='NOSOCIO')
-        ).order_by('nombre_apellido')
+        ).order_by(order_by)
 
     # Realiza la paginacion de los datos con un maximo de 20 proveedores por
     # pagina y especifica la pagina que quiere visualizar.

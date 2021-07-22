@@ -9,7 +9,7 @@ from django.contrib.auth.models import User
 from django.core.paginator import Paginator
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.db.models import Q, Sum, Count
+from django.db.models import Q, Sum
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.utils.timezone import now
@@ -19,8 +19,8 @@ from django_tables2 import RequestConfig
 from .models import (
     RegistroEstacionamiento, Proveedor,
     CicloCaja, CicloMensual, Persona, CicloAnual,
-    Cobros, Estacionado, AperturaManual, TarifaEspecial,
-    Horarios_Precio, Dia_Especial, TiempoTolerancia
+    Cobros, Estacionado, TarifaEspecial,
+    HorariosPrecio, DiaEspecial, TiempoTolerancia
 )
 from .forms import EstacionamientoForm, AperturaManualForm, ProveedorForm
 from .tables import HistorialEstacionamientoTable
@@ -43,7 +43,7 @@ def socket_arduino(cantidad):
 
 
 @login_required
-def apertura_Manual(request):
+def apertura_manual(request):
     form = AperturaManualForm(request.POST or None)
     if form.is_valid():
         form.save()
@@ -58,13 +58,11 @@ def apertura_Manual(request):
 
 @csrf_exempt
 @login_required
-def cobrarEntrada(request, id):
+def cobrar_entrada(request, id):
     if request.method == 'GET':
         entradaCobrar = RegistroEstacionamiento.objects.get(id=id)
         today = datetime.date(datetime.now())
-        dia_Especial = Dia_Especial.objects.filter(
-            Q(dia_Especial=today)
-        ).distinct()
+        dia_Especial = DiaEspecial.objects.filter(Q(dia_Especial=today)).distinct()
 
         if dia_Especial:
             # Hoy es día Especial
@@ -72,7 +70,7 @@ def cobrarEntrada(request, id):
             return JsonResponse(tarifaEspacial.precio, safe=False)
 
         time = datetime.time(datetime.now())
-        horarios = Horarios_Precio.objects.all()
+        horarios = HorariosPrecio.objects.all()
         i = 0
 
         for horario in horarios:
@@ -86,22 +84,19 @@ def cobrarEntrada(request, id):
     else:
         entradaCobrar = RegistroEstacionamiento.objects.get(id=id)
         today = datetime.date(datetime.now())
-        dia_Especial = Dia_Especial.objects.filter(
-            Q(dia_Especial=today)
-        ).distinct()
+        dia_Especial = DiaEspecial.objects.filter(Q(dia_Especial=today)).distinct()
 
         if dia_Especial:
             # Hoy es día Especial
             tarifaEspacial = TarifaEspecial.objects.all().last()
-            cobro = Cobros(precio=tarifaEspacial.precio, 
-                            registroEstacionamiento = entradaCobrar, deuda=False, usuarioCobro = request.user)
+            cobro = Cobros(precio=tarifaEspacial.precio, registroEstacionamiento=entradaCobrar, deuda=False, usuarioCobro=request.user)
             cobro.save()
-            messages.warning(request, 'Cobro por $' + f'{tarifaEspacial}')
+            messages.warning(request, f'Cobro por ${tarifaEspacial}')
             # return redirect("estacionamiento:historial")
-            return JsonResponse("Ok", safe=False)
+            return JsonResponse('Ok', safe=False)
 
         time = datetime.time(datetime.now())
-        horarios = Horarios_Precio.objects.all()
+        horarios = HorariosPrecio.objects.all()
         i = 0
         for horario in horarios:
             i = i + 1
@@ -110,17 +105,17 @@ def cobrarEntrada(request, id):
                 break
 
         cobro = Cobros(
-            precio = tarifaNormal, 
-            registroEstacionamiento = entradaCobrar, 
-            deuda=False, 
-            usuarioCobro = request.user
+            precio=tarifaNormal,
+            registroEstacionamiento=entradaCobrar,
+            deuda=False,
+            usuarioCobro=request.user
         )
         cobro.save()
-        entradaCobrar.pago = 'TRUE'
+        entradaCobrar.pago = 'SI'
         entradaCobrar.save()
-        messages.warning(request, 'Cobro por $' + f'{tarifaNormal}')
+        messages.warning(request, f'Cobro por ${tarifaNormal}')
         # return redirect("estacionamiento:historial")
-        return JsonResponse("Ok", safe=False)
+        return JsonResponse('Ok', safe=False)
 
 
 @csrf_exempt
@@ -129,127 +124,158 @@ def pago_deuda(request, id):
     if request.method == "POST":
         entradaMoroso = RegistroEstacionamiento.objects.get(id=id)
         salida = str(entradaMoroso.persona.deuda)
-        cobroDeuda = Cobros(precio=entradaMoroso.persona.deuda,
-                            registroEstacionamiento=entradaMoroso, deuda=True)
+        cobroDeuda = Cobros(precio=entradaMoroso.persona.deuda, registroEstacionamiento=entradaMoroso, deuda=True)
+        cobroDeuda.save()
         socioMoroso = entradaMoroso.persona
         socioMoroso.deuda = 0.0
         socioMoroso.estacionamiento = True
+        socioMoroso.general = True
         socioMoroso.save()
-        cobroDeuda.save()
         entradaMoroso.tipo = 'SOCIO'
-        entradaMoroso.autorizado = 'TRUE'
-        entradaMoroso.pago = 'TRUE'
+        entradaMoroso.autorizado = 'SI'
+        entradaMoroso.pago = 'SI'
         entradaMoroso.save()
-        messages.warning(request, f'Pago de deuda por ${salida} dirigirse hacia administración para realizar el pago')
-        return JsonResponse("Ok", safe=False)
+        messages.warning(request, f'Registro de pago de deuda por ${salida}. Dirigirse hacia administración para realizar el pago')
+        return JsonResponse('Ok', safe=False)
 
     else:
         entradaMoroso = RegistroEstacionamiento.objects.get(id=id)
         salida = entradaMoroso.persona.deuda
         return JsonResponse(salida, safe=False)
 
-    # return HttpResponse(salida)
-
 
 @login_required
 def emision_resumen_anterior(request, id):
-    cicloCajaR = CicloCaja.objects.get(id=id)
-    cicloMensualActual = CicloMensual.objects.all().last()
-    if cicloMensualActual.cicloMensual == cicloCajaR.cicloMensual.cicloMensual:
-        return redirect('menu_estacionamiento:menu_estacionamiento')
+    ciclo_mensual = CicloMensual.objects.get(id=id)
+    resumen_mensual = []
 
-    else:
-        resumen_mensual = []
-        entradas = RegistroEstacionamiento.objects.\
-            values("persona__nombre_apellido", "persona__nrSocio", 'tiempo').\
-            order_by("persona__nombre_apellido").\
-            exclude(persona__isnull=True).\
-            filter(direccion='SALIDA', cicloCaja__cicloMensual__cicloMensual = cicloCajaR.cicloMensual.cicloMensual,
-                   autorizado='TRUE',)
-        for entrada in entradas:
-            print(entrada)
-        diaEspeciales = Dia_Especial.objects.values("dia_Especial").filter(Q(dia_Especial__range=(cicloMensualActual.inicioMes, cicloMensualActual.finalMes)))
-        numeroSocioant = 0
-        entradadic = {}
-        
-        for entrada in entradas:
-            if entrada['persona__nrSocio'] != numeroSocioant or numeroSocioant == 0:
-                numeroSocioant = entrada['persona__nrSocio']
-                entradadic = {
-                    'NrSocio' : entrada['persona__nrSocio'],
-                    'Persona' : entrada['persona__nombre_apellido'],
-                    'Entradas' : 1,
-                    'Normales' : 0,
-                    'Especiales' : 0  
-                }
+    entradas = RegistroEstacionamiento.objects.\
+        values('persona__nombre_apellido', 'persona__nrSocio', 'tiempo').\
+        order_by('persona__nombre_apellido').\
+        exclude(persona__isnull=True).\
+        filter(direccion='SALIDA', tipo='SOCIO', cicloCaja__cicloMensual__cicloMensual=ciclo_mensual.cicloMensual, autorizado='SI', cicloCaja__usuarioCaja__isnull=False)
+
+    # Hago un query pero que me devuelva unicamente los valores y no los campos.
+    dias_especiales_query = list(DiaEspecial.objects.values_list('dia_Especial').filter(Q(dia_Especial__range=(ciclo_mensual.inicioMes, ciclo_mensual.finalMes))))
+    dias_especiales = []
+
+    # Como necesito conocer la fecha en formato string y no datetime.date creo un nuevo array.
+    for dia in dias_especiales_query:
+        dias_especiales.append(str(dia[0]))
+
+    nrsocio_anterior = 0
+    entradadic = {}
+    first = True  # Declaro first_time para que la primera vuelta no se agregue una entrada vacia.
+
+    for entrada in entradas:
+        if entrada['persona__nrSocio'] != nrsocio_anterior or nrsocio_anterior == 0:
+            if not first:
+                # Agrego la entrada generada en la vuelta del loop anterior cada vez que el nr de socio es distinto.
+                # De esta forma todos los datos modificados anteriormente se agregan.
                 resumen_mensual.append(entradadic)
-            else:
-                entradadic['Entradas'] = entradadic['Entradas'] + 1
-            
-            if entrada['tiempo'] in diaEspeciales:
-                entradadic['Especiales'] = entradadic['Especiales'] + 1
-            else:
-                entradadic['Normales'] = entradadic['Normales'] + 1
-       
-        output = []
-        response = HttpResponse(content_type='text/csv')
-        writer = csv.writer(response)
-        output.append(['NrSocio', 'Persona', 'Cantidad_Entradas', 'Entradas_Normales', 'Entradas_Especiales'])
-        for entrada in resumen_mensual:
-            output.append([entrada['NrSocio'],
-                           entrada['Persona'],
-                           entrada['Entradas'],
-                           entrada['Normales'],
-                           entrada['Especiales']])
 
-        writer.writerows(output)
-        response['Content-Disposition'] = \
-            'attachment; filename="resumen_mensual_'\
-            f'{cicloCajaR.cicloMensual.cicloMensual}_año_'\
-            f'{cicloCajaR.cicloMensual.cicloAnual.cicloAnual}.csv"'
+            nrsocio_anterior = entrada['persona__nrSocio']
+            entradadic = {
+                'NrSocio': entrada['persona__nrSocio'],
+                'Persona': entrada['persona__nombre_apellido'],
+                'Entradas': 1,
+                'Normales': 0,
+                'Especiales': 0
+            }
 
-        return response
+        else:
+            entradadic['Entradas'] += 1
+
+        # entrda['tiempo'] tiene formato 'YY-MM-DD HH:mm' y solo necesito la fecha.
+        if str(entrada['tiempo']).split(' ')[0] in dias_especiales:
+            entradadic['Especiales'] += 1
+
+        else:
+            entradadic['Normales'] += 1
+
+        if first:
+            first = False
+
+        # Como la entrada es agregada al principio del loop cuando el usuario es distinto necesito agregar
+        # la ultima entrada de forma forzosa.
+        if entrada == entradas.last():
+            resumen_mensual.append(entradadic)
+
+    output = []
+    response = HttpResponse(content_type='text/csv')
+    writer = csv.writer(response)
+    output.append(['NrSocio', 'Persona', 'Cantidad_Entradas', 'Entradas_Normales', 'Entradas_Especiales'])
+    for entrada in resumen_mensual:
+        output.append([entrada['NrSocio'],
+                       entrada['Persona'],
+                       entrada['Entradas'],
+                       entrada['Normales'],
+                       entrada['Especiales']])
+
+    writer.writerows(output)
+    response['Content-Disposition'] = f'attachment; filename="resumen_mensual_{ciclo_mensual.cicloMensual}_año_{ciclo_mensual.cicloAnual.cicloAnual}.csv"'
+    return response
 
 
 @login_required
-def emision_resumen_mensual(request):  # Falta testing
-    cicloCaja_ = CicloCaja.objects.all().last()
-    if cicloCaja_.recaudado is not None:
-        cicloMensual_ = CicloMensual.objects.all().last()
+def emision_resumen_mensual(request):
+    ciclo_caja = CicloCaja.objects.all().last()
+    if ciclo_caja.recaudado is not None:
+        ciclo_mensual = CicloMensual.objects.all().last()
         resumen_mensual = []
-        entradas = RegistroEstacionamiento.objects.\
-            values("persona__nombre_apellido", "persona__nrSocio",'tiempo').\
-            order_by("persona__nombre_apellido").\
-            exclude(persona__isnull=True).\
-            filter(direccion='SALIDA', cicloCaja__cicloMensual__cicloMensual=cicloCaja_.cicloMensual.cicloMensual,
-                   autorizado='TRUE',)
-        diaEspeciales = Dia_Especial.objects.values("dia_Especial").filter(Q(dia_Especial__range=(cicloMensual_.inicioMes, now())))
-        numeroSocioant = 0
-        entradadic = {}
-        for entrada in entradas:
-            if entrada['persona__nrSocio'] != numeroSocioant or numeroSocioant == 0:
-                numeroSocioant = entrada['persona__nrSocio']
-                entradadic = {
-                    'NrSocio' : entrada['persona__nrSocio'],
-                    'Persona' : entrada['persona__nombre_apellido'],
-                    'Entradas' : 1,
-                    'Normales' : 0,
-                    'Especiales' : 0  
-                }
-                resumen_mensual.append(entradadic)
-            else:
-                entradadic['Entradas'] = entradadic['Entradas'] + 1
-            
-            if entrada['tiempo'] in diaEspeciales:
-                entradadic['Especiales'] = entradadic['Especiales'] + 1
-            else:
-                entradadic['Normales'] = entradadic['Normales'] + 1
 
-        output = []
-        cicloMensual_.finalMes = now()
-        cicloMensual_.save()
+        entradas = RegistroEstacionamiento.objects.\
+            values('persona__nombre_apellido', 'persona__nrSocio', 'tiempo').\
+            order_by('persona__nombre_apellido').\
+            exclude(persona__isnull=True).\
+            filter(direccion='SALIDA', tipo='SOCIO', cicloCaja__cicloMensual__cicloMensual=ciclo_caja.cicloMensual.cicloMensual, autorizado='SI')
+
+        dias_especiales_query = list(DiaEspecial.objects.values_list('dia_Especial').filter(Q(dia_Especial__range=(ciclo_mensual.inicioMes, now()))))
+        dias_especiales = []
+
+        for dia in dias_especiales_query:
+            dias_especiales.append(str(dia[0]))
+
+        nrsocio_anterior = 0
+        entradadic = {}
+        first_time = True
+
+        for entrada in entradas:
+            if entrada['persona__nrSocio'] != nrsocio_anterior or nrsocio_anterior == 0:
+                if not first_time:
+                    resumen_mensual.append(entradadic)
+
+                nrsocio_anterior = entrada['persona__nrSocio']
+                entradadic = {
+                    'NrSocio': entrada['persona__nrSocio'],
+                    'Persona': entrada['persona__nombre_apellido'],
+                    'Entradas': 1,
+                    'Normales': 0,
+                    'Especiales': 0
+                }
+
+            else:
+                entradadic['Entradas'] += 1
+
+            if str(entrada['tiempo']).split(' ')[0] in dias_especiales:
+                entradadic['Especiales'] += 1
+
+            else:
+                entradadic['Normales'] += 1
+
+            if first_time:
+                first_time = False
+
+            if entrada == entradas.last():
+                resumen_mensual.append(entradadic)
+
+        ciclo_mensual.finalMes = now()
+        ciclo_mensual.save()
+
         response = HttpResponse(content_type='text/csv')
         writer = csv.writer(response)
+
+        output = []
         output.append(['NrSocio', 'Persona', 'Cantidad_Entradas', 'Entradas_Normales', 'Entradas_Especiales'])
 
         for entrada in resumen_mensual:
@@ -258,56 +284,32 @@ def emision_resumen_mensual(request):  # Falta testing
                            entrada['Entradas'],
                            entrada['Normales'],
                            entrada['Especiales']])
-        
-        '''resumen_mensual = RegistroEstacionamiento.objects.\
-            values("persona__nombre_apellido", "persona__nrSocio").\
-            annotate(cantidad_Entradas=Count("id")).\
-            order_by("persona__nombre_apellido").\
-            exclude(persona__isnull=True).\
-            filter(direccion='SALIDA', cicloCaja__cicloMensual=cicloMensual_,
-                   autorizado='TRUE')
 
-        output = []
-        cicloMensual_.finalMes = now()
-        cicloMensual_.save()
-        response = HttpResponse(content_type='text/csv')
-        writer = csv.writer(response)
-        output.append(['NrSocio', 'Persona', 'Cantidad_Entradas', 'Entradas_Especiales', 'Entradas_Normales'])
-
-        for entrada in resumen_mensual:
-            output.append([entrada['persona__nrSocio'],
-                           entrada['persona__nombre_apellido'],
-                           entrada['cantidad_Entradas']])
-        '''
         writer.writerows(output)
-        response['Content-Disposition'] = \
-            'attachment; filename="resumen_mensual_'\
-            f'{cicloMensual_.cicloMensual}_año_'\
-            f'{cicloMensual_.cicloAnual.cicloAnual}.csv"'
-        cicloAnual_ = CicloAnual.objects.all().last()
+        response['Content-Disposition'] = f'attachment; filename="resumen_mensual_{ciclo_mensual.cicloMensual}_año_{ciclo_mensual.cicloAnual.cicloAnual}.csv"'
+        ciclo_anual = CicloAnual.objects.all().last()
 
-        if cicloMensual_.cicloMensual >= 12:
-            cicloAnual_ = CicloAnual(cicloAnual=(cicloAnual_.cicloAnual + 1))
-            cicloAnual_.save()
-            cicloAnual_ = CicloAnual.objects.all().last()
-            cicloMensual_ = CicloMensual(cicloMensual=1,
-                                         cicloAnual=cicloAnual_, inicioMes=now())
-            cicloMensual_.save()
+        if ciclo_mensual.cicloMensual >= 12:
+            ciclo_anual = CicloAnual(cicloAnual=(ciclo_anual.cicloAnual + 1))
+            ciclo_anual.save()
+            ciclo_anual = CicloAnual.objects.all().last()
+            ciclo_mensual = CicloMensual(cicloMensual=1, cicloAnual=ciclo_anual, inicioMes=now())
+            ciclo_mensual.save()
 
         else:
-            cicloMensual_ = CicloMensual(
-                cicloMensual=(cicloMensual_.cicloMensual + 1),
-                cicloAnual=cicloAnual_, inicioMes=now()
+            ciclo_mensual = CicloMensual(
+                cicloMensual=(ciclo_mensual.cicloMensual + 1),
+                cicloAnual=ciclo_anual, inicioMes=now()
             )
-            cicloMensual_.save()
+            ciclo_mensual.save()
 
-        cicloMensual_ = CicloMensual.objects.all().last()
-        cicloCaja_ = CicloCaja(cicloCaja=1, cicloMensual=cicloMensual_, inicioCaja=now())
-        cicloCaja_.save()
+        ciclo_mensual = CicloMensual.objects.all().last()
+        ciclo_caja = CicloCaja(cicloCaja=1, cicloMensual=ciclo_mensual, inicioCaja=now())
+        ciclo_caja.save()
         return response
 
     else:
-        messages.warning(request, 'Error debe cerrar caja primero')
+        messages.warning(request, 'Error: debe cerrar caja primero')
         return redirect('menu_estacionamiento:menu_estacionamiento')
 
 
@@ -316,17 +318,17 @@ def emision_resumen_mensual_get(request):
     if cicloCaja_.recaudado is not None:
         cicloMensual_ = CicloMensual.objects.all().last()
         resp = {
-            "inicio": datetime.date(cicloMensual_.inicioMes),
-            "final": datetime.date(now()),
-            "caja": ''
+            'inicio': datetime.date(cicloMensual_.inicioMes),
+            'final': datetime.date(now()),
+            'caja': ''
         }
         return JsonResponse(resp, safe=False)
 
     else:
         resp = {
-            "inicio": '',
-            "final": '',
-            "caja": 'Error debe cerrar caja primero'
+            'inicio': '',
+            'final': '',
+            'caja': 'Error debe cerrar caja primero'
         }
         return JsonResponse(resp, safe=False)
 
@@ -336,41 +338,44 @@ def emision_resumen_mensual_get(request):
 def cierre_caja(request):
     if request.method == 'GET':
         cicloCaja_ = CicloCaja.objects.all().last()
-        cobros = Cobros.objects.values("registroEstacionamiento__identificador", "precio", "usuarioCobro", "registroEstacionamiento__tipo").filter(registroEstacionamiento__cicloCaja=cicloCaja_, deuda=False) #Trae todo los cobros realizados en este ciclo
-        personas = Cobros.objects.values("usuarioCobro").filter(registroEstacionamiento__cicloCaja=cicloCaja_, deuda=False).distinct() #Trae los usuarios que hicieron los cobros
-        if not cobros: #Si no hay cobros devolver 0
+        cobros = Cobros.objects.values('registroEstacionamiento__identificador', 'precio', 'usuarioCobro', 'registroEstacionamiento__tipo').filter(registroEstacionamiento__cicloCaja=cicloCaja_, deuda=False)  # Trae todos los cobros realizados en este ciclo
+        personas = Cobros.objects.values('usuarioCobro').filter(registroEstacionamiento__cicloCaja=cicloCaja_, deuda=False).distinct()  # Trae los usuarios que hicieron los cobros
+
+        if not cobros:  # Si no hay cobros devolver 0
             resp = {
-                "dinero": '0.0',
-                "cobros": '',
-                "dineroPersonas":''
+                'dinero': '0.0',
+                'cobros': '',
+                'dineroPersonas': ''
             }
             return JsonResponse(resp, safe=False)
 
         if cicloCaja_.recaudado:
-            return JsonResponse("Caja ya cerrada", safe=False)
+            return JsonResponse('Caja ya cerrada', safe=False)
 
         cobrosDic = []
         dineroPersonas = []
+
         for cobro in cobros:
-            #Crear un dictionary con todos los cobros poniendo a quien se realizo el cobro, cual es el precio y que usuario del sistema lo realizo
-            user = User.objects.filter(id = cobro["usuarioCobro"]).last()
-            cobrosDic.append({"persona":cobro['registroEstacionamiento__identificador'],"precio":cobro['precio'], "usuarioCobro": User.get_username(user), "tipo":cobro['registroEstacionamiento__tipo']}) 
-        
-        recaudado = Cobros.objects.filter(
-            registroEstacionamiento__cicloCaja=cicloCaja_, deuda=False).\
-            aggregate(recaudacion=Sum('precio')) #Trae lo reacuadado en la caja total 
+            # Crear un dictionary con todos los cobros poniendo a quien se realizo el cobro, cual es el precio y que usuario del sistema lo realizo
+            user = User.objects.filter(id=cobro["usuarioCobro"]).last()
+            cobrosDic.append({
+                'persona': cobro['registroEstacionamiento__identificador'],
+                'precio': cobro['precio'],
+                'usuarioCobro': User.get_username(user),
+                'tipo': cobro['registroEstacionamiento__tipo']
+            })
+
+        recaudado = Cobros.objects.filter(registroEstacionamiento__cicloCaja=cicloCaja_, deuda=False).aggregate(recaudacion=Sum('precio'))  # Trae lo reacuadado en la caja total
         for persona in personas:
-            #Esto sirve para saber cuanto tiene que pagar cada uno de los usuarios del sistema
-            recaudadoPersona =  Cobros.objects.filter(
-            registroEstacionamiento__cicloCaja=cicloCaja_, deuda=False, usuarioCobro = persona['usuarioCobro']).\
-            aggregate(recaudacion=Sum('precio'))
-            user = User.objects.filter(id = persona['usuarioCobro']).last()
+            # Esto sirve para saber cuanto tiene que pagar cada uno de los usuarios del sistema
+            recaudadoPersona = Cobros.objects.filter(registroEstacionamiento__cicloCaja=cicloCaja_, deuda=False, usuarioCobro=persona['usuarioCobro']).aggregate(recaudacion=Sum('precio'))
+            user = User.objects.filter(id=persona['usuarioCobro']).last()
             dineroDic = {
-                    'Recaudado' : recaudadoPersona['recaudacion'],
-                    'Persona' : User.get_username(user),
-                }
+                'Recaudado': recaudadoPersona['recaudacion'],
+                'Persona': User.get_username(user),
+            }
             dineroPersonas.append(dineroDic)
-             
+
         if recaudado['recaudacion']:
             cicloCaja_.recaudado = recaudado['recaudacion']
 
@@ -379,16 +384,14 @@ def cierre_caja(request):
             recaudado['recaudacion'] = '0.0'
 
         dinero = recaudado['recaudacion']
-        
+
         resp = {
-            "dinero": dinero,
-            "cobros": cobrosDic,
-            "dineroPersonas":dineroPersonas
+            'dinero': dinero,
+            'cobros': cobrosDic,
+            'dineroPersonas': dineroPersonas
         }
 
         return JsonResponse(resp, safe=False)
-        # context ={'recaudado':dinero}
-        # messages.warning(request, 'Lo recaudado en esta caja fue de $'+ f'{dinero}')
 
     else:
         cicloCaja_ = CicloCaja.objects.all().last()
@@ -408,13 +411,10 @@ def cierre_caja(request):
             cicloCaja_.save()
 
         messages.warning(request, f'Lo recaudado en esta caja fue de ${cicloCaja_.recaudado}')
-        return JsonResponse("Ok", safe=False)
-
-    # return redirect('menu_estacionamiento:menu_estacionamiento')
-    # return JsonResponse(dinero, safe=False)
+        return JsonResponse('Ok', safe=False)
 
 
-def funcionCobros(dato):
+def funcion_cobros(dato):
     today = now()
     ayer = today - timedelta(days=1)
     cobro = Cobros.objects.filter(
@@ -422,14 +422,15 @@ def funcionCobros(dato):
         Q(registroEstacionamiento__persona__nrTarjeta=int(dato)),
         Q(registroEstacionamiento__tiempo__range=(ayer, today)),
     ).distinct()
+
     if cobro:
-        return 'TRUE'
+        return 'SI'
 
     else:
-        return tiempoTolerancia(dato,"noSocio")
+        return tiempo_tolerancia(dato, 'noSocio')
 
 
-def tiempoTolerancia(dato,tipo):
+def tiempo_tolerancia(dato,tipo):
     today = now()
     tiempo = TiempoTolerancia.objects.all().last().tiempo
     tolerancia = today - timedelta(minutes=tiempo)
@@ -441,7 +442,7 @@ def tiempoTolerancia(dato,tipo):
 
     if entrada:
         # No excedio tiempo tolerancia
-        return 'T.T'
+        return 'T. TOLERANCIA'
 
     else:
         # Excedio tiempo tolerancia
@@ -452,11 +453,11 @@ def tiempoTolerancia(dato,tipo):
             Q(noSocio=int(dato)),
             Q(direccion='ENTRADA')
             )
-            return 'T.T'
-        return 'FALSE'
+            return 'T. TOLERANCIA'
+        return 'NO'
 
 
-def funcionEliminarEstacionado(entrada):
+def funcion_eliminar_estacionado(entrada):
     try:
         estacionado = Estacionado.objects.all()
         estacionado.filter(
@@ -467,17 +468,21 @@ def funcionEliminarEstacionado(entrada):
     except:
         return 1
 
-def pagoEstacionamiento(tipo, autorizado, direccion):
+
+def pago_estacionamiento(tipo, autorizado, direccion):
     if tipo == 'SOCIO' or tipo == 'PROVEEDOR':
-        return 'TRUE'
+        return 'SI'
+
     else:
         if direccion == 'SALIDA':
-            if autorizado == 'TRUE':
-                return 'TRUE'
+            if autorizado == 'SI':
+                return 'SI'
+
             else:
-                return 'FALSE'
+                return 'NO'
+
         else:
-            return 'FALSE'
+            return 'NO'
 
 def funcionEntradas(dato):
     today = now()
@@ -491,54 +496,35 @@ def funcionEntradas(dato):
     return False
 
 
-def registroEstacionamiento(tipo, dato, direccion,autorizado,cicloCaja):
-    pago = pagoEstacionamiento(tipo, autorizado, direccion)
-    if tipo == 'SOCIO' :
+def registro_estacionamiento(tipo, dato, direccion, autorizado, ciclo_caja, mensaje='No hay descripción'):
+    pago = pago_estacionamiento(tipo, autorizado, direccion)
+    if tipo == 'SOCIO' or tipo == 'SOCIO-MOROSO':
         persona = dato
-        registro = RegistroEstacionamiento(
-        tipo=tipo,
-        lugar='ESTACIONAMIENTO',
-        persona = persona,
-        pago = pago,
-        direccion = direccion,
-        autorizado = autorizado,
-        cicloCaja = cicloCaja
-        )
-    elif tipo == 'SOCIO-MOROSO':
-        persona = dato
-        registro = RegistroEstacionamiento(
-        tipo=tipo,
-        lugar='ESTACIONAMIENTO',
-        persona = persona,
-        pago = pago,
-        direccion = direccion,
-        autorizado = autorizado,
-        cicloCaja = cicloCaja
-        )
-        
+        no_socio = None
+        proveedor = None
+
     elif tipo == 'NOSOCIO':
-        noSocio = dato
-        registro = RegistroEstacionamiento(
-        tipo=tipo,
-        lugar='ESTACIONAMIENTO',
-        pago = pago,
-        noSocio = noSocio,
-        direccion = direccion,
-        autorizado = autorizado,
-        cicloCaja = cicloCaja
-        )
-    else:
+        persona = None
+        no_socio = dato
+        proveedor = None
+
+    elif tipo == 'PROVEEDOR':
+        persona = None
+        no_socio = None
         proveedor = dato
-        registro = RegistroEstacionamiento(
+
+    registro = RegistroEstacionamiento(
         tipo=tipo,
         lugar='ESTACIONAMIENTO',
-        proveedor = proveedor,
-        pago = pago,
-        direccion = direccion,
-        autorizado = autorizado,
-        cicloCaja = cicloCaja
-        )
-        
+        persona=persona,
+        noSocio=no_socio,
+        proveedor=proveedor,
+        pago=pago,
+        direccion=direccion,
+        autorizado=autorizado,
+        cicloCaja=ciclo_caja,
+        mensaje=mensaje
+    )
     registro.save()
     return registro
 
@@ -548,152 +534,161 @@ def respuesta(request):
         # El tipo de dato que vamos a recibir (NrTarjeta=0/DNI=1/Proveedor=2)
         tipo = request.GET.get('tipo', '')
         dato = request.GET.get('dato', '')
-        direccion_ = request.GET.get('direccion', '')
-        cicloCaja_ = CicloCaja.objects.all().last()
-        if cicloCaja_.recaudado is not None:
-            newCicloCaja = CicloCaja(cicloMensual=cicloCaja_.cicloMensual,
-                                     cicloCaja=(cicloCaja_.cicloCaja + 1), inicioCaja=now())
-            newCicloCaja.save()
-            cicloCaja_ = CicloCaja.objects.all().last()
+        direccion = request.GET.get('direccion', '')
+        ciclo_caja = CicloCaja.objects.all().last()
+        if ciclo_caja.recaudado is not None:
+            new_ciclo_caja = CicloCaja(cicloMensual=ciclo_caja.cicloMensual, cicloCaja=(ciclo_caja.cicloCaja + 1), inicioCaja=now())
+            new_ciclo_caja.save()
+            ciclo_caja = CicloCaja.objects.all().last()
 
-        if int(direccion_) == 1:
-            direccion_ = 'SALIDA'
+        if int(direccion) == 1:
+            direccion = 'SALIDA'
             if int(tipo) == 0:
                 try:
                     user = Persona.objects.get(nrTarjeta=int(dato))
                     if user.estacionamiento:
-                        if tiempoTolerancia(dato,'SOCIO') == 'FALSE':
-                            registro = registroEstacionamiento('SOCIO', user, direccion_, 'TRUE', cicloCaja_)
-                        else:
-                            registro = registroEstacionamiento('SOCIO', user, direccion_, 'T.T', cicloCaja_)
-                        # abrir barrera
-                        messages.warning(request, 'Salida Socio Autorizada')
-                        rta = '#1' #salida socio
+                        if tiempo_tolerancia(dato, 'SOCIO') == 'NO':
+                            registro = registro_estacionamiento('SOCIO', user, direccion, 'SI', ciclo_caja, 'El socio no tiene deuda e intentó egresar ingresando el número de socio. Salió fuera del tiempo de tolerancia. Se la autorizó la salida.')
 
+                        else:
+                            registro = registro_estacionamiento('SOCIO', user, direccion, 'T. TOLERANCIA', ciclo_caja, 'El socio no tiene deuda e intentó egresar ingresando el número de socio. Salió dentro del tiempo de tolerancia. Se le autorizó la salida.')
+
+                        # Abrir barrera
+                        messages.warning(request, 'Salida Socio autorizada')
+                        rta = '#1'  # Salida socio
 
                     else:
-                        resultado = funcionCobros(dato)
-                        if resultado == 'FALSE':
-                            registroEstacionamiento('SOCIO-MOROSO', user, direccion_, 'FALSE', cicloCaja_)
-                            messages.warning(request, 'Socio-Moroso no pago la Deuda o no Pago el Estacionamiento')
+                        resultado = funcion_cobros(dato)
+                        if resultado == 'NO':
+                            registro_estacionamiento('SOCIO-MOROSO', user, direccion, 'NO', ciclo_caja, 'El socio tiene deuda e intentó egresar ingresando el número de socio. Al no regularizar la deuda ni pagar la tarifa correspondiente, no se le autorizó la salida.')
+                            messages.warning(request, 'Socio-Moroso no pagó la deuda o no pagó el estacionamiento')
                             rta = '#6'  # SocioMoroso no pago Deuda o no Pago Entrada
-                            
+
                         else:
-                            registro = registroEstacionamiento('SOCIO-MOROSO', user, direccion_, resultado, cicloCaja_)
-                            messages.warning(request, 'Salida Socio-Moroso Autorizada '+resultado)
-                            rta = '#1'   #salida sociomoroso autorizada
-                            
+                            registro = registro_estacionamiento('SOCIO-MOROSO', user, direccion, resultado, ciclo_caja, 'El socio tiene deuda e intentó egresar ingresando el número de socio. Al haber pagado la tarifa correspondiente se le autorizó la salida.')
+                            messages.warning(request, 'Salida Socio-Moroso autorizada')
+                            rta = '#1'   # Salida sociomoroso autorizada
+
                 except:
-                    messages.warning(request, 'La Tarjeta no Existe. Ingresar con DNI')
+                    messages.warning(request, 'La tarjeta no existe. Debe ingresar con DNI')
                     rta = '#2'  # El usuario No existe
 
             elif int(tipo) == 1:
                 try:
                     user = Persona.objects.get(dni=int(dato))
                     if user.estacionamiento:
-                        if tiempoTolerancia(dato,"SOCIO") == 'FALSE':
-                            registro = registroEstacionamiento('SOCIO', user, direccion_, 'TRUE', cicloCaja_)
+                        if tiempo_tolerancia(dato, "SOCIO") == 'NO':
+                            registro = registro_estacionamiento('SOCIO', user, direccion, 'SI', ciclo_caja, 'El socio no tiene deuda e intentó egresar ingresando el DNI. Salió fuera del tiempo de tolerancia. Se le autorizó la salida.')
+
                         else:
-                            registro = registroEstacionamiento('SOCIO', user, direccion_, 'T.T', cicloCaja_)
-                        messages.warning(request, 'Salida Socio Autorizada por DNI')
-                        rta = '#1' #salida socio autorizada por dni
+                            registro = registro_estacionamiento('SOCIO', user, direccion, 'T. TOLERANCIA', ciclo_caja, 'El socio no tiene deuda en intentó egresar ingresando el DNI. Salió dentro del tiempo de tolerancia. Se le autorizó la salida.')
+
+                        messages.warning(request, 'Salida Socio autorizada por DNI')
+                        rta = '#1'  # Salida socio autorizada por dni
 
                     else:
-                        resultado = funcionCobros(dato)
-                        if resultado == 'FALSE':
-                            registroEstacionamiento('SOCIO-MOROSO', user, direccion_, 'FALSE', cicloCaja_)
-                            messages.warning(request, 'Socio-Moroso no pago la Deuda o no Pago el Estacionamiento')
+                        resultado = funcion_cobros(dato)
+                        if resultado == 'NO':
+                            registro_estacionamiento('SOCIO-MOROSO', user, direccion, 'NO', ciclo_caja, 'El socio tiene deuda e intentó egresar ingresando el DNI. Al no regularizar la deuda ni pagar la tarifa correspondiente, no se le autorizó la salida.')
+                            messages.warning(request, 'Socio-Moroso no pagó la deuda o no pagó el estacionamiento')
                             rta = '#6'  # SocioMoroso no pago Deuda o no Pago Entrada
-                            
+
+                        elif resultado == 'SI':
+                            registro = registro_estacionamiento('SOCIO-MOROSO', user, direccion, resultado, ciclo_caja, 'El socio tiene deuda e intentó egresar ingresando el DNI. El socio salió fuera del tiempo de tolerancia. Al haber pagado la tarifa correspondiente se le autorizó la salida.')
+                            messages.warning(request, 'Salida Socio-Moroso autorizada')
+                            rta = '#1'  # Salida sociomoroso autorizada
+
                         else:
-                            registro = registroEstacionamiento('SOCIO-MOROSO', user, direccion_, resultado, cicloCaja_)
-                            messages.warning(request, 'Salida Socio-Moroso Autorizada '+resultado)
-                            rta = '#1'   #salida sociomoroso autorizada
+                            registro = registro_estacionamiento('SOCIO-MOROSO', user, direccion, resultado, ciclo_caja, 'El socio tiene deuda e intentó egresar ingresando el DNI. El socio salió dentro del tiempo de tolerancia. Se le autorizó la salida.')
+                            messages.warning(request, 'Salida Socio-Moroso autorizada')
+                            rta = '#1'  # Salida sociomoroso autorizada
 
                 except:
-                    resultado = funcionCobros(dato)
-                    if resultado == 'FALSE':
-                        res = funcionEntradas(dato)
-                        if res:
-                            registroEstacionamiento('NOSOCIO', dato, direccion_, 'FALSE', cicloCaja_)
-                        else:
-                            registro = registroEstacionamiento('NOSOCIO', dato, direccion_, 'TRUE', cicloCaja_)
-                        messages.warning(request, 'El No Socio no Pagó y Excedió Tiempo Tolerancia')
-                        rta = '#5' #no puede salir
-                        
+                    resultado = funcion_cobros(dato)
+                    if resultado == 'NO':
+                        registro_estacionamiento('NOSOCIO', dato, direccion, 'NO', ciclo_caja, 'El No-Socio intentó egresar ingresando el DNI. El No-Socio no pagó la tarifa correspondiente y excedió el tiempo de tolerancia. Se le rechazó la salida.')
+                        messages.warning(request, 'El No-Socio no pagó y excedió tiempo de tolerancia')
+                        rta = '#5'  # No puede salir
+
+                    elif resultado == 'SI':
+                        registro = registro_estacionamiento('NOSOCIO', dato, direccion, resultado, ciclo_caja, 'El No-Socio intentó egresar ingresando el DNI. El No-Socio salió fuera del tiempo de tolerancia. Al haber pagado la tarifa correspondiente se le autorizó la salida.')
+                        messages.warning(request, 'Salida No-Socio autorizada')
+                        rta = '#1'  # Salida no socio autorizada
+
                     else:
-                        registro = registroEstacionamiento('NOSOCIO', dato, direccion_, resultado, cicloCaja_)
-                        messages.warning(request, 'Salida NoSocio Autorizada '+resultado)
-                        rta = '#1' #salida no socio autorizada            
+                        registro = registro_estacionamiento('NOSOCIO', dato, direccion, resultado, ciclo_caja, 'El No-Socio intentó egresar ingresando el DNI. El No-Socio salió dentro del tiempo de tolerancia. Se le autorizó la salida.')
+                        messages.warning(request, 'Salida No-Socio autorizada')
+                        rta = '#1'  # Salida no socio autorizada
+
             else:
                 try:
                     proveedor_ = Proveedor.objects.get(idProveedor=int(dato))
-                    registro = registroEstacionamiento('PROVEEDOR', proveedor_, direccion_, 'TRUE', cicloCaja_)
-                    messages.warning(request, 'Salida Proveedor Autorizada')
-                    rta = '#1' #salida proveedores autorizada
-                    funcionEliminarEstacionado(registro)
+                    registro = registro_estacionamiento('PROVEEDOR', proveedor_, direccion, 'SI', ciclo_caja)
+                    messages.warning(request, 'Salida Proveedor autorizada')
+                    rta = '#1'  # Salida proveedores autorizada
+                    funcion_eliminar_estacionado(registro)
 
                 except:
-                    messages.warning(request, 'El Codigo que digitó es incorrecto')
+                    messages.warning(request, 'El código que digitó es incorrecto')
                     rta = '#4'  # Error Proveedor no encontrado
             try:
-                funcionEliminarEstacionado(registro)
+                funcion_eliminar_estacionado(registro)
+
             except:
                 pass
 
         else:
-            direccion_ = 'ENTRADA'
+            direccion = 'ENTRADA'
             if int(tipo) == 0:
                 try:
                     user = Persona.objects.get(nrTarjeta=int(dato))
                     if user.estacionamiento:
-                        registro = registroEstacionamiento('SOCIO', user, direccion_, 'TRUE', cicloCaja_)
-                        messages.warning(request, 'Entrada Socio Registrada')
-                        #Abrir barrera
-                        rta = '#1' #Registro Socio
+                        registro = registro_estacionamiento('SOCIO', user, direccion, 'SI', ciclo_caja, 'El socio no tiene deuda e intentó ingresar con el número de socio. Se le autorizó la entrada.')
+                        messages.warning(request, 'Entrada Socio registrada')
+                        # Abrir barrera
+                        rta = '#1'  # Registro Socio
 
                     else:
-                        registroEstacionamiento('SOCIO-MOROSO',user, direccion_, 'FALSE', cicloCaja_)
-                        messages.warning(request, 'Usted es Socio Moroso, debe Ingresar con su DNI')
+                        registro_estacionamiento('SOCIO-MOROSO', user, direccion, 'NO', ciclo_caja, 'El socio tiene deuda e intentó ingresar con el número de socio. Al tener deuda debe ingresar con el DNI. Se le rechazó la entrada.')
+                        messages.warning(request, 'Usted es Socio-Moroso, debe ingresar con su DNI')
                         rta = '#7'  # Registro Socio Moroso el usuario debe dirigirse a la cabina de portería
 
                 except:
-                    messages.warning(request, 'La tarjeta que ingresó es incorrecta. Ingrese DNI')
+                    messages.warning(request, 'La tarjeta que ingresó es incorrecta. Ingrese el DNI')
                     rta = '#2'  # El usuario No existe ingresar DNI
 
             elif int(tipo) == 1:
                 try:
                     user = Persona.objects.get(dni=int(dato))
                     if user.estacionamiento:
-                        registro = registroEstacionamiento('SOCIO', user, direccion_, 'TRUE', cicloCaja_)
-                        messages.warning(request, 'Entrada Registrada por DNI. Acercarse a Portería')
-                        rta = '#3' #Registro Socio 
+                        registro = registro_estacionamiento('SOCIO', user, direccion, 'SI', ciclo_caja, 'El socio no tiene deuda e intentó ingresar con el DNI. Se le autorizó la entrada.')
+                        messages.warning(request, 'Entrada registrada por DNI. Acercarse a portería')
+                        rta = '#3'  # Registro Socio
 
                     else:
-                        registro = registroEstacionamiento('SOCIO-MOROSO', user, direccion_, 'TRUE', cicloCaja_)
+                        registro = registro_estacionamiento('SOCIO-MOROSO', user, direccion, 'SI', ciclo_caja, 'El socio tiene deuda e intentó ingresar con el DNI. Se le autorizó la entrada.')
                         # Abrir barrera
-                        messages.warning(request, 'Entrada Registrada por DNI. Acercarse a Portería')
+                        messages.warning(request, 'Entrada registrada por DNI. Acercarse a portería')
                         rta = '#3'  # Registro Socio Moroso el usuario debe dirigirse a la cabina de portería
 
                 except:
-                    registro = registroEstacionamiento('NOSOCIO', int(dato), direccion_, 'TRUE', cicloCaja_)
-                    messages.warning(request, 'Entrada Registrada por DNI. Acercarse a Portería.')
+                    registro = registro_estacionamiento('NOSOCIO', int(dato), direccion, 'SI', ciclo_caja, 'El No-Socio intentó ingresar con el DNI. Se le autorizó la entrada.')
+                    messages.warning(request, 'Entrada registrada por DNI. Acercarse a portería')
                     rta = '#3'  # NoSocio registrado el usuarios debe dirigirse a la cabina de portería
 
             else:
                 try:
                     proveedor_ = Proveedor.objects.get(idProveedor=int(dato))
-                    registro = registroEstacionamiento('PROVEEDOR', int(dato), direccion_, 'TRUE', cicloCaja_)
+                    registro = registro_estacionamiento('PROVEEDOR', proveedor_, direccion, 'SI', ciclo_caja)
                     # Abrir barrera
-                    messages.warning(request, 'Entrada Proveedor Registrada')
-                    rta = '#1'  #Entrada autorizada
+                    messages.warning(request, 'Entrada Proveedor registrada')
+                    rta = '#1'  # Entrada autorizada
 
                 except:
-                    registroEstacionamiento('PROVEEDOR', int(dato), direccion_, 'FALSE', cicloCaja_)
                     messages.warning(request, 'El Codigo que digitó es incorrecto')
                     rta = '#4'  # Error Proveedor no encontrado
             try:
-                funcionEliminarEstacionado(registro)
+                funcion_eliminar_estacionado(registro)
                 estacionado = Estacionado(registroEstacionamiento=registro)
                 estacionado.save()
 
@@ -744,26 +739,23 @@ def historial_estacionamiento(request):
 
         if caja_input:
             estacionamiento = estacionamiento.filter(cicloCaja=caja_input)
-            messages.info(request, f'Visualizando \
-                          {CicloCaja.objects.get(id=caja_input)}')
+            messages.info(request, f'Visualizando {CicloCaja.objects.get(id=caja_input)}')
 
         if mensual_input:
             estacionamiento = estacionamiento.filter(
                 cicloCaja__cicloMensual=mensual_input
             )
-            messages.info(request, f'Visualizando \
-                          {CicloMensual.objects.get(id=mensual_input)}')
+            messages.info(request, f'Visualizando {CicloMensual.objects.get(id=mensual_input)}')
 
         table = HistorialEstacionamientoTable(estacionamiento)
         RequestConfig(request).configure(table)
 
-        return render(
-            request, 'estacionamiento/historial.html',
-            {'table': table, 'title': 'Historial',
-             'anual': ciclo_anual, 'mensual': ciclo_mensual,
-             'caja': ciclo_caja, 'viscaja': caja_input,
-             'vismes': mensual_input, 'busqueda': busqueda}
-        )
+        context = {
+            'title': 'Historial', 'table': table, 'anual': ciclo_anual, 'mensual': ciclo_mensual,
+            'caja': ciclo_caja, 'viscaja': caja_input, 'vismes': mensual_input, 'busqueda': busqueda
+        }
+
+        return render(request, 'estacionamiento/historial.html', context)
 
 
 def descargar_historial(request, estacionamiento):
@@ -772,30 +764,24 @@ def descargar_historial(request, estacionamiento):
     mes = request.GET.get('caja_mensual')
 
     if busqueda:
-        estacionamiento = estacionamiento.filter(
-            Q(identificador__icontains=busqueda),
-        ).distinct()
+        estacionamiento = estacionamiento.filter(Q(identificador__icontains=busqueda)).distinct()
 
     if caja:
-        estacionamiento = estacionamiento.filter(
-            Q(cicloCaja=caja)
-        ).distinct()
+        estacionamiento = estacionamiento.filter(Q(cicloCaja=caja)).distinct()
 
     if mes:
-        estacionamiento = estacionamiento.filter(
-            Q(cicloCaja__cicloMensual=mes)
-        ).distinct()
+        estacionamiento = estacionamiento.filter(Q(cicloCaja__cicloMensual=mes)).distinct()
 
     response = HttpResponse(content_type='text/csv')
     writer = csv.writer(response)
     writer.writerow(['Identificador', 'Tipo de entrada', 'Lugar',
                      'Fecha y Hora', 'Dirección', 'Ciclo Caja',
-                     'Ciclo Mensual', 'Ciclo Anual', 'Autorizado'])
+                     'Ciclo Mensual', 'Ciclo Anual', 'Autorizado', 'Descripción'])
 
     for est in estacionamiento.values_list(
         'identificador', 'tipo', 'lugar', 'tiempo', 'direccion',
         'cicloCaja__cicloCaja', 'cicloCaja__cicloMensual__cicloMensual',
-            'cicloCaja__cicloMensual__cicloAnual__cicloAnual', 'autorizado'):
+            'cicloCaja__cicloMensual__cicloAnual__cicloAnual', 'autorizado', 'mensaje').order_by('-tiempo'):
         writer.writerow(est)
 
     response['Content-Disposition'] = 'attachment; filename="historial_estacionamiento.csv"'
@@ -805,18 +791,10 @@ def descargar_historial(request, estacionamiento):
 @login_required
 def detalle_estacionamiento(request, id):
     datos = RegistroEstacionamiento.objects.get(id=id)
-    cobro = Cobros.objects.filter(
-        Q(registroEstacionamiento__id__icontains=id)
-    ).distinct()
-    if cobro:
-        cobrado = 'True'
-
-    else:
-        cobrado = 'False'
-
+    cobro = Cobros.objects.filter(Q(registroEstacionamiento__id__icontains=id)).distinct()
     return render(request, 'estacionamiento/detalle_historial.html',
                   {'datos': datos, 'title': 'Detalle Historial',
-                   'cobrado': cobrado})
+                   'cobrado': 'True' if cobro else 'False'})
 
 
 @login_required
@@ -839,11 +817,9 @@ def editar_estacionamiento(request, id):
                 obj.persona = None
                 obj.proveedor = None
 
-            elif (form.cleaned_data['tipo'] == 'SOCIO' or
-                  form.cleaned_data['tipo'] == 'SOCIO-MOROSO'):
+            elif form.cleaned_data['tipo'] == 'SOCIO' or form.cleaned_data['tipo'] == 'SOCIO-MOROSO':
                 if not form.cleaned_data['persona']:
-                    messages.warning(request, 'El formulario no fue \
-                                     completado correctamente')
+                    messages.warning(request, 'El formulario no fue completado correctamente')
                     return redirect('estacionamiento:editar', id)
 
                 else:
@@ -851,40 +827,37 @@ def editar_estacionamiento(request, id):
                     if dni:
                         per.dni = dni
                         per.save()
+                        obj.noSocio = dni
 
-                    # Por ultimo chequeo que si el tipo seleccionado fue socio
-                    # pero el socio sigue teniendo deuda, que la entrada cambie
-                    # por la fuerza a socio-moroso nuevamente y se asegure
-                    # que el autorizado se mantenga en False.
-                    if (not per.estacionamiento and
-                       form.cleaned_data['tipo'] == 'SOCIO'):
+                    elif per.dni:
+                        obj.noSocio = per.dni
+
+                    if not per.estacionamiento and form.cleaned_data['tipo'] == 'SOCIO':
                         obj.tipo = 'SOCIO-MOROSO'
-                        if funcionCobros(dni) == 'T.T' or funcionCobros(dni) == 'FALSE':
-                            obj.autorizado = 'FALSE'
-                        else:
-                            obj.autorizado = 'TRUE'
-                        messages.warning(request, 'El tipo de entrada fue \
-                                         cambiada a SOCIO-MOROSO por tener \
-                                         deuda')
+                        if obj.direccion == 'ENTRADA':
+                            if funcion_cobros(dni) == 'NO':
+                                obj.autorizado = 'NO'
 
-                    if (per.estacionamiento and
-                       form.cleaned_data['tipo'] == 'SOCIO-MOROSO'):
+                            else:
+                                obj.autorizado = 'SI'
+
+                        messages.warning(request, 'El tipo de entrada fue cambiada a SOCIO-MOROSO por tener deuda')
+
+                    if per.estacionamiento and form.cleaned_data['tipo'] == 'SOCIO-MOROSO':
                         obj.tipo = 'SOCIO'
-                        obj.autorizado = 'TRUE'
-                        messages.warning(request, 'El tipo de entrada fue \
-                                         cambiada a SOCIO por no tener deuda')
+                        obj.autorizado = 'SI'
+                        messages.warning(request, 'El tipo de entrada fue cambiada a SOCIO por no tener deuda')
 
-                    if (not obj.tipo == 'SOCIO-MOROSO' and
-                       form.cleaned_data['tipo'] == 'SOCIO-MOROSO'):
-                        if funcionCobros(dni) == 'T.T' or funcionCobros(dni) == 'FALSE':
-                            obj.autorizado = 'FALSE'
+                    if not obj.tipo == 'SOCIO-MOROSO' and form.cleaned_data['tipo'] == 'SOCIO-MOROSO' and obj.direccion == 'ENTRADA':
+                        if funcion_cobros(dni) == 'NO':
+                            obj.autorizado = 'NO'
+
                         else:
-                            obj.autorizado = 'TRUE'
+                            obj.autorizado = 'SI'
 
             elif form.cleaned_data['tipo'] == 'PROVEEDOR':
                 if not form.cleaned_data['proveedor']:
-                    messages.warning(request, 'El formulario no fue \
-                                     completado correctamente')
+                    messages.warning(request, 'El formulario no fue completado correctamente')
                     return redirect('estacionamiento:editar', id)
 
                 elif idProveedor:
@@ -898,14 +871,11 @@ def editar_estacionamiento(request, id):
             return redirect('estacionamiento:historial')
 
         else:
-            messages.warning(request, 'El formulario no fue completado \
-                             correctamente')
-            return render(request, 'estacionamiento/editar_historial.html',
-                          context)
+            messages.warning(request, 'El formulario no fue completado correctamente')
+            return render(request, 'estacionamiento/editar_historial.html', context)
 
     else:
-        return render(request, 'estacionamiento/editar_historial.html',
-                      context)
+        return render(request, 'estacionamiento/editar_historial.html', context)
 
 
 # La unica funcion de este view es la de que el codigo de js pueda hacer un
@@ -919,12 +889,11 @@ def fetch_proveedores(request):
     # Separa el string para filtrar en un list con cada palabra ingresada.
     parsed_filter = filter_string.split(' ')
 
+    proveedores = Proveedor.objects.all()
     # Filtra todos los proveedores con el string recibido por nombre de
     # proveedor.
     for filter in parsed_filter:
-        proveedores = Proveedor.objects.all().filter(
-            Q(nombre_proveedor__icontains=filter_string)
-        ).order_by('nombre_proveedor')
+        proveedores = proveedores.filter(Q(nombre_proveedor__icontains=filter)).order_by('nombre_proveedor')
 
     # Realiza la paginacion de los datos con un maximo de 20 proveedores por
     # pagina y especifica la pagina que quiere visualizar.
@@ -949,15 +918,12 @@ def add_proveedor(request):
 
     if request.method == 'GET':
         context = {'form': form, 'title': 'Agregar un proveedor'}
-        return render(request, 'estacionamiento/agregar_proveedor.html',
-                      context)
+        return render(request, 'estacionamiento/agregar_proveedor.html', context)
 
     elif request.method == 'POST':
         if form.is_valid():
             form.save()
-            messages.success(request, f"El proveedor \
-                    {form.cleaned_data['nombre_proveedor']} se ha \
-                    guardado correctamente")
+            messages.success(request, f"El proveedor {form.cleaned_data['nombre_proveedor']} se ha guardado correctamente")
 
         return redirect('menu_estacionamiento:proveedores')
 
@@ -983,13 +949,12 @@ def editar_proveedor(request, id):
 
 
 @csrf_exempt
-def fetch_Events(request):
+def fetch_events(request):
     if request.method == 'GET':
-        eventos = Dia_Especial.objects.values("dia_Especial").all()
+        eventos = DiaEspecial.objects.values("dia_Especial").all()
         listeventos = []
         for evento in eventos:
-            date_splitted = evento['dia_Especial'].\
-                strftime('%d/%m/%Y').split('/')
+            date_splitted = evento['dia_Especial'].strftime('%d/%m/%Y').split('/')
             if date_splitted[0][0] == '0':
                 day = date_splitted[0][1]
 
@@ -1016,10 +981,10 @@ def fetch_Events(request):
         fecha = fecha.strftime('%Y-%m-%d')
         fecha = datetime.strptime(fecha, '%Y-%m-%d')
         if data['accion'] == "add":
-            evento = Dia_Especial(dia_Especial=fecha)
+            evento = DiaEspecial(dia_Especial=fecha)
             evento.save()
 
         elif data['accion'] == 'delete':
-            Dia_Especial.objects.filter(dia_Especial=fecha).delete()
+            DiaEspecial.objects.filter(dia_Especial=fecha).delete()
 
         return JsonResponse('Ok', safe=False)
