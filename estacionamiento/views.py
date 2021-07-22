@@ -426,10 +426,10 @@ def funcionCobros(dato):
         return 'TRUE'
 
     else:
-        return tiempoTolerancia(dato)
+        return tiempoTolerancia(dato,"noSocio")
 
 
-def tiempoTolerancia(dato):
+def tiempoTolerancia(dato,tipo):
     today = now()
     tiempo = TiempoTolerancia.objects.all().last().tiempo
     tolerancia = today - timedelta(minutes=tiempo)
@@ -445,6 +445,14 @@ def tiempoTolerancia(dato):
 
     else:
         # Excedio tiempo tolerancia
+        if tipo == "SOCIO":
+            tolerancia = today - timedelta(days=1)
+            entrada = RegistroEstacionamiento.objects.filter(
+            Q(tiempo__range=(tolerancia, today)),
+            Q(noSocio=int(dato)),
+            Q(direccion='ENTRADA')
+            )
+            return 'T.T'
         return 'FALSE'
 
 
@@ -554,7 +562,7 @@ def respuesta(request):
                 try:
                     user = Persona.objects.get(nrTarjeta=int(dato))
                     if user.estacionamiento:
-                        if tiempoTolerancia(dato) == 'FALSE':
+                        if tiempoTolerancia(dato,'SOCIO') == 'FALSE':
                             registro = registroEstacionamiento('SOCIO', user, direccion_, 'TRUE', cicloCaja_)
                         else:
                             registro = registroEstacionamiento('SOCIO', user, direccion_, 'T.T', cicloCaja_)
@@ -583,7 +591,7 @@ def respuesta(request):
                 try:
                     user = Persona.objects.get(dni=int(dato))
                     if user.estacionamiento:
-                        if tiempoTolerancia(dato) == 'FALSE':
+                        if tiempoTolerancia(dato,"SOCIO") == 'FALSE':
                             registro = registroEstacionamiento('SOCIO', user, direccion_, 'TRUE', cicloCaja_)
                         else:
                             registro = registroEstacionamiento('SOCIO', user, direccion_, 'T.T', cicloCaja_)
