@@ -695,8 +695,18 @@ def historial_estacionamiento(request):
         mensual_input = request.GET.get('caja_mensual')
 
         ciclo_anual = list(CicloAnual.objects.all().values())
-        ciclo_mensual = list(CicloMensual.objects.all().values())
-        ciclo_caja = list(CicloCaja.objects.all().values())
+        meses = list(CicloMensual.objects.all().values())
+        ciclo_mensual = []
+        cajas = list(CicloCaja.objects.all().values())
+        ciclo_caja = []
+
+        for mes in meses:
+            mes['inicioMes'] = mes['inicioMes'].strftime('%d/%m')
+            ciclo_mensual.append(mes)
+
+        for caja in cajas:
+            caja['inicioCaja'] = caja['inicioCaja'].strftime('%d/%m %H:%M')
+            ciclo_caja.append(caja)
 
         if busqueda:
             estacionamiento = estacionamiento.filter(
