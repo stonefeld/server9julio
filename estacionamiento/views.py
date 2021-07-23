@@ -427,10 +427,10 @@ def funcion_cobros(dato):
         return 'SI'
 
     else:
-        return tiempo_tolerancia(dato)
+        return tiempo_tolerancia(dato, 'noSocio')
 
 
-def tiempo_tolerancia(dato):
+def tiempo_tolerancia(dato,tipo):
     today = now()
     tiempo = TiempoTolerancia.objects.all().last().tiempo
     tolerancia = today - timedelta(minutes=tiempo)
@@ -446,6 +446,14 @@ def tiempo_tolerancia(dato):
 
     else:
         # Excedio tiempo tolerancia
+        if tipo == "SOCIO":
+            tolerancia = today - timedelta(days=1)
+            entrada = RegistroEstacionamiento.objects.filter(
+            Q(tiempo__range=(tolerancia, today)),
+            Q(noSocio=int(dato)),
+            Q(direccion='ENTRADA')
+            )
+            return 'T. TOLERANCIA'
         return 'NO'
 
 
@@ -475,6 +483,17 @@ def pago_estacionamiento(tipo, autorizado, direccion):
 
         else:
             return 'NO'
+
+def funcionEntradas(dato):
+    today = now()
+    ayer = today - timedelta(days=1)
+    registro = RegistroEstacionamiento.objects.filter(
+        Q(registroEstacionamiento__noSocio=int(dato)),
+        Q(registroEstacionamiento__tiempo__range=(ayer, today))
+    ).distinct()
+    if registro:
+        return True
+    return False
 
 
 def registro_estacionamiento(tipo, dato, direccion, autorizado, ciclo_caja, mensaje='No hay descripción'):
@@ -528,7 +547,7 @@ def respuesta(request):
                 try:
                     user = Persona.objects.get(nrTarjeta=int(dato))
                     if user.estacionamiento:
-                        if tiempo_tolerancia(dato) == 'NO':
+                        if tiempo_tolerancia(dato, 'SOCIO') == 'NO':
                             registro = registro_estacionamiento('SOCIO', user, direccion, 'SI', ciclo_caja, 'El socio no tiene deuda e intentó egresar ingresando el número de socio. Salió fuera del tiempo de tolerancia. Se la autorizó la salida.')
 
                         else:
@@ -558,7 +577,7 @@ def respuesta(request):
                 try:
                     user = Persona.objects.get(dni=int(dato))
                     if user.estacionamiento:
-                        if tiempo_tolerancia(dato) == 'NO':
+                        if tiempo_tolerancia(dato, "SOCIO") == 'NO':
                             registro = registro_estacionamiento('SOCIO', user, direccion, 'SI', ciclo_caja, 'El socio no tiene deuda e intentó egresar ingresando el DNI. Salió fuera del tiempo de tolerancia. Se le autorizó la salida.')
 
                         else:

@@ -23,15 +23,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 # SECRET_KEY = 'abcdefghijklmnopqrstuvwxyz1234567890'
-with open('/etc/config.json') as config_file:
-    config = json.load(config_file)
+#with open('/etc/config.json') as config_file:
+#    config = json.load(config_file)
 
-SECRET_KEY = config['SECRET_KEY']
+#SECRET_KEY = config['SECRET_KEY']
+SECRET_KEY = 'abcdefghi'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.168.0.180', 'server9julio.ddns.net', '172.20.0.114', 'localhost']
+ALLOWED_HOSTS = ['192.168.0.180', 'server9julio.ddns.net', '172.20.0.114', 'localhost', '127.0.0.1']
 
 
 # Application definition
@@ -97,7 +98,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': '9Julio_db',
-        'USER': 'admin',
+        'USER': 'root',
         'PASSWORD': '',
         'HOST': '127.0.0.1',
         'PORT': 3306,

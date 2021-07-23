@@ -9,7 +9,7 @@ const deleteTarifaModal = document.getElementById('deleteTarifaModal');
 const backDrop = document.getElementById('modalBackDrop');
 const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
-function guardarTarifasNormales(){
+const guardarTarifasNormales = async () => {
   var tarifa1 = document.getElementById("valorTarifaNormal").value;
   var tarifa2 = document.getElementById("valorTarifaNormal2").value;
   var tarifa3 = document.getElementById("valorTarifaNormal3").value;
@@ -42,12 +42,17 @@ function guardarTarifasNormales(){
         },
         body: JSON.stringify(tarifasNormales)
       };
-      fetch(`/menu_estacionamiento/calendario/`, options);
+      const res = await fetch(`/menu_estacionamiento/calendario/`, options);
+      var caja = await res.json();
+      location.href = "/menu_estacionamiento/calendario";
     }
   }
-  
 }
-function guardarTarifasEspeciales(){
+
+
+
+
+const guardarTarifasEspeciales = async () => {
   var tarifaEspecial = document.getElementById("TarifaEspecial").value;
   if(tarifaEspecial != null){
     const options = {
@@ -57,7 +62,9 @@ function guardarTarifasEspeciales(){
       },
       body: JSON.stringify(tarifaEspecial)
     };
-    fetch('/menu_estacionamiento/tarifaEspecial/',options);
+    const res = await fetch('/menu_estacionamiento/tarifaEspecial/',options);
+    var caja = await res.json();
+    location.href = "/menu_estacionamiento/calendario";
   }
 }
 
