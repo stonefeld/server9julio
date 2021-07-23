@@ -807,7 +807,7 @@ def editar_estacionamiento(request, id):
     context = {
         'form': form,
         'obj': obj,
-        'title': 'Detalle historial'
+        'title': 'Editar historial'
     }
 
     if request.method == 'POST':
