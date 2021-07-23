@@ -82,7 +82,7 @@ const loadUsuarios = async () => {
     // Si es socio/socio-moroso quiero hacer el fetch a la url que me devuelve la lista
     // filtrada de socios, sino que lo haga a la lista de proveedores.
     if (tipoGeneral.innerHTML == 'socio' || tipoGeneral.innerHTML == 'nosocio') {
-      const res = await fetch(`/usuario/fetch?filter-string=${searchString.toLowerCase()}&page=${currentPage}`)
+      const res = await fetch(`/usuario/fetch?filter-string=${searchString.toLowerCase()}&page=${currentPage}&order-by=nombre_apellido`)
       usuarios = await res.json();
     } else if (tipoGeneral.innerHTML == 'proveedor') {
       const res = await fetch(`/estacionamiento/fetch?filter-string=${searchString.toLowerCase()}&page=${currentPage}`)
