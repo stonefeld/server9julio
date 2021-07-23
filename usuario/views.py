@@ -48,7 +48,7 @@ def editar_usuario(request, id):
     if request.method == 'POST':
         if form.is_valid():
             form.save()
-            estacionamientos = RegistroEstacionamiento.objects.all().filter(
+            estacionamientos = RegistroEstacionamiento.objects.filter(
                 Q(identificador=form.cleaned_data['nombre_apellido']) |
                 Q(identificador=form.cleaned_data['dni']) |
                 Q(persona__nombre_apellido=form.cleaned_data['nombre_apellido']) |
@@ -60,11 +60,15 @@ def editar_usuario(request, id):
                     estacionamiento.persona = obj
                     if obj.estacionamiento:
                         estacionamiento.tipo = 'SOCIO'
-                        estacionamiento.mensaje += ' Se modificaron los datos del DNI del socio. El socio no tiene deuda y no debe abonar tarifa ni regularizar la deuda.'
+                        message = ' Se modificaron los datos del DNI del socio. El socio no tiene deuda y no debe abonar tarifa ni regularizar la deuda.'
+                        if message not in estacionamiento.mensaje:
+                            estacionamiento.mensaje += message
 
                     else:
                         estacionamiento.tipo = 'SOCIO-MOROSO'
-                        estacionamiento.mensaje += ' Se modificaron los datos del DNI del socio. El socio tiene deuda y debe regularizarla o abonar la tarifa correspondiente.'
+                        message = ' Se modificaron los datos del DNI del socio. El socio tiene deuda y debe regularizarla o abonar la tarifa correspondiente.'
+                        if message not in estacionamiento.mensaje:
+                            estacionamiento.mensaje += message
 
                 elif estacionamiento.tipo in ('SOCIO', 'SOCIO-MOROSO'):
                     estacionamiento.noSocio = obj.dni

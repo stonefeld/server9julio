@@ -113,7 +113,8 @@ class RegistroEstacionamiento(models.Model):
 
     AUTORIZADO_CHOICES = (('SI', 'SI'),
                           ('NO', 'NO'),
-                          ('TIEMPO TOLERANCIA', 'T. TOLERANCIA'))
+                          ('TIEMPO TOLERANCIA', 'T. TOLERANCIA'),
+                          ('SALIDA EN EL DIA', 'S. DÍA'))
 
     tipo = models.CharField(max_length=30, verbose_name='Tipo', choices=TIPO_CHOICES, default='SOCIO')
     identificador = models.CharField(max_length=30, verbose_name='Identificador', null=True, blank=True, default='Error')
