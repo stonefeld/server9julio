@@ -446,14 +446,16 @@ def tiempo_tolerancia(dato, tipo):
 
     else:
         # Excedio tiempo tolerancia
-        if tipo == "SOCIO":
+        if tipo == 'SOCIO':
             tolerancia = today - timedelta(days=1)
             entrada = RegistroEstacionamiento.objects.filter(
                 Q(tiempo__range=(tolerancia, today)),
-                Q(noSocio=int(dato)),
-                Q(direccion='ENTRADA')
+                Q(persona__nrTarjeta=int(dato)),
+                Q(direccion='SALIDA'),
+                Q(autorizado='SI')
             )
-            return 'T. TOLERANCIA'
+            if entrada:
+                return 'T. TOLERANCIA'
 
         return 'NO'
 
