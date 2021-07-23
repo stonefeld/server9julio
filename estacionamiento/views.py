@@ -430,7 +430,7 @@ def funcion_cobros(dato):
         return tiempo_tolerancia(dato, 'noSocio')
 
 
-def tiempo_tolerancia(dato,tipo):
+def tiempo_tolerancia(dato, tipo):
     today = now()
     tiempo = TiempoTolerancia.objects.all().last().tiempo
     tolerancia = today - timedelta(minutes=tiempo)
@@ -449,11 +449,12 @@ def tiempo_tolerancia(dato,tipo):
         if tipo == "SOCIO":
             tolerancia = today - timedelta(days=1)
             entrada = RegistroEstacionamiento.objects.filter(
-            Q(tiempo__range=(tolerancia, today)),
-            Q(noSocio=int(dato)),
-            Q(direccion='ENTRADA')
+                Q(tiempo__range=(tolerancia, today)),
+                Q(noSocio=int(dato)),
+                Q(direccion='ENTRADA')
             )
             return 'T. TOLERANCIA'
+
         return 'NO'
 
 
@@ -483,17 +484,6 @@ def pago_estacionamiento(tipo, autorizado, direccion):
 
         else:
             return 'NO'
-
-def funcionEntradas(dato):
-    today = now()
-    ayer = today - timedelta(days=1)
-    registro = RegistroEstacionamiento.objects.filter(
-        Q(registroEstacionamiento__noSocio=int(dato)),
-        Q(registroEstacionamiento__tiempo__range=(ayer, today))
-    ).distinct()
-    if registro:
-        return True
-    return False
 
 
 def registro_estacionamiento(tipo, dato, direccion, autorizado, ciclo_caja, mensaje='No hay descripción'):
