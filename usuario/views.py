@@ -71,6 +71,12 @@ def editar_usuario(request, id):
 
                 estacionamiento.save()
 
+            if len(list(estacionamientos)) > 1:
+                messages.info(request, f'{len(list(estacionamientos))} registros del estacionamiento fueron modificados')
+
+            elif len(list(estacionamientos)) == 1:
+                messages.info(request, '1 registro del estacionamiento fue modificado')
+
         messages.success(request, 'Los datos fueron guardados con éxito')
         return redirect('usuario:lista')
 

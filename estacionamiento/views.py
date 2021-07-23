@@ -1,8 +1,8 @@
 import csv
 from datetime import date, time, timedelta, datetime
 import json
-from threading import Thread
 import os
+from threading import Thread
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -14,6 +14,7 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.utils.timezone import now
 from django.views.decorators.csrf import csrf_exempt
+
 from django_tables2 import RequestConfig
 
 from .models import (
@@ -52,8 +53,7 @@ def apertura_manual(request):
         return redirect('estacionamiento:historial')
 
     else:
-        return render(request, 'estacionamiento/apertura_manual.html',
-                      {'form': form, 'title': 'Apertura Manual'})
+        return render(request, 'estacionamiento/apertura_manual.html', {'form': form, 'title': 'Apertura Manual'})
 
 
 @csrf_exempt
@@ -121,7 +121,7 @@ def cobrar_entrada(request, id):
 @csrf_exempt
 @login_required
 def pago_deuda(request, id):
-    if request.method == "POST":
+    if request.method == 'POST':
         entradaMoroso = RegistroEstacionamiento.objects.get(id=id)
         salida = str(entradaMoroso.persona.deuda)
         cobroDeuda = Cobros(precio=entradaMoroso.persona.deuda, registroEstacionamiento=entradaMoroso, deuda=True)
@@ -357,7 +357,7 @@ def cierre_caja(request):
 
         for cobro in cobros:
             # Crear un dictionary con todos los cobros poniendo a quien se realizo el cobro, cual es el precio y que usuario del sistema lo realizo
-            user = User.objects.filter(id=cobro["usuarioCobro"]).last()
+            user = User.objects.filter(id=cobro['usuarioCobro']).last()
             cobrosDic.append({
                 'persona': cobro['registroEstacionamiento__identificador'],
                 'precio': cobro['precio'],
@@ -930,19 +930,26 @@ def detalle_proveedor(request, id):
 def editar_proveedor(request, id):
     obj = Proveedor.objects.get(id=id)
     form = ProveedorForm(request.POST or None, instance=obj)
-    context = {
-        'form': form,
-        'id': obj.id,
-        'title': 'Editar proveedor',
-        'subtitle': 'Editar'
-    }
-    return render(request, 'estacionamiento/agregar_proveedor.html', context)
+    if request.method == 'POST':
+        if form.is_valid():
+            form.save()
+            messages.success(request, f"El proveedor {form.cleaned_data['nombre_proveedor']} se ha guardado correctamente")
+            return redirect('menu_estacionamiento:proveedores')
+
+    else:
+        context = {
+            'form': form,
+            'id': obj.id,
+            'title': 'Editar proveedor',
+            'subtitle': 'Editar'
+        }
+        return render(request, 'estacionamiento/agregar_proveedor.html', context)
 
 
 @csrf_exempt
 def fetch_events(request):
     if request.method == 'GET':
-        eventos = DiaEspecial.objects.values("dia_Especial").all()
+        eventos = DiaEspecial.objects.values('dia_Especial').all()
         listeventos = []
         for evento in eventos:
             date_splitted = evento['dia_Especial'].strftime('%d/%m/%Y').split('/')
@@ -971,7 +978,7 @@ def fetch_events(request):
         fecha = datetime.strptime(data['fecha'], '%d/%m/%Y')
         fecha = fecha.strftime('%Y-%m-%d')
         fecha = datetime.strptime(fecha, '%Y-%m-%d')
-        if data['accion'] == "add":
+        if data['accion'] == 'add':
             evento = DiaEspecial(dia_Especial=fecha)
             evento.save()
 
