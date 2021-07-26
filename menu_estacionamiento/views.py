@@ -60,7 +60,7 @@ def tarifas_especiales(request):
 
 @login_required
 def playground(request):
-    return render(request, 'menu_estacionamiento/playground.html', {})
+    return render(request, 'menu_estacionamiento/playground.html', {'title': 'Playground'})
 
 
 @login_required
