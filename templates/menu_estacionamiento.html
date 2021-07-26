@@ -44,7 +44,7 @@
     <header class="site-header">
       <nav class="navbar navbar-expand-md navbar-dark bg-steel fixed-top">
         <div class="container">
-          <a href="{% url 'usuariosistema:home'%}" class="btn btn-success navbar-btn mr-4">Ir a Control Acceso</a>
+          <a href="{% url 'usuariosistema:home'%}" class="btn btn-success navbar-btn mr-4">Ir a Control Molinetes</a>
           <a class="navbar-brand mr-4" href="{% url 'menu_estacionamiento:menu_estacionamiento' %}">Estacionamiento</a>
           <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggle" aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
@@ -87,9 +87,7 @@
     {% endif %}
 
     {% block content %}{% endblock content %}
-    {% block js %}
-    {% endblock js %}
-
+    {% block js %}{% endblock js %}
 
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->

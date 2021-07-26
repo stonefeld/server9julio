@@ -8,20 +8,15 @@
 
   <div class="content-area" style="padding-left:30px; padding-right:30px; padding-bottom:30px;" >
     <div  class="wrapper">
-      <h2>Instrucciones ESTACIONAMIENTO</h2>
+      <h2>Instrucciones</h2>
 
       <div class="form-group" style="padding:20px;">
-        <!--<a style="text-decoration:none" href={% url 'estacionamiento:cierre-caja' %}>-->
         <a style="text-decoration:none">
           <button style="text-decoration:none" class="btn btn-outline-info btn-lg" data-toggle="modal" data-target="#modalCierreCaja" id = "CajaCerrar">Cierre Caja</button>
-          <!--<button class="btn btn-outline-info btn-lg" type="submit">Cierre Caja</button>-->
         </a>
         <a style="text-decoration:none">
           <button style="text-decoration:none" class="btn btn-outline-info btn-lg" data-toggle="modal" data-target="#modalMensual" id = "cerrarMes">Emitir Resumen Mensual</button>
         </a>
-        <!--<a style="text-decoration:none" href={% url 'estacionamiento:resumen-mensual' %}>
-          <button class="btn btn-outline-info btn-lg" type="submit">Emitir Resumen Mensual</button>
-        </a>-->
         <a style="text-decoration:none" href={% url 'estacionamiento:apertura-manual' %}>
           <button class="btn btn-outline-info btn-lg" type="submit">Apertura Manual</button>
         </a>
@@ -184,32 +179,31 @@
       </script>
 
       <p style="font-size:18px; margin-top:20px;">
-        Bienvenido al Sistema de Control de Acceso ESTACIONAMIENTO de la <strong>Sociedad Alemana de Gimnasia de Villa Ballester</strong> - 
+        Bienvenido al Sistema de Control de Acceso de la <strong>Sociedad Alemana de Gimnasia de Villa Ballester</strong> -
         <strong>SAGVB</strong>.<br><br>
         El uso del sistema es bastante simple, como se puede ver en la barra horizontal de arriba están colocados
         una serie de <strong>links</strong> que lo llevarán a las distintas secciones de nuestra página.<br>
         El sistema se divide en <strong>4 secciones principales</strong>, estas son:<br>
-        <strong>Historial</strong>, <strong>Acceso Manual</strong>,
-        <strong>Vincular Tarjetas</strong> y <strong>Subir Archivos</strong>.<br><br>
+        <strong>Tiempo real</strong>, <strong>Lista de socios</strong>,
+        <strong>Calendario</strong> y <strong>Resumen</strong>.<br><br>
         <ul style="text-align:justify">
           <li>
-            En el <strong>Historial</strong> veremos un registro de todas las entradas y salidas de los usuarios en el establecimiento.
+            En el <strong>Historial</strong> veremos un registro de todas las entradas y salidas de los usuarios en el estacionamiento.
           </li><br>
           <li>
-            En el <strong>Acceso Manual</strong> tendrán la opción de permitirle el paso tanto a <strong>Socios</strong> como a
-            <strong>No Socios</strong> en caso de que por alguna razón el sistema automatizado falle. Para el <strong>acceso</strong>
-            de <strong>socios</strong> solo deberá seleccionar al socio o socios y especificar si están 
-            <strong>entrando</strong> o <strong>saliendo</strong> de las instalaciones. En el caso del <strong>acceso</strong>
-            para <strong>no socios</strong> solo deberá especificar la cantidad de <strong>no socios</strong> que desean ingresar.
-          </li><br>
-          <li>
-            En la sección de <strong>Vincular Tarjetas</strong> habrá un listado de todos los usuarios donde podrá observarse si los usuarios
+            En la sección de <strong>Lista de socios</strong> habrá un listado de todos los usuarios donde podrá observarse si los usuarios
             disponen de un <strong>número de tarjeta</strong>. En caso de no disponer, en esta sección podrá <strong>asignarle uno</strong>.
+            A su vez dispondrá de un botón llamado <strong>Mostrar proveedores</strong> donde podrá listar, agregar y editar proveedores
+            según necesite.
           </li><br>
           <li>
-            En la sección de <strong>Subir Archivo</strong> se subirá el archivo que contiene la información de todos los usuarios para cargar a la <strong>base de datos</strong> de nuestro sistema. El archivo a subir debe ser del tipo <strong>.csv</strong>. En esta sección,
-            a su vez, podrá especificar la <strong>deuda máxima</strong> que los usuarios pueden tener para poder acceder
-            a las instalaciones.
+            En la sección de <strong>Calendario</strong> podrá asignar las fechas y los valores de las <strong>tarifas comúnes</strong> y <strong>especiales</strong>.
+          </li><br>
+          <li>
+            En la sección de <strong>Resumen</strong> habrá un listado de los resúmenes mensuales disponibles para emitir donde, además, podrá visualizar
+            presionando el botón de <strong>Más información</strong> el listado de todas las cajas registradas durante el periódo de ese ciclo,
+            listando <strong>fecha de inicio</strong>, <strong>fecha de cierrre</strong>, <strong>recaudación total</strong> y
+            <strong>el usuario que cerró la caja</strong>.
           </li>
         </ul><br>
       </p>
