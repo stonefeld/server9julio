@@ -19,6 +19,7 @@ from .forms import PersonaForm
 from registroGeneral.models import EntradaGeneral
 from registroGeneral.tables import HistorialTable
 from estacionamiento.models import RegistroEstacionamiento
+from estacionamiento.views import funcion_cobros
 
 
 def postpone(function):
@@ -48,37 +49,28 @@ def editar_usuario(request, id):
     if request.method == 'POST':
         if form.is_valid():
             form.save()
-            estacionamientos = RegistroEstacionamiento.objects.filter(
-                Q(identificador=form.cleaned_data['nombre_apellido']) |
+            estacionamiento = RegistroEstacionamiento.objects.filter(
                 Q(identificador=form.cleaned_data['dni']) |
-                Q(persona__nombre_apellido=form.cleaned_data['nombre_apellido']) |
-                Q(noSocio=form.cleaned_data['dni'])
-            )
+                Q(noSocio=form.cleaned_data['dni']),
+                Q(direccion='ENTRADA'),
+                Q(tipo='NOSOCIO')
+            ).last()
 
-            for estacionamiento in estacionamientos:
-                if estacionamiento.tipo == 'NOSOCIO':
-                    estacionamiento.persona = obj
-                    if obj.estacionamiento:
-                        estacionamiento.tipo = 'SOCIO'
-                        message = ' Se modificaron los datos del DNI del socio. El socio no tiene deuda y no debe abonar tarifa ni regularizar la deuda.'
-                        if message not in estacionamiento.mensaje:
-                            estacionamiento.mensaje += message
+            if funcion_cobros(estacionamiento.noSocio) != 'SI':
+                estacionamiento.persona = obj
+                if obj.estacionamiento:
+                    estacionamiento.tipo = 'SOCIO'
+                    message = ' Se modificaron los datos del DNI del socio. El socio no tiene deuda y no debe abonar tarifa ni regularizar la deuda.'
+                    if message not in estacionamiento.mensaje:
+                        estacionamiento.mensaje += message
 
-                    else:
-                        estacionamiento.tipo = 'SOCIO-MOROSO'
-                        message = ' Se modificaron los datos del DNI del socio. El socio tiene deuda y debe regularizarla o abonar la tarifa correspondiente.'
-                        if message not in estacionamiento.mensaje:
-                            estacionamiento.mensaje += message
-
-                elif estacionamiento.tipo in ('SOCIO', 'SOCIO-MOROSO'):
-                    estacionamiento.noSocio = obj.dni
+                else:
+                    estacionamiento.tipo = 'SOCIO-MOROSO'
+                    message = ' Se modificaron los datos del DNI del socio. El socio tiene deuda y debe regularizarla o abonar la tarifa correspondiente.'
+                    if message not in estacionamiento.mensaje:
+                        estacionamiento.mensaje += message
 
                 estacionamiento.save()
-
-            if len(list(estacionamientos)) > 1:
-                messages.info(request, f'{len(list(estacionamientos))} registros del estacionamiento fueron modificados')
-
-            elif len(list(estacionamientos)) == 1:
                 messages.info(request, '1 registro del estacionamiento fue modificado')
 
         messages.success(request, 'Los datos fueron guardados con éxito')
