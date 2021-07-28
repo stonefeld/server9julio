@@ -3,7 +3,10 @@ from datetime import date, time, timedelta, datetime
 import json
 from threading import Thread
 import os
-
+from django.shortcuts import render
+import qrcode
+import qrcode.image.svg
+from io import BytesIO
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator
@@ -86,6 +89,13 @@ def cobrar_entrada(request, id):
         today = datetime.date(datetime.now())
         dia_Especial = DiaEspecial.objects.filter(Q(dia_Especial=today)).distinct()
 
+        factory = qrcode.image.svg.SvgImage
+        img = qrcode.make(entradaCobrar.noSocio, image_factory=factory, box_size=20)
+        stream = BytesIO()
+        img.save(stream)
+        context = {}
+        context["svg"] = stream.getvalue().decode()
+
         if dia_Especial:
             # Hoy es día Especial
             tarifaEspacial = TarifaEspecial.objects.all().last()
@@ -93,7 +103,7 @@ def cobrar_entrada(request, id):
             cobro.save()
             messages.warning(request, f'Cobro por ${tarifaEspacial}')
             # return redirect("estacionamiento:historial")
-            return JsonResponse('Ok', safe=False)
+            return JsonResponse(context, safe=False)
 
         time = datetime.time(datetime.now())
         horarios = HorariosPrecio.objects.all()
@@ -110,12 +120,16 @@ def cobrar_entrada(request, id):
             deuda=False,
             usuarioCobro=request.user
         )
+        
+
+
+
         cobro.save()
         entradaCobrar.pago = 'SI'
         entradaCobrar.save()
         messages.warning(request, f'Cobro por ${tarifaNormal}')
         # return redirect("estacionamiento:historial")
-        return JsonResponse('Ok', safe=False)
+        return JsonResponse(context, safe=False)
 
 
 @csrf_exempt
