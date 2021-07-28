@@ -437,12 +437,6 @@ def funcion_cobros(dato):
         final = datetime(now().year,now().month,now().day,7,0,0) 
         inicio = now()
     
-    entrada = RegistroEstacionamiento.objects.filter(
-    Q(tiempo__range=(inicio, final)),
-    Q(persona__nrTarjeta=int(dato)),
-    Q(direccion='SALIDA'),
-    Q(autorizado = 'SI') 
-    ).distinct()
     cobro = Cobros.objects.filter(
         Q(registroEstacionamiento__noSocio=int(dato)) |
         Q(registroEstacionamiento__persona__nrTarjeta=int(dato)),
