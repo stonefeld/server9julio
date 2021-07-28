@@ -93,7 +93,7 @@
             {% endif %}
 
             <div>
-              <a href="{% url 'estacionamiento:historial' %}" style="text-decoration:none" class="btn btn-outline-info">Cancelar</a>
+              <a href="{% url 'menu_estacionamiento:resumenTiempoReal' %}" style="text-decoration:none" class="btn btn-outline-info">Cancelar</a>
               <a href="{% url 'estacionamiento:editar' datos.id %}" style="text-decoration:none" class="btn btn-outline-info">Editar</a>
               {% if datos.direccion == 'ENTRADA' %}
                 {% if cobrado == 'False' %}
@@ -145,6 +145,7 @@
                   </div>
                   <div class="modal-body">
                     <p id = 'deuda_a_Pagar'>La deuda del socio es: {{ recaudado }}</p>
+                    <svg id='imagenModal' > </svg>
                   </div>
                   <div class="modal-footer">
                     <button type="button" class="btn btn-primary" id = "regularizar">Regulizar Deuda</button>
@@ -156,6 +157,7 @@
             <!-- Fin ModalDeuda -->
 
             <script type="text/javascript">
+              const imagen = document.getElementById('imagenModal')
               const loadPrecio = async () => {
                 try {
                   const res = await fetch('cobrarEntrada');
@@ -180,8 +182,10 @@
                   };
                   const res = await fetch('cobrarEntrada',options);
                   const respuesta = await res.json();
+                  console.log(respuesta.svg)
+                  imagen.innerHTML = `${respuesta.svg}`
                   if(respuesta){
-                    location.href = "/menu_estacionamiento/historial"
+                    //location.href = "/menu_estacionamiento/resumen_tiempo"
                   }
                 } catch (err) {
                   console.error(err);
@@ -213,7 +217,7 @@
                   const res = await fetch('pago_deuda',options);
                   const respuesta = await res.json();
                   if(respuesta){
-                    location.href = "/menu_estacionamiento/historial"
+                    location.href = "/menu_estacionamiento/resumen_tiempo"
                   }
                 } catch (err) {
                   console.error(err);
