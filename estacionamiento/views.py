@@ -3,6 +3,7 @@ from datetime import date, time, timedelta, datetime
 import json
 from threading import Thread
 import os
+from typing import final
 from django.shortcuts import render
 import qrcode
 import qrcode.image.svg
@@ -429,12 +430,23 @@ def cierre_caja(request):
 
 
 def funcion_cobros(dato):
-    today = now()
-    ayer = today - timedelta(days=1)
+    final = now()
+    if int(now().hour) < 7:
+        inicio = datetime(now().year,now().month,now().day-1,7,0,0) 
+    else:
+        final = datetime(now().year,now().month,now().day,7,0,0) 
+        inicio = now()
+    
+    entrada = RegistroEstacionamiento.objects.filter(
+    Q(tiempo__range=(inicio, final)),
+    Q(persona__nrTarjeta=int(dato)),
+    Q(direccion='SALIDA'),
+    Q(autorizado = 'SI') 
+    ).distinct()
     cobro = Cobros.objects.filter(
         Q(registroEstacionamiento__noSocio=int(dato)) |
         Q(registroEstacionamiento__persona__nrTarjeta=int(dato)),
-        Q(registroEstacionamiento__tiempo__range=(ayer, today)),
+        Q(registroEstacionamiento__tiempo__range=(inicio, final)),
     ).distinct()
 
     if cobro:
@@ -461,9 +473,15 @@ def tiempo_tolerancia(dato,tipo):
     else:
         # Excedio tiempo tolerancia
         if tipo == "SOCIO":
-            tolerancia = today - timedelta(days=1)
+            final = today
+            if int(now().hour) < 7:
+                inicio = datetime(now().year,now().month,now().day-1,7,0,0) 
+            else:
+                final = datetime(now().year,now().month,now().day,7,0,0) 
+                inicio = today
+            
             entrada = RegistroEstacionamiento.objects.filter(
-            Q(tiempo__range=(tolerancia, today)),
+            Q(tiempo__range=(inicio, final)),
             Q(persona__nrTarjeta=int(dato)),
             Q(direccion='SALIDA'),
             Q(autorizado = 'SI') 
