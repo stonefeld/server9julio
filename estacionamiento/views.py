@@ -433,6 +433,7 @@ def funcion_cobros(dato):
     final = now()
     if int(now().hour) < 7:
         inicio = datetime(now().year,now().month,now().day-1,7,0,0) 
+        inicio = inicio - timedelta(days=1)
     else:
         final = datetime(now().year,now().month,now().day,7,0,0) 
         inicio = now()
@@ -469,7 +470,8 @@ def tiempo_tolerancia(dato,tipo):
         if tipo == "SOCIO":
             final = today
             if int(now().hour) < 7:
-                inicio = datetime(now().year,now().month,now().day-1,7,0,0) 
+                inicio = datetime(now().year,now().month,now().day,7,0,0)
+                inicio = inicio - timedelta(days=1) 
             else:
                 final = datetime(now().year,now().month,now().day,7,0,0) 
                 inicio = today
