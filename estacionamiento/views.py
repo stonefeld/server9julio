@@ -2,8 +2,11 @@ import csv
 from datetime import date, time, timedelta, datetime
 import json
 import os
-from threading import Thread
-
+from typing import final
+from django.shortcuts import render
+import qrcode
+import qrcode.image.svg
+from io import BytesIO
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator
@@ -86,6 +89,13 @@ def cobrar_entrada(request, id):
         today = datetime.date(datetime.now())
         dia_Especial = DiaEspecial.objects.filter(Q(dia_Especial=today)).distinct()
 
+        factory = qrcode.image.svg.SvgImage
+        img = qrcode.make(entradaCobrar.noSocio, image_factory=factory, box_size=20)
+        stream = BytesIO()
+        img.save(stream)
+        context = {}
+        context["svg"] = stream.getvalue().decode()
+
         if dia_Especial:
             # Hoy es día Especial
             tarifaEspacial = TarifaEspecial.objects.all().last()
@@ -93,7 +103,7 @@ def cobrar_entrada(request, id):
             cobro.save()
             messages.warning(request, f'Cobro por ${tarifaEspacial}')
             # return redirect("estacionamiento:historial")
-            return JsonResponse('Ok', safe=False)
+            return JsonResponse(context, safe=False)
 
         time = datetime.time(datetime.now())
         horarios = HorariosPrecio.objects.all()
@@ -110,12 +120,16 @@ def cobrar_entrada(request, id):
             deuda=False,
             usuarioCobro=request.user
         )
+        
+
+
+
         cobro.save()
         entradaCobrar.pago = 'SI'
         entradaCobrar.save()
         messages.warning(request, f'Cobro por ${tarifaNormal}')
         # return redirect("estacionamiento:historial")
-        return JsonResponse('Ok', safe=False)
+        return JsonResponse(context, safe=False)
 
 
 @csrf_exempt
@@ -415,12 +429,18 @@ def cierre_caja(request):
 
 
 def funcion_cobros(dato):
-    today = now()
-    ayer = today - timedelta(days=1)
+    final = now()
+    if int(now().hour) < 7:
+        inicio = datetime(now().year,now().month,now().day-1,7,0,0) 
+        inicio = inicio - timedelta(days=1)
+    else:
+        final = datetime(now().year,now().month,now().day,7,0,0) 
+        inicio = now()
+    
     cobro = Cobros.objects.filter(
         Q(registroEstacionamiento__noSocio=int(dato)) |
         Q(registroEstacionamiento__persona__nrTarjeta=int(dato)),
-        Q(registroEstacionamiento__tiempo__range=(ayer, today)),
+        Q(registroEstacionamiento__tiempo__range=(inicio, final)),
     ).distinct()
 
     if cobro:
@@ -446,17 +466,23 @@ def tiempo_tolerancia(dato, tipo):
 
     else:
         # Excedio tiempo tolerancia
-        if tipo == 'SOCIO':
-            tolerancia = today - timedelta(days=1)
+        if tipo == "SOCIO":
+            final = today
+            if int(now().hour) < 7:
+                inicio = datetime(now().year,now().month,now().day,7,0,0)
+                inicio = inicio - timedelta(days=1) 
+            else:
+                final = datetime(now().year,now().month,now().day,7,0,0) 
+                inicio = today
+            
             entrada = RegistroEstacionamiento.objects.filter(
-                Q(tiempo__range=(tolerancia, today)),
-                Q(persona__nrTarjeta=int(dato)),
-                Q(direccion='SALIDA'),
-                Q(autorizado='SI')
-            )
+            Q(tiempo__range=(inicio, final)),
+            Q(persona__nrTarjeta=int(dato)),
+            Q(direccion='SALIDA'),
+            Q(autorizado = 'SI') 
+            ).distinct()
             if entrada:
-                return 'S. DÍA'
-
+                return 'T. TOLERANCIA'
         return 'NO'
 
 
@@ -486,6 +512,17 @@ def pago_estacionamiento(tipo, autorizado, direccion):
 
         else:
             return 'NO'
+
+def funcion_entradas(dato):
+    today = now()
+    ayer = today - timedelta(days=1)
+    registro = RegistroEstacionamiento.objects.filter(
+        Q(registroEstacionamiento__noSocio=int(dato)),
+        Q(registroEstacionamiento__tiempo__range=(ayer, today))
+    ).distinct()
+    if registro:
+        return True
+    return False
 
 
 def registro_estacionamiento(tipo, dato, direccion, autorizado, ciclo_caja, mensaje='No hay descripción'):

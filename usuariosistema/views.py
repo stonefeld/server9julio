@@ -1,9 +1,11 @@
+from estacionamiento.views import registro_estacionamiento
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http.response import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render, redirect
-from estacionamiento.models import CicloCaja
+from estacionamiento.models import CicloCaja, Cobros
+from django.db.models import Q
 import json
 from django.contrib.auth.models import User
 from .forms import FormRegistroUsuario
@@ -51,7 +53,12 @@ def cambiarContrasena(request):
     
 def logout(request):
     cicloCaja_ = CicloCaja.objects.all().last()
-    if cicloCaja_.recaudado is not None:
+    user = request.user
+    cobros_ = Cobros.objects.filter(
+        Q(registroEstacionamiento__cicloCaja=cicloCaja_),
+        Q(usuarioCobro = user)
+    ).distinct()
+    if cobros_ is None:
         messages.warning(request, 'Seción cerrada correctamente')
         return redirect('/logout/')
     else:
