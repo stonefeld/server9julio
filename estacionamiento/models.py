@@ -129,13 +129,13 @@ class RegistroEstacionamiento(models.Model):
     aperturaManual = models.ForeignKey(AperturaManual, on_delete=models.CASCADE, verbose_name='Apertura manual', null=True, blank=True)
     usuarioEditor = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, verbose_name='Usuario que editó el registro')
     pago = models.CharField(max_length=30, verbose_name='Pago', null=True, blank=True)
-    mensaje = models.CharField(max_length=250, verbose_name='Descripción', blank=False, default='No hay descripción')
+    mensaje = models.TextField(max_length=250, verbose_name='Descripción', blank=False, default='No hay descripción')
 
     def __str__(self):
         return f'{self.tiempo} - {self.identificador}'
 
     def get_absolute_url(self):
-        return f'/estacionamiento/historial/{self.id}'
+        return f'/estacionamiento/historial/{self.id}/detalle'
 
     def save(self, *args, **kwargs):
         if self.tipo == 'SOCIO' or self.tipo == 'SOCIO-MOROSO':
@@ -165,8 +165,8 @@ class Cobros(models.Model):
     registroEstacionamiento = models.ForeignKey(RegistroEstacionamiento, on_delete=models.CASCADE, verbose_name='Registro estacionamiento')
 
     class Meta:
-        verbose_name = "Cobro"
-        verbose_name_plural = "Cobros"
+        verbose_name = 'Cobro'
+        verbose_name_plural = 'Cobros'
 
     def __str__(self):
         return f'Usuario: {self.registroEstacionamiento.identificador} - Precio: ${self.precio}'
@@ -179,7 +179,7 @@ class Estacionado(models.Model):
         return f'{self.registroEstacionamiento.tiempo} - {self.registroEstacionamiento.identificador}'
 
     def get_absolute_url(self):
-        return f'/estacionamiento/historial/{self.registroEstacionamiento.id}/'
+        return f'/estacionamiento/historial/{self.registroEstacionamiento.id}/detalle'
 
 
 class HorariosPrecio(models.Model):

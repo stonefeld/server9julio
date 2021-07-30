@@ -15,6 +15,9 @@ pytz = "==2021.1"
 six = "==1.15.0"
 sqlparse = "==0.4.1"
 Django = "==3.1.6"
+qrcode = "*"
+xhtml2pdf = "*"
+pillow = "*"
 
 [requires]
 python_version = "3.9"

@@ -4,3 +4,4 @@ migrations/
 *.CSV
 *.csv
 *.pyc
+media/

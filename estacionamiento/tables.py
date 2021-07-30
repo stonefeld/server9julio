@@ -2,7 +2,9 @@ import django_tables2 as tables
 
 
 class HistorialEstacionamientoTable(tables.Table):
-    identificador = tables.Column(linkify=True)
+    identificador = tables.Column(linkify=True, attrs={
+        'a': {'class': 'origen'}
+    })
     tipo = tables.Column()
     tiempo = tables.Column()
     direccion = tables.Column()
@@ -16,7 +18,9 @@ class HistorialEstacionamientoTable(tables.Table):
 
 
 class EstacionadosTable(tables.Table):
-    registroEstacionamiento__identificador = tables.Column(linkify=True)
+    registroEstacionamiento__identificador = tables.Column(linkify=True, attrs={
+        'a': {'class': 'origen'}
+    })
     registroEstacionamiento__tipo = tables.Column()
     registroEstacionamiento__tiempo = tables.Column()
     registroEstacionamiento__autorizado = tables.Column()

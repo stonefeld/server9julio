@@ -8,7 +8,6 @@
 {% endblock subtitle %}
 
 {% block content %}
-
   <div id="mySidebar" class="sidebar">
     <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">x</a>
     <div class="sidebar-content">
@@ -180,5 +179,10 @@
   </div>
 
   <script src="{% static 'usuariosistema/historial.js' %}"></script>
-
+  <script type="text/javascript">
+    const names = document.getElementsByClassName('origen');
+    for (var i = 0; i < names.length; i++) {
+      names[i].href += '/historial';
+    }
+  </script>
 {% endblock content%}
