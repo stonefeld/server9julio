@@ -835,9 +835,8 @@ def detalle_estacionamiento(request, id, origen):
     datos = RegistroEstacionamiento.objects.get(id=id)
     cobro = Cobros.objects.filter(Q(registroEstacionamiento__id__icontains=id)).distinct()
 
-    today = now()
-    fecha = today.strftime('%d/%m/%Y')
-    hora = today.strftime('%H:%M')
+    fecha = datos.tiempo.strftime('%d/%m/%Y')
+    hora = datos.tiempo.strftime('%H:%M')
 
     factory = SvgImage
     img = qr.make(datos.noSocio, image_factory=factory, box_size=20)
@@ -862,9 +861,8 @@ def generate_pdf(request, id, origen):
     datos = RegistroEstacionamiento.objects.get(id=id)
     cobro = Cobros.objects.filter(Q(registroEstacionamiento__id__icontains=id)).distinct().last()
 
-    today = now()
-    fecha = today.strftime('%d/%m/%Y')
-    hora = today.strftime('%H:%M')
+    fecha = datos.tiempo.strftime('%d/%m/%Y')
+    hora = datos.tiempo.strftime('%H:%M')
 
     media_root = settings.MEDIA_ROOT
     location = os.path.join(media_root, 'codigo.png')
