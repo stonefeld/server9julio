@@ -1,10 +1,11 @@
 {% extends "menu_estacionamiento.html" %}
+
 {% load static %}
 {% block subtitle %}
   <h1>Detalle Estacionamiento</h1>
 {% endblock subtitle %}
-{% block content %}
 
+{% block content %}
 {% endblock content %}
 
 {% block js %}
@@ -93,20 +94,26 @@
             {% endif %}
 
             <div>
-              <a href="{% url 'menu_estacionamiento:resumenTiempoReal' %}" style="text-decoration:none" class="btn btn-outline-info">Cancelar</a>
-              <a href="{% url 'estacionamiento:editar' datos.id %}" style="text-decoration:none" class="btn btn-outline-info">Editar</a>
+              {% if origen == 'tiempo-real' %}
+                <a href="{% url 'menu_estacionamiento:resumenTiempoReal' %}" style="text-decoration:none" class="btn btn-outline-info">Atrás</a>
+              {% else %}
+                <a href="{% url 'estacionamiento:historial' %}" style="text-decoration:none" class="btn btn-outline-info">Atrás</a>
+              {% endif %}
+              <a href="{% url 'estacionamiento:editar' datos.id origen %}" style="text-decoration:none" class="btn btn-outline-info">Editar</a>
               {% if datos.direccion == 'ENTRADA' %}
                 {% if cobrado == 'False' %}
                   {% if datos.tipo == 'NOSOCIO' or datos.tipo == 'SOCIO-MOROSO' %}
                     <a style="text-decoration:none">
-                      <button style="text-decoration:none" class="btn btn-outline-info" data-toggle="modal" data-target="#modalCobrar" id = "cobrarEntrada">Cobrar</button>
+                      <button style="text-decoration:none" class="btn btn-outline-info" data-toggle="modal" data-target="#modalCobrar" id="cobrarEntrada">Cobrar</button>
                     </a>
                   {% endif %}
                   {% if datos.tipo == 'SOCIO-MOROSO'%}
                     <a style="text-decoration:none">
-                      <button style="text-decoration:none" class="btn btn-outline-info" data-toggle="modal" data-target="#modalDeuda" id = "pagarDeuda">Regularizar Deuda</button>
+                      <button style="text-decoration:none" class="btn btn-outline-info" data-toggle="modal" data-target="#modalDeuda" id="pagarDeuda">Regularizar Deuda</button>
                     </a>
                   {% endif %}
+                {% else %}
+                  <button type="button" style="text-decoration:none" class="btn btn-outline-info" data-toggle="modal" data-target="#modalSvg">Generar código QR</button>
                 {% endif %}
               {% endif %}
             </div>
@@ -122,7 +129,7 @@
                     </button>
                   </div>
                   <div class="modal-body">
-                    <p id = 'recaudadoTexto'>Tarifa a pagar es : {{ recaudado }}</p>
+                    <p id = 'recaudadoTexto'>Tarifa a pagar es: </p>
                   </div>
                   <div class="modal-footer">
                     <button type="button" class="btn btn-primary" id = "cobrarDinero">Cobrar</button>
@@ -145,7 +152,6 @@
                   </div>
                   <div class="modal-body">
                     <p id = 'deuda_a_Pagar'>La deuda del socio es: {{ recaudado }}</p>
-                    <svg id='imagenModal' > </svg>
                   </div>
                   <div class="modal-footer">
                     <button type="button" class="btn btn-primary" id = "regularizar">Regulizar Deuda</button>
@@ -156,20 +162,50 @@
             </div>
             <!-- Fin ModalDeuda -->
 
+            <!-- Inicio ModalSVG -->
+            <div class="modal fade" id="modalSvg" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+              <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">SAGVB Bono Estacionamiento</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                  <div class="modal-body">
+                    <p>Fecha: {{ fecha }}</p>
+                    <p>Hora: {{ hora }}</p>
+                    <p>Importe: ${{ importe }}</p>
+                    {% autoescape off %}
+                      {{ svg }}
+                    {% endautoescape %}
+                  </div>
+                  <div class="modal-footer">
+                    <a class="btn btn-primary" href="{% url 'estacionamiento:gen-pdf' datos.id origen %}" target="_blank">Generar PDF</a>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Fin ModalSVG -->
+
+            <p style="display:none" id="origen">{{ origen }}</p>
+
             <script type="text/javascript">
-              const imagen = document.getElementById('imagenModal')
+              const origen = document.getElementById('origen').innerHTML;
+
               const loadPrecio = async () => {
                 try {
-                  const res = await fetch('cobrarEntrada');
+                  const res = await fetch(`${origen}/cobrarEntrada`);
                   var precio = await res.json();
-                  load(precio)
+                  drawPrecio(precio)
                 } catch (err) {
                   console.error(err);
                 }
               };
 
-              const load = (precio) => {
-                document.getElementById("recaudadoTexto").innerHTML = `Tarifa a pagar es : $${precio} `
+              const drawPrecio = (precio) => {
+                document.getElementById('recaudadoTexto').innerHTML = `Tarifa a pagar es: $${precio} `
               };
 
               const cobrarTarifa = async () =>{
@@ -180,12 +216,10 @@
                       'Content-Type': 'application/json'
                     }
                   };
-                  const res = await fetch('cobrarEntrada',options);
+                  const res = await fetch(`${origen}/cobrarEntrada`, options);
                   const respuesta = await res.json();
-                  console.log(respuesta.svg)
-                  imagen.innerHTML = `${respuesta.svg}`
-                  if(respuesta){
-                    //location.href = "/menu_estacionamiento/resumen_tiempo"
+                  if (respuesta) {
+                    location.href = `./${origen}`;
                   }
                 } catch (err) {
                   console.error(err);
@@ -196,13 +230,13 @@
                 try {
                   const res = await fetch('pago_deuda');
                   var deuda = await res.json();
-                  deudaLoad(deuda)
+                  drawDeuda(deuda)
                 } catch (err) {
                   console.error(err);
                 }
               };
 
-              const deudaLoad = (deuda) =>{
+              const drawDeuda = (deuda) =>{
                 document.getElementById('deuda_a_Pagar').innerHTML = `La deuda del socio es: $${deuda}`
               };
 
@@ -216,8 +250,8 @@
                   };
                   const res = await fetch('pago_deuda',options);
                   const respuesta = await res.json();
-                  if(respuesta){
-                    location.href = "/menu_estacionamiento/resumen_tiempo"
+                  if(respuesta) {
+                    location.href = `./${origen}`;
                   }
                 } catch (err) {
                   console.error(err);
@@ -245,5 +279,4 @@
       </div>
     </div>
   </div>
-
 {% endblock js %}

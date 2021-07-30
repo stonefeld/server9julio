@@ -1,24 +1,27 @@
 import csv
 from datetime import date, time, timedelta, datetime
+from io import BytesIO
 import json
 import os
-from typing import final
-from django.shortcuts import render
-import qrcode
-import qrcode.image.svg
-from io import BytesIO
+from threading import Thread
+
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.core.paginator import Paginator
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 from django.db.models import Q, Sum
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
+from django.template.loader import get_template
 from django.utils.timezone import now
 from django.views.decorators.csrf import csrf_exempt
 
 from django_tables2 import RequestConfig
+
+import qrcode as qr
+from qrcode.image.svg import SvgImage
+from xhtml2pdf import pisa
 
 from .models import (
     RegistroEstacionamiento, Proveedor,
@@ -61,75 +64,60 @@ def apertura_manual(request):
 
 @csrf_exempt
 @login_required
-def cobrar_entrada(request, id):
+def cobrar_entrada(request, id, origen):
     if request.method == 'GET':
         entradaCobrar = RegistroEstacionamiento.objects.get(id=id)
         today = datetime.date(datetime.now())
-        dia_Especial = DiaEspecial.objects.filter(Q(dia_Especial=today)).distinct()
+        dia_especial = DiaEspecial.objects.filter(Q(dia_Especial=today)).distinct()
 
-        if dia_Especial:
+        if dia_especial:
             # Hoy es día Especial
-            tarifaEspacial = TarifaEspecial.objects.all().last()
-            return JsonResponse(tarifaEspacial.precio, safe=False)
+            tarifa_especial = TarifaEspecial.objects.all().last()
+            return JsonResponse(tarifa_especial.precio, safe=False)
 
         time = datetime.time(datetime.now())
         horarios = HorariosPrecio.objects.all()
-        i = 0
 
-        for horario in horarios:
-            i = i + 1
+        for i, horario in enumerate(horarios, start=1):
             if time < horario.final or i == 3:
-                tarifaNormal = horario.precio
+                tarifa_normal = horario.precio
                 break
 
-        return JsonResponse(tarifaNormal, safe=False)
+        return JsonResponse(tarifa_normal, safe=False)
 
     else:
         entradaCobrar = RegistroEstacionamiento.objects.get(id=id)
         today = datetime.date(datetime.now())
-        dia_Especial = DiaEspecial.objects.filter(Q(dia_Especial=today)).distinct()
+        dia_especial = DiaEspecial.objects.filter(Q(dia_Especial=today)).distinct()
 
-        factory = qrcode.image.svg.SvgImage
-        img = qrcode.make(entradaCobrar.noSocio, image_factory=factory, box_size=20)
-        stream = BytesIO()
-        img.save(stream)
-        context = {}
-        context["svg"] = stream.getvalue().decode()
-
-        if dia_Especial:
+        if dia_especial:
             # Hoy es día Especial
-            tarifaEspacial = TarifaEspecial.objects.all().last()
-            cobro = Cobros(precio=tarifaEspacial.precio, registroEstacionamiento=entradaCobrar, deuda=False, usuarioCobro=request.user)
+            tarifa_especial = TarifaEspecial.objects.all().last()
+            cobro = Cobros(precio=tarifa_especial.precio, registroEstacionamiento=entradaCobrar, deuda=False, usuarioCobro=request.user)
             cobro.save()
-            messages.warning(request, f'Cobro por ${tarifaEspacial}')
-            # return redirect("estacionamiento:historial")
-            return JsonResponse(context, safe=False)
+            messages.warning(request, f'Cobro por ${tarifa_especial}')
+            return JsonResponse({}, safe=False)
 
         time = datetime.time(datetime.now())
         horarios = HorariosPrecio.objects.all()
-        i = 0
-        for horario in horarios:
-            i = i + 1
+
+        for i, horario in enumerate(horarios, start=1):
             if time < horario.final or i == 3:
-                tarifaNormal = horario.precio
+                tarifa_normal = horario.precio
                 break
 
         cobro = Cobros(
-            precio=tarifaNormal,
+            precio=tarifa_normal,
             registroEstacionamiento=entradaCobrar,
             deuda=False,
             usuarioCobro=request.user
         )
-        
-
-
-
         cobro.save()
+
         entradaCobrar.pago = 'SI'
         entradaCobrar.save()
-        messages.warning(request, f'Cobro por ${tarifaNormal}')
-        # return redirect("estacionamiento:historial")
-        return JsonResponse(context, safe=False)
+        messages.warning(request, f'Cobro por ${tarifa_normal}')
+        return JsonResponse({}, safe=False)
 
 
 @csrf_exempt
@@ -410,8 +398,9 @@ def cierre_caja(request):
     else:
         cicloCaja_ = CicloCaja.objects.all().last()
         recaudado = Cobros.objects.filter(
-            registroEstacionamiento__cicloCaja=cicloCaja_, deuda=False).\
-            aggregate(recaudacion=Sum('precio'))
+            registroEstacionamiento__cicloCaja=cicloCaja_, deuda=False
+        ).aggregate(recaudacion=Sum('precio'))
+
         if recaudado['recaudacion']:
             cicloCaja_.recaudado = recaudado['recaudacion']
             cicloCaja_.finalCaja = now()
@@ -429,14 +418,15 @@ def cierre_caja(request):
 
 
 def funcion_cobros(dato):
-    final = now()
     if int(now().hour) < 7:
-        inicio = datetime(now().year,now().month,now().day-1,7,0,0) 
+        final = now()
+        inicio = datetime(now().year, now().month, now().day - 1, 7, 0, 0)
         inicio = inicio - timedelta(days=1)
+
     else:
-        final = datetime(now().year,now().month,now().day,7,0,0) 
+        final = datetime(now().year, now().month, now().day, 7, 0, 0)
         inicio = now()
-    
+
     cobro = Cobros.objects.filter(
         Q(registroEstacionamiento__noSocio=int(dato)) |
         Q(registroEstacionamiento__persona__nrTarjeta=int(dato)),
@@ -466,23 +456,26 @@ def tiempo_tolerancia(dato, tipo):
 
     else:
         # Excedio tiempo tolerancia
-        if tipo == "SOCIO":
-            final = today
+        if tipo == 'SOCIO':
             if int(now().hour) < 7:
-                inicio = datetime(now().year,now().month,now().day,7,0,0)
-                inicio = inicio - timedelta(days=1) 
+                final = today
+                inicio = datetime(now().year, now().month, now().day, 7, 0, 0)
+                inicio = inicio - timedelta(days=1)
+
             else:
-                final = datetime(now().year,now().month,now().day,7,0,0) 
+                final = datetime(now().year, now().month, now().day, 7, 0, 0)
                 inicio = today
-            
+
             entrada = RegistroEstacionamiento.objects.filter(
-            Q(tiempo__range=(inicio, final)),
-            Q(persona__nrTarjeta=int(dato)),
-            Q(direccion='SALIDA'),
-            Q(autorizado = 'SI') 
+                Q(tiempo__range=(inicio, final)),
+                Q(persona__nrTarjeta=int(dato)),
+                Q(direccion='SALIDA'),
+                Q(autorizado='SI')
             ).distinct()
+
             if entrada:
                 return 'T. TOLERANCIA'
+
         return 'NO'
 
 
@@ -513,6 +506,7 @@ def pago_estacionamiento(tipo, autorizado, direccion):
         else:
             return 'NO'
 
+
 def funcion_entradas(dato):
     today = now()
     ayer = today - timedelta(days=1)
@@ -522,6 +516,7 @@ def funcion_entradas(dato):
     ).distinct()
     if registro:
         return True
+
     return False
 
 
@@ -836,23 +831,80 @@ def descargar_historial(request, estacionamiento):
 
 
 @login_required
-def detalle_estacionamiento(request, id):
+def detalle_estacionamiento(request, id, origen):
     datos = RegistroEstacionamiento.objects.get(id=id)
     cobro = Cobros.objects.filter(Q(registroEstacionamiento__id__icontains=id)).distinct()
-    return render(request, 'estacionamiento/detalle_historial.html',
-                  {'datos': datos, 'title': 'Detalle Historial',
-                   'cobrado': 'True' if cobro else 'False'})
+
+    today = now()
+    fecha = today.strftime('%d/%m/%Y')
+    hora = today.strftime('%H:%M')
+
+    factory = SvgImage
+    img = qr.make(datos.noSocio, image_factory=factory, box_size=20)
+    stream = BytesIO()
+    img.save(stream)
+
+    context = {
+        'title': 'Detalle estacionamiento',
+        'datos': datos,
+        'cobrado': 'True' if cobro else 'False',
+        'fecha': fecha,
+        'hora': hora,
+        'importe': cobro.last().precio if cobro else 0,
+        'svg': stream.getvalue().decode(),
+        'origen': origen
+    }
+
+    return render(request, 'estacionamiento/detalle_historial.html', context)
+
+
+def generate_pdf(request, id, origen):
+    datos = RegistroEstacionamiento.objects.get(id=id)
+    cobro = Cobros.objects.filter(Q(registroEstacionamiento__id__icontains=id)).distinct().last()
+
+    today = now()
+    fecha = today.strftime('%d/%m/%Y')
+    hora = today.strftime('%H:%M')
+
+    media_root = settings.MEDIA_ROOT
+    location = os.path.join(media_root, 'codigo.png')
+
+    if os.path.exists(location):
+        os.remove(location)
+
+    qr.make(datos.noSocio, box_size=7).save(location)
+
+    template_path = 'estacionamiento/pdf_template.html'
+    context = {
+        'fecha': fecha,
+        'hora': hora,
+        'importe': cobro.precio,
+        'image': location
+    }
+
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'filename="codigo_salida.pdf"'
+    template = get_template(template_path)
+    html = template.render(context)
+
+    pisa_status = pisa.CreatePDF(html, dest=response)
+    if pisa_status.err:
+        messages.warning(request, 'Un error ha surgido generando el PDF')
+        return redirect('estacionamiento:detalle', id, origen)
+
+    return response
 
 
 @login_required
-def editar_estacionamiento(request, id):
+def editar_estacionamiento(request, id, origen):
     obj = RegistroEstacionamiento.objects.get(id=id)
     form = EstacionamientoForm(request.POST or None, instance=obj)
 
     context = {
         'form': form,
         'obj': obj,
-        'title': 'Editar historial'
+        'title': 'Editar historial',
+        'origen': origen
     }
 
     if request.method == 'POST':
@@ -915,7 +967,11 @@ def editar_estacionamiento(request, id):
             obj.usuarioEditor = request.user
             obj.save()
             form.save()
-            return redirect('estacionamiento:historial')
+            if origen == 'historial':
+                return redirect('estacionamiento:historial')
+
+            else:
+                return redirect('menu_estacionamiento:resumenTiempoReal')
 
         else:
             messages.warning(request, 'El formulario no fue completado correctamente')
