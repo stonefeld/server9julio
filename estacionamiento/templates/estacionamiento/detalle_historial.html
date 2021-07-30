@@ -115,6 +115,9 @@
                 {% else %}
                   <button type="button" style="text-decoration:none" class="btn btn-outline-info" data-toggle="modal" data-target="#modalSvg">Generar código QR</button>
                 {% endif %}
+                {% if datos.tipo == 'SOCIO' %}
+                  <button type="button" style="text-decoration:none" class="btn btn-outline-info" data-toggle="modal" data-target="#modalSvg">Generar código QR</button>
+                {% endif %}
               {% endif %}
             </div>
 
@@ -175,7 +178,9 @@
                   <div class="modal-body">
                     <p>Fecha: {{ fecha }}</p>
                     <p>Hora: {{ hora }}</p>
-                    <p>Importe: ${{ importe }}</p>
+                    {% if datos.tipo != 'SOCIO' %}
+                      <p>Importe: ${{ importe }}</p>
+                    {% endif %}
                     {% autoescape off %}
                       {{ svg }}
                     {% endautoescape %}

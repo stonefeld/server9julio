@@ -878,8 +878,9 @@ def generate_pdf(request, id, origen):
     context = {
         'fecha': fecha,
         'hora': hora,
-        'importe': cobro.precio,
-        'image': location
+        'importe': cobro.precio if cobro else 0,
+        'image': location,
+        'tipo': datos.tipo
     }
 
     response = HttpResponse(content_type='application/pdf')

@@ -10,7 +10,9 @@
     <h1>SAGVB Bono Estacionamiento</h1>
     <p>Fecha: {{ fecha }}</p>
     <p>Hora: {{ hora }}</p>
-    <p>Importe: ${{ importe }}</p>
+    {% if tipo != 'SOCIO' %}
+      <p>Importe: ${{ importe }}</p>
+    {% endif %}
     <img src="{{ image }}">
   </body>
 </html>
