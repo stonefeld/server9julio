@@ -95,7 +95,10 @@ def cobrar_entrada(request, id, origen):
             tarifa_especial = TarifaEspecial.objects.all().last()
             cobro = Cobros(precio=tarifa_especial.precio, registroEstacionamiento=entradaCobrar, deuda=False, usuarioCobro=request.user)
             cobro.save()
-            messages.warning(request, f'Cobro por ${tarifa_especial}')
+
+            entradaCobrar.pago = 'SI'
+            entradaCobrar.save()
+            messages.warning(request, f'Cobro por ${tarifa_especial.precio}')
             return JsonResponse({}, safe=False)
 
         time = datetime.time(datetime.now())
