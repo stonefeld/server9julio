@@ -112,10 +112,10 @@
                       <button style="text-decoration:none" class="btn btn-outline-info" data-toggle="modal" data-target="#modalDeuda" id="pagarDeuda">Regularizar Deuda</button>
                     </a>
                   {% endif %}
+                  {% if datos.tipo == 'SOCIO' %}
+                    <button type="button" style="text-decoration:none" class="btn btn-outline-info" data-toggle="modal" data-target="#modalSvg">Generar código QR</button>
+                  {% endif %}
                 {% else %}
-                  <button type="button" style="text-decoration:none" class="btn btn-outline-info" data-toggle="modal" data-target="#modalSvg">Generar código QR</button>
-                {% endif %}
-                {% if datos.tipo == 'SOCIO' %}
                   <button type="button" style="text-decoration:none" class="btn btn-outline-info" data-toggle="modal" data-target="#modalSvg">Generar código QR</button>
                 {% endif %}
               {% endif %}
@@ -135,7 +135,7 @@
                     <p id = 'recaudadoTexto'>Tarifa a pagar es: </p>
                   </div>
                   <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" id = "cobrarDinero">Cobrar</button>
+                    <button type="button" class="btn btn-primary" id="cobrarDinero">Cobrar</button>
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
                   </div>
                 </div>
@@ -224,6 +224,7 @@
                   const res = await fetch(`${origen}/cobrarEntrada`, options);
                   const respuesta = await res.json();
                   if (respuesta) {
+                    window.open(`../gen-pdf/${origen}`);
                     location.href = `./${origen}`;
                   }
                 } catch (err) {
@@ -233,7 +234,7 @@
 
               const loadDeuda = async () =>{
                 try {
-                  const res = await fetch('pago_deuda');
+                  const res = await fetch('../pago_deuda');
                   var deuda = await res.json();
                   drawDeuda(deuda)
                 } catch (err) {
@@ -253,9 +254,10 @@
                       'Content-Type': 'application/json'
                     }
                   };
-                  const res = await fetch('pago_deuda',options);
+                  const res = await fetch('../pago_deuda', options);
                   const respuesta = await res.json();
                   if(respuesta) {
+                    window.open(`../gen-pdf/${origen}`);
                     location.href = `./${origen}`;
                   }
                 } catch (err) {
