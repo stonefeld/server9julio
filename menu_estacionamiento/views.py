@@ -90,7 +90,7 @@ def resumen_tiempo_real(request):
         table = EstacionadosTable(estacionamiento)
         RequestConfig(request).configure(table)
 
-        return render(request, 'menu_estacionamiento/resumen_tiempo.html', {'table': table, 'title': 'Historial'})
+        return render(request, 'menu_estacionamiento/resumen_tiempo.html', {'table': table, 'title': 'Resumen en tiempo real'})
 
     return render(request, 'menu_estacionamiento/resumen_tiempo.html', {})
 

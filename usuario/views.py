@@ -56,7 +56,7 @@ def editar_usuario(request, id):
                 Q(tipo='NOSOCIO')
             ).last()
 
-            if funcion_cobros(estacionamiento.noSocio) != 'SI':
+            if estacionamiento and funcion_cobros(estacionamiento.noSocio) != 'SI':
                 estacionamiento.persona = obj
                 if obj.estacionamiento:
                     estacionamiento.tipo = 'SOCIO'

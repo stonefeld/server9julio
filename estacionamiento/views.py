@@ -31,6 +31,7 @@ from .models import (
 )
 from .forms import EstacionamientoForm, AperturaManualForm, ProveedorForm
 from .tables import HistorialEstacionamientoTable
+from scripts.client import client
 
 
 def postpone(function):
@@ -44,9 +45,8 @@ def postpone(function):
 
 @postpone
 def socket_arduino(cantidad):
-    base_dir = settings.BASE_DIR
-    script_loc = os.path.join(base_dir, 'scripts/client.py')
-    os.system(f'python3 {script_loc} abrir_tiempo {cantidad}')
+    # Completar con la ip del esp.
+    client(ip='', cantidad=cantidad)
 
 
 @login_required
