@@ -461,23 +461,21 @@ def tiempo_tolerancia(dato, tipo):
         # Excedio tiempo tolerancia
         if tipo == 'SOCIO':
             if int(now().hour) < 7:
-                final = today
                 inicio = datetime(now().year, now().month, now().day, 7, 0, 0)
                 inicio = inicio - timedelta(days=1)
 
             else:
-                final = datetime(now().year, now().month, now().day, 7, 0, 0)
-                inicio = today
+                inicio = datetime(now().year, now().month, now().day, 7, 0, 0)
 
             entrada = RegistroEstacionamiento.objects.filter(
-                Q(tiempo__range=(inicio, final)),
+                Q(tiempo__range=(inicio, today)),
                 Q(persona__nrTarjeta=int(dato)),
                 Q(direccion='SALIDA'),
                 Q(autorizado='SI')
             ).distinct()
 
             if entrada:
-                return 'T. TOLERANCIA'
+                return 'S. DÍA'
 
         return 'NO'
 
@@ -613,7 +611,7 @@ def respuesta(request):
                             registro = registro_estacionamiento('SOCIO', user, direccion, 'SI', ciclo_caja, 'El socio no tiene deuda e intentó egresar ingresando el DNI. Salió fuera del tiempo de tolerancia. Se le autorizó la salida.')
 
                         elif status == 'S. DÍA':
-                            registro = registro_estacionamiento('SOCIO', user, direccion, 'SI', ciclo_caja, 'El socio no tiene deuda e intentó egresar ingresando el DNI. El socio ya ingresó al establecimiento durante la fecha en cuestión. Se le autorizó la salida.')
+                            registro = registro_estacionamiento('SOCIO', user, direccion, status, ciclo_caja, 'El socio no tiene deuda e intentó egresar ingresando el DNI. El socio ya ingresó al establecimiento durante la fecha en cuestión. Se le autorizó la salida.')
 
                         else:
                             registro = registro_estacionamiento('SOCIO', user, direccion, 'T. TOLERANCIA', ciclo_caja, 'El socio no tiene deuda en intentó egresar ingresando el DNI. Salió dentro del tiempo de tolerancia. Se le autorizó la salida.')
