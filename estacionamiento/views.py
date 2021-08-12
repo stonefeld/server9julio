@@ -421,19 +421,18 @@ def cierre_caja(request):
 
 
 def funcion_cobros(dato):
+    today = now()
     if int(now().hour) < 7:
-        final = now()
         inicio = datetime(now().year, now().month, now().day - 1, 7, 0, 0)
         inicio = inicio - timedelta(days=1)
 
     else:
-        final = datetime(now().year, now().month, now().day, 7, 0, 0)
-        inicio = now()
+        inicio = datetime(now().year, now().month, now().day, 7, 0, 0)
 
     cobro = Cobros.objects.filter(
         Q(registroEstacionamiento__noSocio=int(dato)) |
         Q(registroEstacionamiento__persona__nrTarjeta=int(dato)),
-        Q(registroEstacionamiento__tiempo__range=(inicio, final)),
+        Q(registroEstacionamiento__tiempo__range=(inicio, today)),
     ).distinct()
 
     if cobro:
@@ -593,8 +592,13 @@ def respuesta(request):
                             messages.warning(request, 'Socio-Moroso no pagó la deuda o no pagó el estacionamiento')
                             rta = '#6'  # SocioMoroso no pago Deuda o no Pago Entrada
 
+                        elif resultado == 'SI':
+                            registro = registro_estacionamiento('SOCIO-MOROSO', user, direccion, resultado, ciclo_caja, 'El socio tiene deuda e intentó egresar ingresando el número de socio. El socio salió fuera del tiempo de tolerancia. Al haber pagado la tarifa correspondiente se le autorizó la salida.')
+                            messages.warning(request, 'Salida Socio-Moroso autorizada')
+                            rta = '#1'  # Salida sociomoroso autorizada
+
                         else:
-                            registro = registro_estacionamiento('SOCIO-MOROSO', user, direccion, resultado, ciclo_caja, 'El socio tiene deuda e intentó egresar ingresando el número de socio. Al haber pagado la tarifa correspondiente se le autorizó la salida.')
+                            registro = registro_estacionamiento('SOCIO-MOROSO', user, direccion, resultado, ciclo_caja, 'El socio tiene deuda e intentó egresar ingresando el número de socio. Salió dentro del tiempo de tolerancia. Se le autorizó la salida.')
                             messages.warning(request, 'Salida Socio-Moroso autorizada')
                             rta = '#1'   # Salida sociomoroso autorizada
 
