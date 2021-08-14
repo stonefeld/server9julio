@@ -1,0 +1,33 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+asgiref = "*"
+django-crispy-forms = "*"
+django-tables2 = "*"
+mysqlclient = "*"
+numpy = "*"
+pandas = "*"
+python-dateutil = "*"
+pytz = "*"
+six = "*"
+sqlparse = "*"
+Django = "*"
+qrcode = "*"
+xhtml2pdf = "*"
+pillow = "*"
+
+[requires]
+python_version = "3.9"
+
+[dev-packages]
+python-language-server = "*"
+rope = "*"
+pyflakes = "*"
+mccabe = "*"
+pycodestyle = "*"
+pydocstyle = "*"
+autopep8 = "*"
+yapf = "*"
