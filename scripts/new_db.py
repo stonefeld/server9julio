@@ -14,7 +14,7 @@ media_root = settings.MEDIA_ROOT
 us_location = os.path.join(media_root, 'usuario.json')
 rg_location = os.path.join(media_root, 'registroGeneral.json')
 
-print('Configurando deuda...')
+print('\nConfigurando deuda...')
 deuda_general = 300
 deuda_estacionamiento = 400
 Deuda(deuda=deuda_general, deudaEstacionamiento=deuda_estacionamiento).save()
@@ -80,9 +80,9 @@ HorariosPrecio(precio=300, inicio='08:00:00', final='15:59:00').save()
 HorariosPrecio(precio=350, inicio='16:00:00', final='23:59:00').save()
 
 print('Inicializando tarifa especial...')
-TarifaEspecial(precio=500)
+TarifaEspecial(precio=500).save()
 
 print('Inicializando tiempo de tolerancia...')
-TiempoTolerancia(tiempo=15)
+TiempoTolerancia(tiempo=15).save()
 
 print('Inicializacion de variables finalizada')
