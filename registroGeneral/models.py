@@ -1,5 +1,5 @@
 from django.db import models
-from django.utils.timezone import now, localtime
+from django.utils.timezone import now
 
 from usuario.models import Persona
 
@@ -12,7 +12,7 @@ class EntradaGeneral(models.Model):
     autorizado = models.BooleanField(default=False, verbose_name='Autorización')
 
     def __str__(self):
-        return str(localtime(self.tiempo)) + " - " + str(self.persona)
+        return f'{self.tiempo} - {self.persona}'
 
     class Meta:
         verbose_name = "Entrada general"
