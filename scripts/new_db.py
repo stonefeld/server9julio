@@ -3,19 +3,22 @@ import os
 import json
 
 from django.conf import settings
-from django.db import connection, models
+from django.utils.timezone import now
 
+from estacionamiento.models import CicloAnual, CicloCaja, CicloMensual, HorariosPrecio, TarifaEspecial, TiempoTolerancia
 from registroGeneral.models import EntradaGeneral
-from usuario.models import Persona, Deuda
+from usuario.models import Deuda, Persona
 
 
 media_root = settings.MEDIA_ROOT
 us_location = os.path.join(media_root, 'usuario.json')
 rg_location = os.path.join(media_root, 'registroGeneral.json')
 
+print('Configurando deuda...')
 deuda_general = 300
 deuda_estacionamiento = 400
 Deuda(deuda=deuda_general, deudaEstacionamiento=deuda_estacionamiento).save()
+print('Deuda configurada\n')
 
 borrable = False
 
@@ -61,4 +64,25 @@ for r in list(registros):
         autorizado=r['fields']['autorizado']
     ).save()
 
-print('Carga de datos finalizada')
+print('Carga de datos finalizada\n')
+
+print('Inicializando ciclos...')
+anual = CicloAnual(cicloAnual=2021)
+anual.save()
+mensual = CicloMensual(cicloAnual=anual, cicloMensual=1, inicioMes=now())
+mensual.save()
+caja = CicloCaja(cicloMensual=mensual, cicloCaja=1, inicioCaja=now())
+caja.save()
+
+print('Inicializando precios por horarios...')
+HorariosPrecio(precio=250, inicio='00:00:00', final='07:59:00').save()
+HorariosPrecio(precio=300, inicio='08:00:00', final='15:59:00').save()
+HorariosPrecio(precio=350, inicio='16:00:00', final='23:59:00').save()
+
+print('Inicializando tarifa especial...')
+TarifaEspecial(precio=500)
+
+print('Inicializando tiempo de tolerancia...')
+TiempoTolerancia(tiempo=15)
+
+print('Inicializacion de variables finalizada')
