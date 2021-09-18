@@ -75,13 +75,13 @@ def registro_socio(request):
                     return HttpResponse('Error')
 
             if len(pks) > 1:
-                messages.success(request, f'Entradas registradas con éxito.')
+                messages.success(request, 'Entradas registradas con éxito.')
 
             else:
-                messages.success(request, f'Entrada registrada con éxito.')
+                messages.success(request, 'Entrada registrada con éxito.')
 
             if no_pasa:
-                messages.warning(request, f'Algunas entradas fueron registradas incluso sin estar autorizadas.')
+                messages.warning(request, 'Algunas entradas fueron registradas incluso sin estar autorizadas.')
 
             cant = len(pks)
             socket_arduino(cant)
@@ -129,6 +129,10 @@ def registro_nosocio(request):
         try:
             cantidad = int(cantidad[0])
             dire = str(direccion[0])
+            if cantidad > 10:
+                messages.warning(request, 'Error: Se superó la cantidad de registros permitidos por vez')
+                return redirect('registroGeneral:registro-nosocio')
+
             for i in range(cantidad):
                 entrada = EntradaGeneral(
                     lugar='GENERAL',
