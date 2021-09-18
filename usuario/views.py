@@ -161,17 +161,16 @@ def cargarDBAsync(df):
             try:
                 usuario = Persona.objects.get(nrSocio=int(df['NrSocio'][ind]))
                 listaUsuarios.append(usuario.id)
-                if usuario.general == True:
-                    usuario.general = False
-                    usuario.deuda = float((df['Deuda'][ind]).replace(',', ''))
-                    usuario.save()
+                usuario.general = False
+                usuario.deuda = float((df['Deuda'][ind]).replace(',', ''))
+                usuario.save()
 
             except:
                 usuario = Persona(
                     nombre_apellido=df['Socio'][ind],
                     nrSocio=int(df['NrSocio'][ind]),
                     general=False,
-                    deuda=float((df['Deuda'][ind]).replace(',',''))
+                    deuda=float((df['Deuda'][ind]).replace(',', ''))
                 )
                 usuario.save()
                 usuario = Persona.objects.get(nrSocio=int(df['NrSocio'][ind]))
@@ -181,10 +180,9 @@ def cargarDBAsync(df):
             try:
                 usuario = Persona.objects.get(nrSocio=int(df['NrSocio'][ind]))
                 listaUsuarios.append(usuario.id)
-                if usuario.general == False:
-                    usuario.general = True
-                    usuario.deuda = float((df['Deuda'][ind]).replace(',', ''))
-                    usuario.save()
+                usuario.general = True
+                usuario.deuda = float((df['Deuda'][ind]).replace(',', ''))
+                usuario.save()
 
             except:
                 usuario = Persona(
@@ -213,4 +211,3 @@ def cargarDBAsync(df):
         noSocio.save()
 
     connection.close()
-
