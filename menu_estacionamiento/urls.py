@@ -14,5 +14,6 @@ urlpatterns = [
     path('historialCajas/', views.historial_cajas, name='historialCajas'),
     path('tarifaEspecial/', views.tarifas_especiales, name='tarifaEspecial'),
     path('playground/', views.playground, name='playground'),
+    path('marquez/', views.playground, name='marquez'),
     path('cicloscaja/fetch', views.fetch_ciclo_caja, name='fetch-ciclo-caja')
 ]

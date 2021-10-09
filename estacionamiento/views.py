@@ -93,7 +93,7 @@ def cobrar_entrada(request, id):
         factory = qrcode.image.svg.SvgImage
         img = qrcode.make(entradaCobrar.noSocio, image_factory=factory, box_size=20)
         stream = BytesIO()
-        img.save(stream)
+        img.save(stream) 
         context = {}
         context["svg"] = stream.getvalue().decode()
 
@@ -475,7 +475,6 @@ def tiempo_tolerancia(dato,tipo):
             else:
                 final = datetime(now().year,now().month,now().day,7,0,0) 
                 inicio = today
-            
             entrada = RegistroEstacionamiento.objects.filter(
             Q(tiempo__range=(inicio, final)),
             Q(persona__nrTarjeta=int(dato)),
@@ -557,6 +556,53 @@ def registro_estacionamiento(tipo, dato, direccion, autorizado, ciclo_caja, mens
     )
     registro.save()
     return registro
+
+
+def marquez(request):
+    if request.method == 'GET':
+        tipo = request.GET.get('tipo', '')
+        dato = request.GET.get('dato', '')
+        direccion = request.GET.get('direccion', '')
+        ciclo_caja = CicloCaja.objects.all().last()
+        if ciclo_caja.recaudado is not None:
+            new_ciclo_caja = CicloCaja(cicloMensual=ciclo_caja.cicloMensual, cicloCaja=(ciclo_caja.cicloCaja + 1), inicioCaja=now())
+            new_ciclo_caja.save()
+            ciclo_caja = CicloCaja.objects.all().last()
+        
+        if int(direccion) == 0:
+            direccion = 'ENTRADA'
+            if int(tipo) == 0:
+                try:
+                    user = Persona.objects.get(nrTarjeta=int(dato))
+                    if user.estacionamiento:
+                        registro_estacionamiento('SOCIO', user, direccion, 'SI', ciclo_caja, 'Entrada Marquez registrada, el socio no tiene deuda e intentó ingresar con el número de socio. Se le autorizó la entrada.')
+                        registro_estacionamiento('SOCIO', user, 'SALIDA', 'SI', ciclo_caja, 'Salida Marquez registrada, el socio no tiene deuda. Se le autorizó la salida')
+                        messages.warning(request, f'Entrada Socio Registrada {user.nombre_apellido}')
+                    else:
+                        registro_estacionamiento('SOCIO-MOROSO', user, direccion, 'NO', ciclo_caja, 'El socio tiene deuda e intentó ingresar con el número de socio. Al tener deuda no puede ingresar por Marquez. Debe pagar tarifa del No Socio.')
+                        messages.warning(request, 'Usted es Socio-Moroso, debe ingresar con su DNI')
+                        rta = '#7'  # Registro Socio Moroso el usuario debe dirigirse a la cabina de portería
+
+                except:
+                    messages.warning(request, 'La tarjeta que ingresó es incorrecta. Ingrese el DNI')
+                    rta = '#2'  # El usuario No existe ingresar DNI
+            elif int(tipo) == 1:
+                try:
+                    user = Persona.objects.get(dni=int(dato))
+                    if user.estacionamiento:
+                        registro_estacionamiento('SOCIO', user, direccion, 'SI', ciclo_caja, 'Entrada Marquez registrada, el socio no tiene deuda e intentó ingresar con el número de DNI. Se le autorizó la entrada.')
+                        registro_estacionamiento('SOCIO', user, 'SALIDA', 'SI', ciclo_caja, 'Salida Marquez registrada, el socio no tiene deuda. Se le autorizó la salida')
+                        messages.warning(request, f'Entrada Socio Registrada {user.nombre_apellido}')
+                        rta = '#1'  # Salida socio autorizada por dni
+
+                    else:
+                        registro_estacionamiento('SOCIO-MOROSO', user, direccion, 'NO', ciclo_caja, 'El socio tiene deuda e intentó ingresar con el número de DNI. Al tener deuda no puede ingresar por Marquez. Debe pagar tarifa del No Socio.')
+                        messages.warning(request, 'Usted es Socio-Moroso, debe ingresar con su DNI')
+                        rta = '#7'  # Registro Socio Moroso el usuario debe dirigirse a la cabina de portería
+                except:
+                    messages.warning(request, 'El DNI que ingresó no esta vinculado.')
+                    rta = '#2'  # El usuario No existe ingresar DNI
+
 
 
 def respuesta(request):
