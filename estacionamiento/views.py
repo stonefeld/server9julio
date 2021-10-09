@@ -611,6 +611,7 @@ def respuesta(request):
         tipo = request.GET.get('tipo', '')
         dato = request.GET.get('dato', '')
         direccion = request.GET.get('direccion', '')
+        teclado = request.GET.get('teclado','')
         ciclo_caja = CicloCaja.objects.all().last()
         if ciclo_caja.recaudado is not None:
             new_ciclo_caja = CicloCaja(cicloMensual=ciclo_caja.cicloMensual, cicloCaja=(ciclo_caja.cicloCaja + 1), inicioCaja=now())
@@ -681,20 +682,36 @@ def respuesta(request):
 
                 except:
                     resultado = funcion_cobros(dato)
-                    if resultado == 'NO':
-                        registro_estacionamiento('NOSOCIO', dato, direccion, 'NO', ciclo_caja, 'El No-Socio intentó egresar ingresando el DNI. El No-Socio no pagó la tarifa correspondiente y excedió el tiempo de tolerancia. Se le rechazó la salida.')
-                        messages.warning(request, 'El No-Socio no pagó y excedió tiempo de tolerancia')
-                        rta = '#5'  # No puede salir
+                    if teclado == 1:
+                        if resultado == 'NO':
+                            registro_estacionamiento('NOSOCIO', dato, direccion, 'NO', ciclo_caja, 'El No-Socio intentó egresar ingresando el DNI. El No-Socio no pagó la tarifa correspondiente y excedió el tiempo de tolerancia. Se le rechazó la salida.')
+                            messages.warning(request, 'El No-Socio no pagó y excedió tiempo de tolerancia')
+                            rta = '#5'  # No puede salir
 
-                    elif resultado == 'SI':
-                        registro = registro_estacionamiento('NOSOCIO', dato, direccion, resultado, ciclo_caja, 'El No-Socio intentó egresar ingresando el DNI. El No-Socio salió fuera del tiempo de tolerancia. Al haber pagado la tarifa correspondiente se le autorizó la salida.')
-                        messages.warning(request, 'Salida No-Socio autorizada')
-                        rta = '#1'  # Salida no socio autorizada
+                        elif resultado == 'SI':
+                            registro = registro_estacionamiento('NOSOCIO', dato, direccion, 'NO', ciclo_caja, 'El No-Socio intentó egresar ingresando el DNI. El No-Socio intento egresar por teclado. Se le rechazó la salida.')
+                            messages.warning(request, 'Salida No-Socio autorizada')
+                            rta = '#1'  # Salida no socio autorizada
 
+                        else:
+                            registro = registro_estacionamiento('NOSOCIO', dato, direccion, resultado, ciclo_caja, 'El No-Socio intentó egresar ingresando el DNI. El No-Socio salió dentro del tiempo de tolerancia. Se le autorizó la salida.')
+                            messages.warning(request, 'Salida No-Socio autorizada')
+                            rta = '#1'  # Salida no socio autorizada
                     else:
-                        registro = registro_estacionamiento('NOSOCIO', dato, direccion, resultado, ciclo_caja, 'El No-Socio intentó egresar ingresando el DNI. El No-Socio salió dentro del tiempo de tolerancia. Se le autorizó la salida.')
-                        messages.warning(request, 'Salida No-Socio autorizada')
-                        rta = '#1'  # Salida no socio autorizada
+                        if resultado == 'NO':
+                            registro_estacionamiento('NOSOCIO', dato, direccion, 'NO', ciclo_caja, 'El No-Socio intentó egresar ingresando el DNI. El No-Socio no pagó la tarifa correspondiente y excedió el tiempo de tolerancia. Se le rechazó la salida.')
+                            messages.warning(request, 'El No-Socio no pagó y excedió tiempo de tolerancia')
+                            rta = '#5'  # No puede salir
+
+                        elif resultado == 'SI':
+                            registro = registro_estacionamiento('NOSOCIO', dato, direccion, resultado, ciclo_caja, 'El No-Socio intentó egresar ingresando el DNI. El No-Socio salió fuera del tiempo de tolerancia. Al haber pagado la tarifa correspondiente se le autorizó la salida.')
+                            messages.warning(request, 'Salida No-Socio autorizada')
+                            rta = '#1'  # Salida no socio autorizada
+
+                        else:
+                            registro = registro_estacionamiento('NOSOCIO', dato, direccion, resultado, ciclo_caja, 'El No-Socio intentó egresar ingresando el DNI. El No-Socio salió dentro del tiempo de tolerancia. Se le autorizó la salida.')
+                            messages.warning(request, 'Salida No-Socio autorizada')
+                            rta = '#1'  # Salida no socio autorizada
 
             else:
                 try:
