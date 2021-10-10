@@ -32,7 +32,7 @@ SECRET_KEY = config['SECRET_KEY']
 DEBUG = True
 
 #                Vieja IP         DDNS                     TMP                 Nueva IP         Monti
-ALLOWED_HOSTS = ['192.168.0.180', 'server9julio.ddns.net', 'server9julio.net', '192.168.49.30', '192.168.100.39']
+ALLOWED_HOSTS = ['192.168.0.180', 'server9julio.ddns.net', 'server9julio.net', '192.168.49.30', '192.168.100.39', 'localhost']
 
 
 # Application definition
