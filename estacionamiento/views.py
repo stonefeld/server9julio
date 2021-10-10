@@ -3,8 +3,12 @@ from datetime import date, time, timedelta, datetime
 from io import BytesIO
 import json
 import os
-from threading import Thread
-
+from typing import final
+from django.shortcuts import render
+import qrcode
+import qrcode.image.svg
+from io import BytesIO
+from scripts.client import client
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib import messages
@@ -43,10 +47,10 @@ def postpone(function):
     return decorator
 
 
+
 @postpone
-def socket_arduino(cantidad):
-    # Completar con la ip del esp.
-    client(ip='', cantidad=cantidad)
+def socket_arduino(ip,accion='abrir_tiempo',cantidad=1):
+    client(ip=ip, accion=accion,cantidad=cantidad)
 
 
 @login_required
@@ -553,12 +557,62 @@ def registro_estacionamiento(tipo, dato, direccion, autorizado, ciclo_caja, mens
     return registro
 
 
-def respuesta(request):
+def marquez(request):
     if request.method == 'GET':
-        # El tipo de dato que vamos a recibir (NrTarjeta=0/DNI=1/Proveedor=2)
         tipo = request.GET.get('tipo', '')
         dato = request.GET.get('dato', '')
         direccion = request.GET.get('direccion', '')
+        ciclo_caja = CicloCaja.objects.all().last()
+        if ciclo_caja.recaudado is not None:
+            new_ciclo_caja = CicloCaja(cicloMensual=ciclo_caja.cicloMensual, cicloCaja=(ciclo_caja.cicloCaja + 1), inicioCaja=now())
+            new_ciclo_caja.save()
+            ciclo_caja = CicloCaja.objects.all().last()
+        
+        if int(direccion) == 0:
+            direccion = 'ENTRADA'
+            if int(tipo) == 0:
+                try:
+                    user = Persona.objects.get(nrTarjeta=int(dato))
+                    if user.estacionamiento:
+                        registro_estacionamiento('SOCIO', user, direccion, 'SI', ciclo_caja, 'Entrada Marquez registrada, el socio no tiene deuda e intentó ingresar con el número de socio. Se le autorizó la entrada.')
+                        registro_estacionamiento('SOCIO', user, 'SALIDA', 'SI', ciclo_caja, 'Salida Marquez registrada, el socio no tiene deuda. Se le autorizó la salida')
+                        messages.warning(request, f'Entrada Socio Registrada {user.nombre_apellido}')
+                    else:
+                        registro_estacionamiento('SOCIO-MOROSO', user, direccion, 'NO', ciclo_caja, 'El socio tiene deuda e intentó ingresar con el número de socio. Al tener deuda no puede ingresar por Marquez. Debe pagar tarifa del No Socio.')
+                        messages.warning(request, 'Usted es Socio-Moroso, debe ingresar con su DNI')
+                        rta = '#7'  # Registro Socio Moroso el usuario debe dirigirse a la cabina de portería
+
+                except:
+                    messages.warning(request, 'La tarjeta que ingresó es incorrecta. Ingrese el DNI')
+                    rta = '#2'  # El usuario No existe ingresar DNI
+            elif int(tipo) == 1:
+                try:
+                    user = Persona.objects.get(dni=int(dato))
+                    if user.estacionamiento:
+                        registro_estacionamiento('SOCIO', user, direccion, 'SI', ciclo_caja, 'Entrada Marquez registrada, el socio no tiene deuda e intentó ingresar con el número de DNI. Se le autorizó la entrada.')
+                        registro_estacionamiento('SOCIO', user, 'SALIDA', 'SI', ciclo_caja, 'Salida Marquez registrada, el socio no tiene deuda. Se le autorizó la salida')
+                        messages.warning(request, f'Entrada Socio Registrada {user.nombre_apellido}')
+                        rta = '#1'  # Salida socio autorizada por dni
+
+                    else:
+                        registro_estacionamiento('SOCIO-MOROSO', user, direccion, 'NO', ciclo_caja, 'El socio tiene deuda e intentó ingresar con el número de DNI. Al tener deuda no puede ingresar por Marquez. Debe pagar tarifa del No Socio.')
+                        messages.warning(request, 'Usted es Socio-Moroso, debe ingresar con su DNI')
+                        rta = '#7'  # Registro Socio Moroso el usuario debe dirigirse a la cabina de portería
+                except:
+                    messages.warning(request, 'El DNI que ingresó no esta vinculado.')
+                    rta = '#2'  # El usuario No existe ingresar DNI
+
+
+
+def respuesta(request):
+    if request.method == 'GET':
+        # El tipo de dato que vamos a recibir (NrTarjeta=0/DNI=1/Proveedor=2)
+        ip_barrera_entrada = ''
+        ip_barrera_salida = ''
+        tipo = request.GET.get('tipo', '')
+        dato = request.GET.get('dato', '')
+        direccion = request.GET.get('direccion', '')
+        teclado = request.GET.get('teclado','')
         ciclo_caja = CicloCaja.objects.all().last()
         if ciclo_caja.recaudado is not None:
             new_ciclo_caja = CicloCaja(cicloMensual=ciclo_caja.cicloMensual, cicloCaja=(ciclo_caja.cicloCaja + 1), inicioCaja=now())
@@ -584,7 +638,7 @@ def respuesta(request):
                         # Abrir barrera
                         messages.warning(request, 'Salida Socio autorizada')
                         rta = '#1'  # Salida socio
-
+                        socket_arduino(ip=ip_barrera_salida)
                     else:
                         resultado = funcion_cobros(dato)
                         if resultado == 'NO':
@@ -601,6 +655,7 @@ def respuesta(request):
                             registro = registro_estacionamiento('SOCIO-MOROSO', user, direccion, resultado, ciclo_caja, 'El socio tiene deuda e intentó egresar ingresando el número de socio. Salió dentro del tiempo de tolerancia. Se le autorizó la salida.')
                             messages.warning(request, 'Salida Socio-Moroso autorizada')
                             rta = '#1'   # Salida sociomoroso autorizada
+                            socket_arduino(ip=ip_barrera_salida)
 
                 except:
                     messages.warning(request, 'La tarjeta no existe. Debe ingresar con DNI')
@@ -622,6 +677,7 @@ def respuesta(request):
 
                         messages.warning(request, 'Salida Socio autorizada por DNI')
                         rta = '#1'  # Salida socio autorizada por dni
+                        socket_arduino(ip=ip_barrera_salida)
 
                     else:
                         resultado = funcion_cobros(dato)
@@ -634,28 +690,49 @@ def respuesta(request):
                             registro = registro_estacionamiento('SOCIO-MOROSO', user, direccion, resultado, ciclo_caja, 'El socio tiene deuda e intentó egresar ingresando el DNI. El socio salió fuera del tiempo de tolerancia. Al haber pagado la tarifa correspondiente se le autorizó la salida.')
                             messages.warning(request, 'Salida Socio-Moroso autorizada')
                             rta = '#1'  # Salida sociomoroso autorizada
+                            socket_arduino(ip=ip_barrera_salida)
 
                         else:
                             registro = registro_estacionamiento('SOCIO-MOROSO', user, direccion, resultado, ciclo_caja, 'El socio tiene deuda e intentó egresar ingresando el DNI. El socio salió dentro del tiempo de tolerancia. Se le autorizó la salida.')
                             messages.warning(request, 'Salida Socio-Moroso autorizada')
                             rta = '#1'  # Salida sociomoroso autorizada
+                            socket_arduino(ip=ip_barrera_salida)
 
                 except:
                     resultado = funcion_cobros(dato)
-                    if resultado == 'NO':
-                        registro_estacionamiento('NOSOCIO', dato, direccion, 'NO', ciclo_caja, 'El no-socio intentó egresar ingresando el DNI. El no-socio no pagó la tarifa correspondiente y excedió el tiempo de tolerancia. Se le rechazó la salida.')
-                        messages.warning(request, 'El No-Socio no pagó y excedió tiempo de tolerancia')
-                        rta = '#5'  # No puede salir
+                    if teclado == 1:
+                        if resultado == 'NO':
+                            registro_estacionamiento('NOSOCIO', dato, direccion, 'NO', ciclo_caja, 'El No-Socio intentó egresar ingresando el DNI. El No-Socio no pagó la tarifa correspondiente y excedió el tiempo de tolerancia. Se le rechazó la salida.')
+                            messages.warning(request, 'El No-Socio no pagó y excedió tiempo de tolerancia')
+                            rta = '#5'  # No puede salir
 
-                    elif resultado == 'SI':
-                        registro = registro_estacionamiento('NOSOCIO', dato, direccion, resultado, ciclo_caja, 'El no-socio intentó egresar ingresando el DNI. El no-socio salió fuera del tiempo de tolerancia. Al haber pagado la tarifa correspondiente se le autorizó la salida.')
-                        messages.warning(request, 'Salida No-Socio autorizada')
-                        rta = '#1'  # Salida no socio autorizada
+                        elif resultado == 'SI':
+                            registro = registro_estacionamiento('NOSOCIO', dato, direccion, 'NO', ciclo_caja, 'El No-Socio intentó egresar ingresando el DNI. El No-Socio intento egresar por teclado. Se le rechazó la salida.')
+                            messages.warning(request, 'Salida No-Socio autorizada')
+                            rta = '#5'  # Salida no socio autorizada
 
+                        else:
+                            registro = registro_estacionamiento('NOSOCIO', dato, direccion, resultado, ciclo_caja, 'El No-Socio intentó egresar ingresando el DNI. El No-Socio salió dentro del tiempo de tolerancia. Se le autorizó la salida.')
+                            messages.warning(request, 'Salida No-Socio autorizada')
+                            rta = '#1'  # Salida no socio autorizada
+                            socket_arduino(ip=ip_barrera_salida)
                     else:
-                        registro = registro_estacionamiento('NOSOCIO', dato, direccion, resultado, ciclo_caja, 'El no-socio intentó egresar ingresando el DNI. El no-socio salió dentro del tiempo de tolerancia. Se le autorizó la salida.')
-                        messages.warning(request, 'Salida No-Socio autorizada')
-                        rta = '#1'  # Salida no socio autorizada
+                        if resultado == 'NO':
+                            registro_estacionamiento('NOSOCIO', dato, direccion, 'NO', ciclo_caja, 'El No-Socio intentó egresar ingresando el DNI. El No-Socio no pagó la tarifa correspondiente y excedió el tiempo de tolerancia. Se le rechazó la salida.')
+                            messages.warning(request, 'El No-Socio no pagó y excedió tiempo de tolerancia')
+                            rta = '#5'  # No puede salir
+
+                        elif resultado == 'SI':
+                            registro = registro_estacionamiento('NOSOCIO', dato, direccion, resultado, ciclo_caja, 'El No-Socio intentó egresar ingresando el DNI. El No-Socio salió fuera del tiempo de tolerancia. Al haber pagado la tarifa correspondiente se le autorizó la salida.')
+                            messages.warning(request, 'Salida No-Socio autorizada')
+                            rta = '#1'  # Salida no socio autorizada
+                            socket_arduino(ip=ip_barrera_salida)
+
+                        else:
+                            registro = registro_estacionamiento('NOSOCIO', dato, direccion, resultado, ciclo_caja, 'El No-Socio intentó egresar ingresando el DNI. El No-Socio salió dentro del tiempo de tolerancia. Se le autorizó la salida.')
+                            messages.warning(request, 'Salida No-Socio autorizada')
+                            rta = '#1'  # Salida no socio autorizada
+                            socket_arduino(ip=ip_barrera_salida)
 
             else:
                 try:
@@ -663,6 +740,7 @@ def respuesta(request):
                     registro = registro_estacionamiento('PROVEEDOR', proveedor_, direccion, 'SI', ciclo_caja)
                     messages.warning(request, 'Salida Proveedor autorizada')
                     rta = '#1'  # Salida proveedores autorizada
+                    socket_arduino(ip=ip_barrera_salida)
                     funcion_eliminar_estacionado(registro)
 
                 except:
@@ -684,6 +762,7 @@ def respuesta(request):
                         messages.warning(request, 'Entrada Socio registrada')
                         # Abrir barrera
                         rta = '#1'  # Registro Socio
+                        socket_arduino(ip=ip_barrera_salida)
 
                     else:
                         registro_estacionamiento('SOCIO-MOROSO', user, direccion, 'NO', ciclo_caja, 'El socio tiene deuda e intentó ingresar con el número de socio. Al tener deuda debe ingresar con el DNI. Se le rechazó la entrada.')
@@ -701,17 +780,20 @@ def respuesta(request):
                         registro = registro_estacionamiento('SOCIO', user, direccion, 'SI', ciclo_caja, 'El socio no tiene deuda e intentó ingresar con el DNI. Se le autorizó la entrada.')
                         messages.warning(request, 'Entrada registrada por DNI. Acercarse a portería')
                         rta = '#3'  # Registro Socio
+                        socket_arduino(ip=ip_barrera_salida)
 
                     else:
                         registro = registro_estacionamiento('SOCIO-MOROSO', user, direccion, 'SI', ciclo_caja, 'El socio tiene deuda e intentó ingresar con el DNI. Se le autorizó la entrada.')
                         # Abrir barrera
                         messages.warning(request, 'Entrada registrada por DNI. Acercarse a portería')
                         rta = '#3'  # Registro Socio Moroso el usuario debe dirigirse a la cabina de portería
+                        socket_arduino(ip=ip_barrera_salida)
 
                 except:
                     registro = registro_estacionamiento('NOSOCIO', int(dato), direccion, 'SI', ciclo_caja, 'El no-socio intentó ingresar con el DNI. Se le autorizó la entrada.')
                     messages.warning(request, 'Entrada registrada por DNI. Acercarse a portería')
                     rta = '#3'  # NoSocio registrado el usuarios debe dirigirse a la cabina de portería
+                    socket_arduino(ip=ip_barrera_salida)
 
             else:
                 try:
@@ -720,6 +802,7 @@ def respuesta(request):
                     # Abrir barrera
                     messages.warning(request, 'Entrada Proveedor registrada')
                     rta = '#1'  # Entrada autorizada
+                    socket_arduino(ip=ip_barrera_salida)
 
                 except:
                     messages.warning(request, 'El código que digitó es incorrecto')
@@ -731,7 +814,7 @@ def respuesta(request):
 
             except:
                 pass
-
+        
         return JsonResponse(rta, safe=False)
 
 

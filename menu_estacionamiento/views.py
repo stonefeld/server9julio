@@ -62,6 +62,10 @@ def tarifas_especiales(request):
 def playground(request):
     return render(request, 'menu_estacionamiento/playground.html', {'title': 'Playground'})
 
+@login_required
+def marquez(request):
+    return render(request, 'menu_estacionamiento/marquez.html', {})
+
 
 @login_required
 def resumen_tiempo_real(request):
