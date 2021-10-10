@@ -64,6 +64,11 @@ def playground(request):
 
 
 @login_required
+def marquez(request):
+    return render(request, 'menu_estacionamiento/marquez.html', {})
+
+
+@login_required
 def resumen_tiempo_real(request):
     if request.method == 'GET':
         estacionamiento = Estacionado.objects.all()

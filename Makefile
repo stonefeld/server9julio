@@ -7,7 +7,7 @@ new:
 ifeq (,$(wildcard ./media/usuario.json))
 	@echo "Debe exportar los datos antes de ejecutar esta tarea\nEjecute 'make old'"
 else
-	find . -type d -name "migrations" | xargs rm -r
+	find . -type d -name "migrations" | xargs -r rm -r
 	python3 manage.py makemigrations estacionamiento usuario usuariosistema registroGeneral registroTenis registroPileta
 	python3 manage.py migrate
 	@python3 manage.py shell < scripts/new_db.py

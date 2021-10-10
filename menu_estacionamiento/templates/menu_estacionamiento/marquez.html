@@ -1,0 +1,144 @@
+{% extends "menu_estacionamiento.html" %}
+{% load static %}
+
+{% block subtitle %}
+  <h1>Márquez</h1>
+{% endblock subtitle %}
+
+{% block content %}
+
+  <div style="padding: 30px;" >
+
+    <div class="container" style="padding: 20px;">
+      <div class="card mb-4">
+        <div class="card-body">
+          <h5>Márquez</h5>
+          <div class="row justify-content-center" style="padding-top: 20px; padding-bottom: 20px;">
+
+            <div class="col">
+              <label>Número de tarjeta</label>
+              <input type="number" min="0" class="form-control" placeholder="Numero de Trajeta" id=numTarjeta>
+              <small id="emailHelp" class="form-text text-muted">Ingrese su número de la tarjeta de identifación</small>
+            </div>
+
+            <div class="col">
+
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" id="entradaTarjeta" value="0">
+                <label class="form-check-label" for="entradaTarjeta">Entrada</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" id="salidaTarjeta" value="1">
+                <label class="form-check-label" for="salidaTarjeta">Salida</label>
+              </div>
+
+            </div>
+
+            <div class="col">
+              <div class="d-flex justify-content-center" style="padding-top: 30px;">
+                <button class="btn btn-danger" id="saveNumTarj">Guardar</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="row justify-content-center" style="padding-top: 20px; padding-bottom: 20px;">
+
+            <div class="col">
+              <label>Número de DNI</label>
+              <input type="number" min="0" class="form-control" placeholder="Número de DNI" id="numDNI" >
+              <small id="emailHelp" class="form-text text-muted">Ingrese su DNI</small>
+            </div>
+
+            <div class="col">
+
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" id="entradaDNI" value="0">
+                <label class="form-check-label" for="entradaDNI">Entrada</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" id="salidaDNI" value="1">
+                <label class="form-check-label" for="salidaDNI">Salida</label>
+              </div>
+            </div>
+
+            <div class="col">
+              <div class="d-flex justify-content-center" style="padding-top: 30px;">
+                <button class="btn btn-danger" id="saveNumDNI">Guardar</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script type="text/javascript">
+
+    document.getElementById('saveNumTarj').addEventListener('click',()=>{
+      agarrarDatosTarjetaYDir()
+    });
+
+    const agarrarDatosTarjetaYDir = async () => {
+      var numTarjeta = document.getElementById('numTarjeta').value
+      var entradaTarj = document.getElementById('entradaTarjeta')
+      var salidaTarj = document.getElementById('salidaTarjeta')
+
+      if(entradaTarj.checked) {
+        var checkedTarj = document.getElementById('entradaTarjeta').value
+        try {
+          const res = await fetch(`/estacionamiento/marquez/?tipo=0&dato=${numTarjeta}&direccion=${checkedTarj}`)
+          const resp = await res.json();
+          redirect();
+        } catch (err) {
+          console.error(err);
+        }
+      } else if(salidaTarj) {
+        var checkedTarj2 = document.getElementById('salidaTarjeta').value
+        try {
+          const res = await fetch(`/estacionamiento/marquez/?tipo=0&dato=${numTarjeta}&direccion=${checkedTarj2}`)
+          const resp = await res.json();
+          redirect();
+        } catch (err) {
+          console.error(err);
+        }
+      }
+    }
+
+    document.getElementById('saveNumDNI').addEventListener('click',()=> {
+      agarrarDatosDNIYDir()
+    });
+
+    const agarrarDatosDNIYDir = async () => {
+      var numDNI = document.getElementById('numDNI').value
+      var entradaDNI = document.getElementById('entradaDNI')
+      var salidaDNI = document.getElementById('salidaDNI')
+
+      if(entradaDNI.checked) {
+        var checkedDNI = document.getElementById('entradaDNI').value
+        try {
+          const res = await fetch(`/estacionamiento/marquez/?tipo=1&dato=${numDNI}&direccion=${checkedDNI}`)
+          const resp = await res.json();
+          redirect();
+        } catch (err) {
+          console.error(err);
+        }
+      } else if(salidaDNI) {
+        var checkedDNI2 = document.getElementById('salidaDNI').value
+        try {
+          const res = await fetch(`/estacionamiento/marquez/?tipo=1&dato=${numDNI}&direccion=${checkedDNI2}`)
+          const resp = await res.json();
+          redirect();
+        } catch (err) {
+          console.error(err);
+        }
+      }
+    };
+
+    const redirect = () => {
+      location.href = "/menu_estacionamiento/playground"
+    };
+  </script>
+
+{% endblock content %}
