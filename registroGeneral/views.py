@@ -236,9 +236,7 @@ def downloadHistory(request):
             values_list('persona', 'lugar',
                         'tiempo', 'direccion', 'autorizado'):
         entrada_list = list(entrada)
-        entrada_list[0] = Persona.objects.\
-            get(id=entrada_list[0]).nombre_apellido
-        entrada_list[2] = localtime(entrada_list[2])
+        entrada_list[0] = Persona.objects.get(id=entrada_list[0]).nombre_apellido
         writer.writerow(entrada_list)
 
     response['Content-Disposition'] = 'attachment; filename="historial.csv"'
