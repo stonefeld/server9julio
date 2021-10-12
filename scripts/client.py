@@ -1,31 +1,21 @@
-import sys
-import socket
+def client(ip='192.168.49.31', accion='abrir_tiempo', cantidad=1):
+    import socket
 
-argv = sys.argv
-argv.remove(argv[0])
+    for i in range(cantidad):
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        server_address = (ip, 5050)
+        s.connect(server_address)
+        try:
+            if accion == 'abrir_tiempo':
+                message = b'#T'
 
-accion = argv[0]
-cantidad = int(argv[1])
-ip = '192.168.0.181'
+            elif accion == 'abrir':
+                message = b'#A'
 
-for i in range(cantidad):
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    print(f'Conectando a la ip: {ip} en el puerto: 5050')
-    server_address = (ip, 5050)
-    s.connect(server_address)
-    try:
-        if accion == 'abrir_tiempo':
-            message = b'#T'
+            else:
+                message = b'#C'
 
-        elif accion == 'abrir':
-            message = b'#A'
+            s.sendall(message)
 
-        else:
-            message = b'#C'
-
-        print(f'Enviando {str(message)}')
-        s.sendall(message)
-
-    finally:
-        print('Cerrando conexión')
-        s.close()
+        finally:
+            s.close()

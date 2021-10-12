@@ -1,4 +1,3 @@
-
 import os
 
 from django.conf import settings
@@ -16,7 +15,9 @@ def upload(request):
     if request.method == 'POST':
         try:
             deudaMax = request.POST.get('deuda')
-            deuda = Deuda(deuda=deudaMax)
+            deuda = Deuda.objects.all().last()
+            deuda.deuda = deudaMax
+            deuda.save()
 
             media_root = settings.MEDIA_ROOT
             location = os.path.join(media_root, 'saldos.csv')

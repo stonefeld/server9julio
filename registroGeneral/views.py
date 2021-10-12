@@ -1,8 +1,6 @@
 import csv
-import os
 from threading import Thread
 
-from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
@@ -14,6 +12,7 @@ from django_tables2 import RequestConfig
 
 from .models import EntradaGeneral, Persona
 from .tables import EntradaGeneralTable, EntradaGeneralNoAutorizadaTable
+from scripts.client import client
 
 
 def postpone(function):
@@ -23,6 +22,11 @@ def postpone(function):
         t.start()
 
     return decorator
+
+
+@postpone
+def socket_arduino(cantidad):
+    client(cantidad=cantidad)
 
 
 def respuesta(request):
@@ -232,18 +236,9 @@ def downloadHistory(request):
             values_list('persona', 'lugar',
                         'tiempo', 'direccion', 'autorizado'):
         entrada_list = list(entrada)
-        entrada_list[0] = Persona.objects.\
-            get(id=entrada_list[0]).nombre_apellido
-        entrada_list[2] = localtime(entrada_list[2])
+        entrada_list[0] = Persona.objects.get(id=entrada_list[0]).nombre_apellido
         writer.writerow(entrada_list)
 
     response['Content-Disposition'] = 'attachment; filename="historial.csv"'
 
     return response
-
-
-@postpone
-def socket_arduino(cantidad):
-    base_dir = settings.BASE_DIR
-    script_loc = os.path.join(base_dir, 'scripts/client.py')
-    os.system(f'python3 {script_loc} abrir_tiempo {cantidad}')

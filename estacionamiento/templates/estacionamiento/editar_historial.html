@@ -4,11 +4,10 @@
 {% load crispy_forms_tags %}
 
 {% block subtitle %}
-  <h1>Detalle Estacionamiento</h1>
+  <h1>Editar Estacionamiento</h1>
 {% endblock subtitle %}
 
 {% block content %}
-
   <!-- NO DARLE PELOTA A ESTO, su unica funcionalidad es tener una forma de saber -->
   <!-- cual era el tipo original del registro para las funcionalidades en js.     -->
   <!-- Debe haber una forma mas linda de hacerlo, pero con el apuro lo solucione  -->
@@ -29,134 +28,117 @@
             <form class="form-container" method="POST">
               <div class="form-group">
                 {% csrf_token %}
-                <div class="row">
-                  {% if obj.tipo == 'SOCIO' or obj.tipo == 'SOCIO-MOROSO' %}
+                {% if obj.tipo == 'SOCIO' or obj.tipo == 'SOCIO-MOROSO' %}
+                  <!-- Esta seccion esta oculta para poder completar el form con los datos desde js. -->
+                  <div style="padding-bottom:20px">
+                    <div style="display:none">
+                      {{ form.persona|as_crispy_field }}
+                    </div>
+                    <label class="requierField">Socio</label>
+                    <button type="button" data-toggle="modal" data-target="#exampleModal" class="button-vincular-socio" style="text-decoration:none" id="button-vincular">{{ obj.persona.nombre_apellido }}</button>
+                  </div>
+
+                  <div class="row">
                     <div class="col-6">
-
-                      <!-- Esta seccion esta oculta para poder completar el form con los datos desde js. -->
-                      <div style="display:none">
-                        {{ form.persona|as_crispy_field }}
-                      </div>
-
+                      {{ form.noSocio|as_crispy_field }}
+                    </div>
+                    <div class="col-6">
+                      {{ form.tipo|as_crispy_field }}
+                    </div>
+                  </div>
+                {% elif obj.tipo == 'NOSOCIO' %}
+                  <div id="form-persona" style="display:none">
+                    <div style="padding-bottom:20px">
                       <label class="requierField">Socio</label>
                       <button type="button" data-toggle="modal" data-target="#exampleModal" class="button-vincular-socio" style="text-decoration:none" id="button-vincular">{{ obj.persona.nombre_apellido }}</button>
                     </div>
-                    <div class="col-6">
-                      {{ form.noSocio|as_crispy_field }}
-                    </div>
-                  {% elif obj.tipo == 'NOSOCIO' %}
-                    <div class="col-6">
+                  </div>
 
+                  <div class="row">
+                    <div class="col-6">
                       <!-- Esta seccion esta oculta para poder completar el form con los datos desde js. -->
                       <div style="display:none">
                         {{ form.persona|as_crispy_field }}
                       </div>
-
                       {{ form.noSocio|as_crispy_field }}
                     </div>
                     <div class="col-6">
-                      <div id="form-persona" style="display:none">
-                        <label class="requierField">Socio</label>
-                        <button type="button" data-toggle="modal" data-target="#exampleModal" class="button-vincular-socio" style="text-decoration:none" id="button-vincular">{{ obj.persona.nombre_apellido }}</button>
-                      </div>
+                      {{ form.tipo|as_crispy_field }}
                     </div>
-                  {% elif obj.tipo == 'PROVEEDOR' %}
-                    <div class="col-6">
+                  </div>
+                {% elif obj.tipo == 'PROVEEDOR' %}
+                  <div class="col-6">
 
-                      <!-- Esta seccion esta oculta para poder completar el form con los datos desde js. -->
-                      <div style="display:none">
-                        {{ form.proveedor|as_crispy_field }}
-                      </div>
-
-                      <label class="requierField">Proveedor</label>
-                      <button type="button" data-toggle="modal" data-target="#exampleModal" class="button-vincular-socio" style="text-decoration:none" id="button-vincular">{{ obj.proveedor.nombre_proveedor }}</button>
+                    <!-- Esta seccion esta oculta para poder completar el form con los datos desde js. -->
+                    <div style="display:none">
+                      {{ form.proveedor|as_crispy_field }}
                     </div>
-                    <div class="col-6">
-                      <label class="requierField">ID</label>
-                      <input class="form-control" name="idProveedor" type="number" value="{{ obj.proveedor.idProveedor }}"></input>
+
+                    <label class="requierField">Proveedor</label>
+                    <button type="button" data-toggle="modal" data-target="#exampleModal" class="button-vincular-socio" style="text-decoration:none" id="button-vincular">{{ obj.proveedor.nombre_proveedor }}</button>
+                  </div>
+                  <div class="col-6">
+                    <label class="requierField">ID</label>
+                    <input class="form-control" name="idProveedor" type="number" value="{{ obj.proveedor.idProveedor }}"></input>
+                  </div>
+                {% endif %}
+              </div>
+              {{ form.mensaje|as_crispy_field }}
+
+              <div class="form-group" style="padding-top:10px">
+                <a href="{% url 'estacionamiento:detalle' obj.id origen %}" style="text-decoration:none" class="btn btn-outline-info">Cancelar</a>
+                <button type="button" data-toggle="modal" data-target="#exampleModal" class="btn btn-outline-info" style="text-decoration:none; display:none" id="vincular">Vincular socio</button>
+                <button class="btn btn-outline-info" type="submit">Guardar</button>
+              </div>
+
+              <!-- Esta es la seccion del modal, por tu bien, no tocar!!! -->
+              <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      {% if obj.tipo == 'PROVEEDOR' %}
+                        <h5 class="modal-title" id="exampleModalLabel">Editar Proveedor</h5>
+                      {% else %}
+                        <h5 class="modal-title" id="exampleModalLabel">Editar Socio</h5>
+                      {% endif %}
+                      <button type="button" class="btn btn-secondary" id="clear-button">
+                        <span>Borrar búsqueda</span>
+                      </button>
                     </div>
-                  {% endif %}
-                </div>
 
-                <div class="row">
-                  <div class="col-6">
-                    {{ form.tiempo|as_crispy_field }}
-                  </div>
-                  <div class="col-6">
-                    {{ form.tipo|as_crispy_field }}
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col-6">
-                    {{ form.cicloCaja|as_crispy_field }}
-                  </div>
-                  <div class="col-6">
-                    {{ form.direccion|as_crispy_field }}
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col-6">
-                    {{ form.lugar|as_crispy_field }}
-                  </div>
-                  <div class="col-6" style="padding:40px">
-                    {{ form.autorizado|as_crispy_field }}
-                  </div>
-                </div>
-                <div class="form-group" style="padding-top:10px">
-                  <a href="{% url 'estacionamiento:detalle' obj.id %}" style="text-decoration:none" class="btn btn-outline-info">Cancelar</a>
-                  <button type="button" data-toggle="modal" data-target="#exampleModal" class="btn btn-outline-info" style="text-decoration:none; display:none" id="vincular">Vincular socio</button>
-                  <button class="btn btn-outline-info" type="submit">Guardar</button>
-                </div>
-
-                <!-- Esta es la seccion del modal, por tu bien, no tocar!!! -->
-                <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                  <div class="modal-dialog" role="document">
-                    <div class="modal-content">
-                      <div class="modal-header">
-                        {% if obj.tipo == 'PROVEEDOR' %}
-                          <h5 class="modal-title" id="exampleModalLabel">Editar Proveedor</h5>
-                        {% else %}
-                          <h5 class="modal-title" id="exampleModalLabel">Editar Socio</h5>
-                        {% endif %}
-                        <button type="button" class="btn btn-secondary" id="clear-button">
-                          <span>Borrar búsqueda</span>
-                        </button>
-                      </div>
-
-                      <div class="modal-body">
-                        <div class="form-row">
-                          <div class="form-group col-md-12">
-                            <div class="input-group">
-                              <input type="text" class="form-control" name="buscar" placeholder="Buscar..." id="buscar_socio">
-                              <div class="input-group-append">
-                                {% if obj.tipo == 'PROVEEDOR' %}
-                                  <span class="input-group-text">Nombre proveedor</span>
-                                {% else %}
-                                  <span class="input-group-text">Nombre y apellido</span>
-                                {% endif %}
-                              </div>
-                              <table class="table">
-                                <tbody id="personas"></tbody>
-                              </table>
+                    <div class="modal-body">
+                      <div class="form-row">
+                        <div class="form-group col-md-12">
+                          <div class="input-group">
+                            <input type="text" class="form-control" name="buscar" placeholder="Buscar..." id="buscar_socio">
+                            <div class="input-group-append">
+                              {% if obj.tipo == 'PROVEEDOR' %}
+                                <span class="input-group-text">Nombre proveedor</span>
+                              {% else %}
+                                <span class="input-group-text">Nombre y apellido o DNI</span>
+                              {% endif %}
                             </div>
+                            <table class="table">
+                              <tbody id="personas"></tbody>
+                            </table>
                           </div>
                         </div>
                       </div>
+                    </div>
 
-                      <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
-                        {% if obj.persona %}
-                          <a href="{% url 'usuario:detalle' obj.persona.id %}" class="btn btn-primary" style="text-decoration:none">Editar Socio</a>
-                        {% elif obj.proveedor %}
-                          <a href="{% url 'estacionamiento:detalle-proveedor' obj.proveedor.id %}" class="btn btn-primary" style="text-decoration:none">Editar Proveedor</a>
-                        {% endif %}
-                      </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                      {% if obj.persona %}
+                        <a href="{% url 'usuario:detalle' obj.persona.id %}" class="btn btn-primary" style="text-decoration:none">Editar Socio</a>
+                      {% elif obj.proveedor %}
+                        <a href="{% url 'estacionamiento:detalle-proveedor' obj.proveedor.id %}" class="btn btn-primary" style="text-decoration:none">Editar Proveedor</a>
+                      {% endif %}
                     </div>
                   </div>
                 </div>
-                <!-- Aca termina el modal. -->
-
               </div>
+              <!-- Aca termina el modal. -->
+
             </form>
           </div>
         </div>
@@ -165,5 +147,4 @@
   </div>
 
   <script src="{% static 'usuariosistema/editar_historial.js' %}"></script>
-
 {% endblock content%}

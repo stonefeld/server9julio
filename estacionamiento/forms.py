@@ -6,16 +6,11 @@ class EstacionamientoForm(forms.ModelForm):
     class Meta:
         model = RegistroEstacionamiento
         fields = [
-            'identificador',
             'persona',
             'noSocio',
             'proveedor',
             'tipo',
-            'lugar',
-            'tiempo',
-            'direccion',
-            'autorizado',
-            'cicloCaja',
+            'mensaje'
         ]
 
 

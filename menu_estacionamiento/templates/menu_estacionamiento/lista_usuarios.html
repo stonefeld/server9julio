@@ -1,10 +1,11 @@
 {% extends "menu_estacionamiento.html" %}
 
 {% load static %}
+{% load crispy_forms_tags %}
 {% load render_table from django_tables2 %}
 
 {% block subtitle %}
-  <h1>Lista de Proveedores</h1>
+  <h1>Lista de Socios</h1>
 {% endblock subtitle %}
 
 {% block content %}
@@ -28,28 +29,39 @@
         </div>
 
         <div class="p-2">
-          <a href="{% url 'estacionamiento:agregar-proveedor' %}" class="btn btn-outline-info">Agregar un proveedor</a>
-        </div>
-
-        <div class="p-2">
-          <a href="{% url 'menu_estacionamiento:lista_socios' %}" class="btn btn-outline-info">Mostrar socios</a>
+          <a href="{% url 'menu_estacionamiento:proveedores' %}" class="btn btn-outline-info">Mostrar proveedores</a>
         </div>
       </div>
 
-      <!-- Tabla de proveedores -->
       <div style="padding-top:40px; padding-left:10px; padding-right:10px; padding-bottom:10px">
         <table class="table">
           <thead>
             <tr>
               <th class="orderable">
-                <a href="" style="text-decoration: none">ID</a>
+                <a href="#" id="nrSocio" style="text-decoration:none">Nr. Socio</a>
               </th>
               <th class="orderable">
-                <a href="" style="text-decoration: none">Proveedor</a>
+                <a href="#" id="nombre_apellido" style="text-decoration:none">Nombre y Apellido</a>
               </th>
+              <th class="orderable">
+                <a href="#" id="nrTarjeta" style="text-decoration:none">Nr. Tarjeta</a>
+              </th>
+              <th class="orderable">
+                <a href="#" id="dni" style="text-decoration:none">DNI</a>
+              </th>
+              <th class="orderable">
+                <a href="#" id="general" style="text-decoration:none">Autorización</a>
+              </th>
+              <th class="orderable">
+                <a href="#" id="estacionamiento" style="text-decoration:none">Permiso para estacionamiento</a>
+              </th>
+              <th class="orderable">
+                <a href="#" id="deuda" style="text-decoration:none">Deuda</a>
+              </th>
+            </tr>
           </thead>
 
-          <tbody id="proveedores"></tbody>
+          <tbody id="usuarios"></tbody>
         </table>
 
         <nav aria-label="Table navigation">
@@ -60,5 +72,5 @@
     </div>
   </div>
 
-  <script src="{% static 'usuariosistema/proveedores.js' %}">
-{% endblock content %}
+  <script src="{% static 'usuariosistema/usuario.js' %}"></script>
+{% endblock %}

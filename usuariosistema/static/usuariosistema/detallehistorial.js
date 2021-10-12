@@ -1,8 +1,6 @@
 const deleteTarifaModal = document.getElementById('deleteTarifaModal');
 const backDrop = document.getElementById('modalBackDrop');
 
-
-
 function closeModal(){
     newTarifaModal.style.display = 'none';
     deleteTarifaModal.style.display = 'none';
@@ -10,15 +8,13 @@ function closeModal(){
 }
 
 function openModalCobrar(){
-    
-    if(tarifaEspecialForDay){
+    if(tarifaEspecialForDay) {
         deleteTarifaModal.style.display = 'block';
-    }else{
+    } else {
         newTarifaModal.style.display = 'block';
     }
-    
     backDrop.style.display = 'block';
-    }
+}
 
 function initButtons(){
     document.getElementById('')
@@ -27,9 +23,5 @@ function initButtons(){
     document.getElementById('cobrar').addEventListener('click', openModalCobrar);
     document.getElementById('pagarDeuda').addEventListener('click', openModalDeuda);
 }
-
-
-
-
 
 initButtons();

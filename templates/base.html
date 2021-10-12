@@ -22,9 +22,9 @@
     <script type="text/javascript" src="{% static 'usuariosistema/clockpicker/dist/bootstrap-clockpicker.min.js' %}"></script>
 
     {% if title %}
-      <title>Server 9 de Julio | {{ title }}</title>
+      <title>{{ title }} | Servidor SAGVB</title>
     {% else %}
-      <title>Server 9 de Julio</title>
+      <title>Servidor SAGVB</title>
     {% endif %}
   </head>
 
@@ -33,7 +33,6 @@
       <nav class="navbar navbar-expand-md navbar-dark bg-steel fixed-top">
         <div class="container">
           <a href="{% url 'menu_estacionamiento:menu_estacionamiento'%}" class="btn btn-danger navbar-btn mr-4">Ir a Estacionamiento</a>
-          <!-- <button class="btn btn-danger navbar-btn mr-4" href="{% url 'menu_estacionamiento:menu_estacionamiento'%}">Estacionamiento</button>-->
           <a class="navbar-brand mr-4" href="{% url 'usuariosistema:home' %}">Control Molinetes</a>
           <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggle" aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
@@ -42,15 +41,15 @@
             <div class="navbar-nav mr-auto">
               {% if user.is_authenticated %}
                 <a class="nav-item nav-link" style="padding:10px" href="{% url 'usuario:historial' %}">Historial</a>
-                <a class="nav-item nav-link" style="padding:10px" href="{% url 'usuario:lista' %}">Lista de Socios</a>
-                <a class="nav-item nav-link" style="padding:10px" href="{% url 'registroGeneral:registro' %}">Acceso Manual</a>
-                <a class="nav-item nav-link" style="padding:10px" href="{% url 'draganddrop:upload' %}">Actualizar Datos</a>
+                <a class="nav-item nav-link" style="padding:10px" href="{% url 'usuario:lista' %}">Lista de socios</a>
+                <a class="nav-item nav-link" style="padding:10px" href="{% url 'registroGeneral:registro' %}">Acceso manual</a>
+                <a class="nav-item nav-link" style="padding:10px" href="{% url 'draganddrop:upload' %}">Actualizar datos</a>
               {% endif %}
             </div>
 
             <div class="navbar-nav">
               {% if user.is_authenticated %}
-                <a class="nav-item nav-link" href="{% url 'logout' %}">Cerrar sesión</a>
+                <a class="nav-item nav-link" href="/logoutSis">Cerrar sesión</a>
               {% else %}
                 <a class="nav-item nav-link" href="{% url 'login' %}">Iniciar sesión</a>
               {% endif %}
@@ -63,7 +62,7 @@
     <div class="hero-image">
       <div class="hero-text">
         {% block subtitle %}{% endblock subtitle %}
-        <p style="font-size: 20px;">Sistema de Control</p>
+        <p style="font-size: 20px;">Control Molinetes</p>
       </div>
     </div>
 
@@ -76,7 +75,32 @@
     {% endif %}
 
     {% block content %}{% endblock content %}
-    
+
+    <script type="text/javascript">
+      const cambiarContraseña = async () =>{
+        try {
+          var actual = document.getElementById('Acontraseña').value;
+          var nueva = document.getElementById('Ncontraseña').value;
+          const cuerpo = {
+            act: actual,
+            new: nueva
+          }
+          const options = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(cuerpo)
+          };
+          const res = await fetch('/cambiarContrasena/', options);
+          var caja = await res.json();
+          location.href = "/";
+        } catch(err) {
+          console.error(err);
+        }
+      };
+      document.getElementById('cambiarContra').addEventListener('click', () =>{
+        cambiarContraseña();
+      });
+    </script>
 
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
