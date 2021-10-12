@@ -158,10 +158,9 @@ def cargar_db_async(df):
             try:
                 usuario = Persona.objects.get(nrSocio=int(df['NrSocio'][ind]))
                 listaUsuarios.append(usuario.id)
-                if usuario.general:
-                    usuario.general = False
-                    usuario.deuda = float(str(df['Deuda'][ind]).replace(',', ''))
-                    usuario.save()
+                usuario.general = False
+                usuario.deuda = float(str(df['Deuda'][ind]).replace(',', ''))
+                usuario.save()
 
             except:
                 partes_nombre = str(df['Socio'][ind]).strip().split(' ')
@@ -184,10 +183,9 @@ def cargar_db_async(df):
             try:
                 usuario = Persona.objects.get(nrSocio=int(df['NrSocio'][ind]))
                 listaUsuarios.append(usuario.id)
-                if not usuario.general:
-                    usuario.general = True
-                    usuario.deuda = float(str(df['Deuda'][ind]).replace(',', ''))
-                    usuario.save()
+                usuario.general = True
+                usuario.deuda = float(str(df['Deuda'][ind]).replace(',', ''))
+                usuario.save()
 
             except:
                 partes_nombre = str(df['Socio'][ind]).strip().split(' ')
@@ -228,10 +226,9 @@ def cargar_db_async(df):
             try:
                 usuario = Persona.objects.get(nrSocio=int(df['NrSocio'][ind]))
                 listaUsuarios.append(usuario.id)
-                if usuario.estacionamiento:
-                    usuario.estacionamiento = False
-                    usuario.deuda = float(str(df['Deuda'][ind]).replace(',', ''))
-                    usuario.save()
+                usuario.estacionamiento = False
+                usuario.deuda = float(str(df['Deuda'][ind]).replace(',', ''))
+                usuario.save()
 
             except:
                 partes_nombre = str(df['Socio'][ind]).strip().split(' ')
@@ -254,10 +251,9 @@ def cargar_db_async(df):
             try:
                 usuario = Persona.objects.get(nrSocio=int(df['NrSocio'][ind]))
                 listaUsuarios.append(usuario.id)
-                if not usuario.estacionamiento:
-                    usuario.estacionamiento = True
-                    usuario.deuda = float(str(df['Deuda'][ind]).replace(',', ''))
-                    usuario.save()
+                usuario.estacionamiento = True
+                usuario.deuda = float(str(df['Deuda'][ind]).replace(',', ''))
+                usuario.save()
 
             except:
                 partes_nombre = str(df['Socio'][ind]).strip().split(' ')
