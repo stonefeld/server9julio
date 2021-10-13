@@ -196,6 +196,10 @@ def registro_nosocio(request):
         try:
             cantidad = int(cantidad[0])
             dire = str(direccion[0])
+            if cantidad > 10:
+                messages.warning(request, 'Error: Ingrese una cantidad menor o igual a 10')
+                return redirect('registroGeneral:registro-nosocio')
+
             for i in range(cantidad):
                 entrada = EntradaGeneral(
                     lugar='GENERAL',
@@ -206,13 +210,8 @@ def registro_nosocio(request):
                 entrada.save()
 
         except:
-            messages.warning(request,
-                             'Debe seleccionar la cantidad de personas')
-            return render(
-                request,
-                'registroGeneral/registro_manual_nosocio.html',
-                {'title': 'Acceso no socio'}
-            )
+            messages.warning(request, 'Debe seleccionar la cantidad de personas')
+            return render(request, 'registroGeneral/registro_manual_nosocio.html', {'title': 'Acceso no socio'})
 
         socket_arduino(cantidad)
         return redirect('usuariosistema:home')
