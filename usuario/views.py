@@ -208,7 +208,7 @@ def cargar_db_async(df):
     for persona in personas:
         if persona.id not in listaUsuarios:
             persona.general = False
-            persona.save()
+            persona.save(no_existe=True)
 
     try:
         noSocio = personas.get(nombre_apellido='NOSOCIO')
@@ -276,7 +276,7 @@ def cargar_db_async(df):
     for persona in personas:
         if persona.id not in listaUsuarios:
             persona.estacionamiento = False
-            persona.save()
+            persona.save(no_existe=True)
 
     connection.close()
 

@@ -17,19 +17,20 @@ class Persona(models.Model):
     def get_absolute_url(self):
         return f'/usuario/lista/{self.id}/'
 
-    def save(self, *args, **kwargs):
-        deuda_max = Deuda.objects.last()
-        if self.deuda < deuda_max.deuda:
-            self.general = True
+    def save(self, no_existe=False, *args, **kwargs):
+        if not no_existe:
+            deuda_max = Deuda.objects.last()
+            if self.deuda < deuda_max.deuda:
+                self.general = True
 
-        else:
-            self.general = False
+            else:
+                self.general = False
 
-        if self.deuda < deuda_max.deudaEstacionamiento:
-            self.estacionamiento = True
+            if self.deuda < deuda_max.deudaEstacionamiento:
+                self.estacionamiento = True
 
-        else:
-            self.estacionamiento = False
+            else:
+                self.estacionamiento = False
 
         super().save(*args, **kwargs)
 
