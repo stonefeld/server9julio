@@ -1,12 +1,14 @@
 import csv
+import os
 from threading import Thread
 
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
-from django.utils.timezone import localtime
+from django.utils.timezone import now
 
 from django_tables2 import RequestConfig
 
@@ -177,8 +179,7 @@ def registro_socio(request):
                 Q(dni__icontains=busqueda)
             ).distinct()
 
-        table = EntradaGeneralTable(
-                persona.filter(~Q(nombre_apellido='NOSOCIO')))
+        table = EntradaGeneralTable(persona.filter(~Q(nombre_apellido='NOSOCIO')))
         RequestConfig(request).configure(table)
         return render(
             request,
@@ -225,9 +226,25 @@ def registro_nosocio(request):
 
 
 @login_required
-def downloadHistory(request):
-    response = HttpResponse(content_type='text/csv')
-    writer = csv.writer(response)
+def cargar_historial(request):
+    media_root = settings.MEDIA_ROOT
+    file_name = ('historial-%s.csv' % now()).replace(' ', '-')
+    location = os.path.join(media_root + '/historiales', file_name)
+    in_progress = location.replace('.csv', '.prog')
+    cargar_datos_csv(location, in_progress)
+    messages.success(request, 'Podrá encontrar el historial generado en la lista luego de un rato')
+    return redirect('usuario:historial')
+
+
+@postpone
+def cargar_datos_csv(location, in_progress):
+    prog = open(in_progress, 'w')
+    prog.write('')
+    prog.close()
+
+    file = open(location, 'w')
+
+    writer = csv.writer(file)
     writer.writerow(['Persona', 'Lugar', 'Fecha y Hora',
                      'Dirección', 'Autorización'])
 
@@ -238,6 +255,31 @@ def downloadHistory(request):
         entrada_list[0] = Persona.objects.get(id=entrada_list[0]).nombre_apellido
         writer.writerow(entrada_list)
 
-    response['Content-Disposition'] = 'attachment; filename="historial.csv"'
+    file.close()
 
-    return response
+    if os.path.exists(in_progress):
+        os.remove(in_progress)
+
+
+@login_required
+def lista_historiales(request):
+    location = settings.MEDIA_ROOT + '/historiales'
+    list = sorted(os.listdir(location), reverse=True)
+
+    for f in list:
+        if f.endswith('.prog'):
+            list.remove(f)
+            list.remove(f.replace('.prog', '.csv'))
+
+    return render(request, 'registroGeneral/lista_historiales.html', {'lista': list})
+
+
+@login_required
+def borrar_historial(request):
+    historial = request.GET.get('historial')
+    his_location = settings.MEDIA_ROOT + '/historiales'
+
+    if os.path.exists(his_location + '/' + historial):
+        os.remove(his_location + '/' + historial)
+
+    return redirect('registroGeneral:lista-historial')
