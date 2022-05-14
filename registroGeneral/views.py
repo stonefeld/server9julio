@@ -8,6 +8,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
+from django.utils.encoding import force_bytes
 from django.utils.timezone import now
 
 from django_tables2 import RequestConfig
@@ -253,7 +254,7 @@ def cargar_datos_csv(location, in_progress):
                         'tiempo', 'direccion', 'autorizado'):
         entrada_list = list(entrada)
         entrada_list[0] = Persona.objects.get(id=entrada_list[0]).nombre_apellido
-        writer.writerow(entrada_list)
+        writer.writerow(force_bytes(entrada_list))
 
     file.close()
 
