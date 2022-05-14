@@ -227,17 +227,22 @@ def registro_nosocio(request):
 
 @login_required
 def cargar_historial(request):
+    finicio = request.GET.get('fecha-inicio')
+    ffinal = request.GET.get('fecha-final')
+
     media_root = settings.MEDIA_ROOT
     file_name = ('historial-%s.csv' % now()).replace(' ', '-')
     location = os.path.join(media_root + '/historiales', file_name)
     in_progress = location.replace('.csv', '.prog')
-    cargar_datos_csv(location, in_progress)
+
+    cargar_datos_csv(location, in_progress, finicio, ffinal)
+
     messages.success(request, 'Podrá encontrar el historial generado en la lista luego de un rato')
     return redirect('usuario:historial')
 
 
 @postpone
-def cargar_datos_csv(location, in_progress):
+def cargar_datos_csv(location, in_progress, finicio, ffinal):
     prog = open(in_progress, 'w')
     prog.write('')
     prog.close()
@@ -247,7 +252,12 @@ def cargar_datos_csv(location, in_progress):
     writer = csv.writer(file)
     writer.writerow(['Persona', 'Lugar', 'Fecha y Hora', 'Direccion', 'Autorizacion'])
 
-    for entrada in EntradaGeneral.objects.all().values_list('persona', 'lugar', 'tiempo', 'direccion', 'autorizado'):
+    entradas = EntradaGeneral.objects.all()
+
+    if finicio and ffinal:
+        entradas = entradas.filter(tiempo__date__range=(finicio, ffinal))
+
+    for entrada in entradas.values_list('persona', 'lugar', 'tiempo', 'direccion', 'autorizado'):
         entrada_list = list(entrada)
         entrada_list[0] = Persona.objects.get(id=entrada_list[0]).nombre_apellido
         writer.writerow(entrada_list)
@@ -268,7 +278,7 @@ def lista_historiales(request):
             list.remove(f)
             list.remove(f.replace('.prog', '.csv'))
 
-    return render(request, 'registroGeneral/lista_historiales.html', {'lista': list})
+    return render(request, 'registroGeneral/lista_historiales.html', {'lista': list, 'title': 'Lista historiales'})
 
 
 @login_required

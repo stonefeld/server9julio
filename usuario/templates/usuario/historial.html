@@ -29,7 +29,11 @@
         </div>
 
         <div class="p-2">
-          <a href="{% url 'registroGeneral:descargar-historial' %}" class="btn btn-outline-info">Descargar historial</a>
+          <button type="button" class="btn btn-outline-info" data-toggle="modal" data-target="#exampleModal">Filtro avanzado</button>
+        </div>
+
+        <div class="p-2">
+          <a href="{% url 'registroGeneral:descargar-historial' %}?fecha-inicio={{ finicio }}&fecha-final={{ ffinal }}" class="btn btn-outline-info">Descargar historial</a>
         </div>
 
         <div class="p-2">
@@ -39,6 +43,49 @@
 
       <div style="padding-top:40px; padding-left:10px; padding-right:10px; padding-bottom:10px">
         {% render_table table %}
+      </div>
+
+      <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="exampleModalLabel">Filtro Avanzado</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <form method="GET">
+                <div class="form-row">
+                  <div class="form-group col-md-12">
+                    <div class="input-group">
+                      <input type="date" class="form-control" name="fecha-inicio" value="{{ finicio }}">
+                      <div class="input-group-append">
+                        <span class="input-group-text">Fecha inicio</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group col-md-12">
+                    <div class="input-group">
+                      <input type="date" class="form-control" name="fecha-final" value="{{ ffinal }}">
+                      <div class="input-group-append">
+                        <span class="input-group-text">Fecha final</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                  <button type="submit" class="btn btn-primary">Filtrar</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
       </div>
 
     </div>

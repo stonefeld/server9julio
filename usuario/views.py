@@ -1,3 +1,4 @@
+from datetime import datetime, time, date
 import os
 from threading import Thread
 
@@ -85,19 +86,30 @@ def historial(request):
     if request.method == 'GET':
         entradas = EntradaGeneral.objects.all()
         busqueda = request.GET.get('buscar')
+        fecha_inicio = request.GET.get('fecha-inicio')
+        fecha_final = request.GET.get('fecha-final')
+
+        context = {'title': 'Historial'}
 
         if busqueda:
-            entradas = EntradaGeneral.objects.filter(
+            entradas = entradas.filter(
                 Q(lugar__icontains=busqueda) |
                 Q(tiempo__icontains=busqueda) |
                 Q(persona__nombre_apellido__icontains=busqueda) |
                 Q(persona__dni__icontains=busqueda)
             ).distinct()
 
+        if fecha_inicio and fecha_final:
+            entradas = entradas.filter(tiempo__date__range=(fecha_inicio, fecha_final)).distinct()
+            context['finicio'] = fecha_inicio
+            context['ffinal'] = fecha_final
+
         table = HistorialTable(entradas)
         RequestConfig(request).configure(table)
 
-        return render(request, 'usuario/historial.html', {'table': table, 'title': 'Historial'})
+        context['table'] = table
+
+        return render(request, 'usuario/historial.html', context)
 
 
 @login_required
