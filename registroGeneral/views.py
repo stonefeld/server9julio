@@ -8,7 +8,6 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
-from django.utils.encoding import force_bytes
 from django.utils.timezone import now
 
 from django_tables2 import RequestConfig
