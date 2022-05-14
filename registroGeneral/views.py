@@ -246,7 +246,7 @@ def cargar_datos_csv(location, in_progress):
 
     writer = csv.writer(file)
     writer.writerow(['Persona', 'Lugar', 'Fecha y Hora',
-                     'Dirección', 'Autorización'])
+                     'Direccion', 'Autorizacion'])
 
     for entrada in EntradaGeneral.objects.all().\
             values_list('persona', 'lugar',
