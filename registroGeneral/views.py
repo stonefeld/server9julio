@@ -246,15 +246,12 @@ def cargar_datos_csv(location, in_progress):
     file = open(location, 'w')
 
     writer = csv.writer(file)
-    writer.writerow(['Persona', 'Lugar', 'Fecha y Hora',
-                     'Direccion', 'Autorizacion'])
+    writer.writerow(['Persona', 'Lugar', 'Fecha y Hora', 'Direccion', 'Autorizacion'])
 
-    for entrada in EntradaGeneral.objects.all().\
-            values_list('persona', 'lugar',
-                        'tiempo', 'direccion', 'autorizado'):
+    for entrada in EntradaGeneral.objects.all().values_list('persona', 'lugar', 'tiempo', 'direccion', 'autorizado'):
         entrada_list = list(entrada)
         entrada_list[0] = Persona.objects.get(id=entrada_list[0]).nombre_apellido
-        writer.writerow(force_bytes(entrada_list))
+        writer.writerow(entrada_list)
 
     file.close()
 
