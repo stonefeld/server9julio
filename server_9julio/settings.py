@@ -22,17 +22,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'abcdefghijklmnopqrstuvwxyz1234567890'
-# with open('/etc/config.json') as config_file:
-#     config = json.load(config_file)
-# 
-# SECRET_KEY = config['SECRET_KEY']
+# SECRET_KEY = 'abcdefghijklmnopqrstuvwxyz1234567890'
+with open('/etc/config.json') as config_file:
+    config = json.load(config_file)
+
+SECRET_KEY = config['SECRET_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 #                Vieja IP         DDNS                     TMP                 Nueva IP         Monti              Fallback
-ALLOWED_HOSTS = ['192.168.0.180', 'server9julio.ddns.net', 'server9julio.net', '192.168.49.30', '192.168.100.39', '192.168.48.103', 'localhost']
+ALLOWED_HOSTS = ['192.168.0.180', 'server9julio.ddns.net', 'server9julio.net', '192.168.49.30', '192.168.100.39', '192.168.48.103']
 
 
 # Application definition
