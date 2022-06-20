@@ -20,7 +20,7 @@ def upload(request):
             deuda.save()
 
             media_root = settings.MEDIA_ROOT
-            location = os.path.join(media_root, 'saldos.csv')
+            location = os.path.join(media_root, 'saldos.xls')
 
             if os.path.exists(location):
                 os.remove(location)
@@ -28,7 +28,7 @@ def upload(request):
             try:
                 uploaded_file = request.FILES['file']
                 fs = FileSystemStorage()
-                name = fs.save('saldos.csv', uploaded_file)
+                name = fs.save('saldos.xls', uploaded_file)
                 context['url'] = fs.url(name)
                 deuda.save()
 

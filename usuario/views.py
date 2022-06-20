@@ -1,5 +1,5 @@
-from datetime import datetime, time, date
 import os
+import re
 from threading import Thread
 
 from django.conf import settings
@@ -115,42 +115,41 @@ def historial(request):
 @login_required
 def cargar_db(request):
     media_root = settings.MEDIA_ROOT
-    location = os.path.join(media_root, 'saldos.csv')
+    location = os.path.join(media_root, 'saldos.xls')
 
     try:
-        df = pd.read_csv(
+        df = pd.read_excel(
             location,
-            encoding='latin_1',
-            on_bad_lines='skip',
-            names=list('abcdefghijklmnopqrstuv')
+            names=list('abcdefghijklmnopqrstuvwxyzaaa')
         )
 
-    except:
-        messages.warning(request, 'Ha habido un error al leer el archivo')
+    except Exception:
+        messages.warning(request, 'Ha habido un error. Suba el archivo de datos con extension .xls')
         return redirect('draganddrop:upload')
 
-    for column in list('bdefghijklmnopqrst'):
-        df.drop(str(column), inplace=True, axis=1)
+    for col in list('cdefghijklmnopqrsy'):
+        df.drop(col, inplace=True, axis=1)
 
-    for ind in df.index:
-        if not pd.isna(df['v'][ind]):
-            df['u'][ind] = df['v'][ind]
+    df.drop('a.1', inplace=True, axis=1)
+    df.drop('a.2', inplace=True, axis=1)
+    df.drop('a.3', inplace=True, axis=1)
 
-    df.drop('v', inplace=True, axis=1)
     df = df.rename(columns={
         'a': 'NrSocio',
-        'c': 'Socio',
-        'u': 'Deuda'
+        'b': 'Socio',
+        't': 'N-1',
+        'u': 'N-2',
+        'v': 'N-3',
+        'w': 'Anterior',
+        'x': 'Punitorios',
+        'z': 'TipoDebito'
     })
-    if df['NrSocio'][5] != 'Composición de Saldos':
+
+    if df['NrSocio'][0] != 'Socio' or df['Socio'][0] != 'Nombre':
         messages.warning(request, 'El archivo subido es incorrecto')
         return redirect('draganddrop:upload')
 
-    for row in range(10):
-        df = df.drop(row)
-
-    df = df.dropna(thresh=2)
-    df['Deuda'] = df['Deuda'].fillna(0)
+    df = df.drop(0)
 
     cargar_db_async(df)
 
@@ -160,157 +159,85 @@ def cargar_db(request):
 
 @postpone
 def cargar_db_async(df):
-    deudaMax = Deuda.objects.all().last().deuda
-    listaUsuarios = []
+    deuda_max_gen = Deuda.objects.all().last().deuda
+    deuda_max_est = Deuda.objects.all().last().deudaEstacionamiento
+    lista_usr = []
+
     for ind in df.index:
-        if float(str(df['Deuda'][ind]).replace(',', '')) > deudaMax:
-            try:
-                usuario = Persona.objects.get(nrSocio=int(df['NrSocio'][ind]))
-                listaUsuarios.append(usuario.id)
-                usuario.general = False
-                usuario.deuda = float(str(df['Deuda'][ind]).replace(',', ''))
-                usuario.save()
+        deuda = float(df['N-2'][ind] + df['N-3'][ind] + df['Anterior'][ind] + df['Punitorios'][ind])
+        if df['TipoDebito'][ind] == 'Sin Débito.':
+            deuda += df['N-1'][ind]
 
-            except:
-                partes_nombre = str(df['Socio'][ind]).strip().split(' ')
-                name = ''
-                for nombre in partes_nombre:
-                    if nombre:
-                        name += f'{nombre} '
+        general = True
+        if deuda > deuda_max_gen:
+            general = False
 
-                usuario = Persona(
-                    nombre_apellido=name.strip(),
-                    nrSocio=int(df['NrSocio'][ind]),
-                    general=False,
-                    deuda=float(str(df['Deuda'][ind]).replace(',', ''))
-                )
-                usuario.save()
-                usuario = Persona.objects.get(nrSocio=int(df['NrSocio'][ind]))
-                listaUsuarios.append(usuario.id)
+        estacionamiento = True
+        if deuda > deuda_max_est:
+            estacionamiento = False
 
-        else:
-            try:
-                usuario = Persona.objects.get(nrSocio=int(df['NrSocio'][ind]))
-                listaUsuarios.append(usuario.id)
-                usuario.general = True
-                usuario.deuda = float(str(df['Deuda'][ind]).replace(',', ''))
-                usuario.save()
+        nr_socio = int(df['NrSocio'][ind])
 
-            except:
-                partes_nombre = str(df['Socio'][ind]).strip().split(' ')
-                name = ''
-                for nombre in partes_nombre:
-                    if nombre:
-                        name += f'{nombre} '
+        try:
+            usr = Persona.objects.get(nrSocio=nr_socio)
+            lista_usr.append(usr.id)
+            usr.general = general
+            usr.estacionamiento = estacionamiento
+            usr.deuda = deuda
+            usr.save()
 
-                usuario = Persona(
-                    nombre_apellido=name.strip(),
-                    nrSocio=int(df['NrSocio'][ind]),
-                    general=True,
-                    deuda=float(str(df['Deuda'][ind]).replace(',', ''))
-                )
-                usuario.save()
-                usuario = Persona.objects.get(nrSocio=int(df['NrSocio'][ind]))
-                listaUsuarios.append(usuario.id)
+        except Exception:
+            name = re.sub(' +', ' ', str(df['Socio'][ind]).strip())
+            usr = Persona(
+                nombre_apellido=name,
+                nrSocio=nr_socio,
+                general=general,
+                estacionamiento=estacionamiento,
+                deuda=deuda
+            ).save()
+            usr = Persona.objects.get(nrSocio=nr_socio)
+            lista_usr.append(usr.id)
 
     personas = Persona.objects.all()
     for persona in personas:
-        if persona.id not in listaUsuarios:
+        if persona.id not in lista_usr:
             persona.general = False
+            persona.estacionamiento = False
             persona.save(no_existe=True)
 
     try:
-        noSocio = personas.get(nombre_apellido='NOSOCIO')
-        noSocio.general = True
-        noSocio.save()
+        no_socio = personas.get(nombre_apellido='NOSOCIO')
+        no_socio.general = True
+        no_socio.estacionamiento = True
+        no_socio.save()
 
-    except:
-        noSocio = Persona(nrSocio=0, nombre_apellido='NOSOCIO', general=True, deuda=0.0)
-        noSocio.save()
-
-    deudaMax = Deuda.objects.all().last().deudaEstacionamiento
-    listaUsuarios = []
-    for ind in df.index:
-        if float(str(df['Deuda'][ind]).replace(',', '')) > deudaMax:
-            try:
-                usuario = Persona.objects.get(nrSocio=int(df['NrSocio'][ind]))
-                listaUsuarios.append(usuario.id)
-                usuario.estacionamiento = False
-                usuario.deuda = float(str(df['Deuda'][ind]).replace(',', ''))
-                usuario.save()
-
-            except:
-                partes_nombre = str(df['Socio'][ind]).strip().split(' ')
-                name = ''
-                for nombre in partes_nombre:
-                    if nombre:
-                        name += f'{nombre} '
-
-                usuario = Persona(
-                    nombre_apellido=name.strip(),
-                    nrSocio=int(df['NrSocio'][ind]),
-                    estacionamiento=False,
-                    deuda=float(str(df['Deuda'][ind]).replace(',', ''))
-                )
-                usuario.save()
-                usuario = Persona.objects.get(nrSocio=int(df['NrSocio'][ind]))
-                listaUsuarios.append(usuario.id)
-
-        else:
-            try:
-                usuario = Persona.objects.get(nrSocio=int(df['NrSocio'][ind]))
-                listaUsuarios.append(usuario.id)
-                usuario.estacionamiento = True
-                usuario.deuda = float(str(df['Deuda'][ind]).replace(',', ''))
-                usuario.save()
-
-            except:
-                partes_nombre = str(df['Socio'][ind]).strip().split(' ')
-                name = ''
-                for nombre in partes_nombre:
-                    if nombre:
-                        name += f'{nombre} '
-
-                usuario = Persona(
-                    nombre_apellido=name.strip(),
-                    nrSocio=int(df['NrSocio'][ind]),
-                    estacionamiento=True,
-                    deuda=float(str(df['Deuda'][ind]).replace(',', ''))
-                )
-                usuario.save()
-                usuario = Persona.objects.get(nrSocio=int(df['NrSocio'][ind]))
-                listaUsuarios.append(usuario.id)
-
-    personas = Persona.objects.all()
-    for persona in personas:
-        if persona.id not in listaUsuarios:
-            persona.estacionamiento = False
-            persona.save(no_existe=True)
+    except Exception:
+        Persona(nrSocio=0, nombre_apellido='NOSOCIO', general=True, estacionamiento=True, deuda=0.0).save()
 
     connection.close()
 
 
-# La unica funcion de este view es la de que el codigo de js pueda hacer un
+# la unica funcion de este view es la de que el codigo de js pueda hacer un
 # a estos datos para renderizarlos en tiempo real sin tener que hacer otro
 # request.
 def fetch_usuarios(request):
-    # Dentro del GET recibe como datos:
-    page = request.GET.get('page')  # La pagina que quiere visualizar.
-    filter_string = request.GET.get('filter-string')  # El string de filtro.
+    # dentro del get recibe como datos:
+    page = request.GET.get('page')  # la pagina que quiere visualizar.
+    filter_string = request.GET.get('filter-string')  # el string de filtro.
     order_by = request.GET.get('order-by')
 
-    # Separa el string para filtrar en un list con cada palabra ingresada.
+    # separa el string para filtrar en un list con cada palabra ingresada.
     parsed_filter = filter_string.split(' ')
 
     personas = Persona.objects.all()
-    # Filtra todos los socios con el string recibido por nombre de
+    # filtra todos los socios con el string recibido por nombre de
     # socio.
     for filter in parsed_filter:
         personas = personas.filter(
             Q(nombre_apellido__icontains=filter) |
             Q(dni__icontains=filter) |
             Q(nrSocio__icontains=filter),
-            ~Q(nombre_apellido='NOSOCIO')
+            ~Q(nombre_apellido='nosocio')
         ).order_by(order_by)
 
     # Realiza la paginacion de los datos con un maximo de 20 proveedores por

@@ -2,7 +2,7 @@ from django.db import models
 
 
 class Persona(models.Model):
-    nombre_apellido = models.CharField(max_length=30, verbose_name='Nombre y apellido')
+    nombre_apellido = models.CharField(max_length=120, verbose_name='Nombre y apellido')
     dni = models.IntegerField(null=True, verbose_name='DNI')
     nrTarjeta = models.IntegerField(null=True, blank=True, verbose_name='Nr. de tarjeta')
     nrSocio = models.IntegerField(null=True, blank=True, verbose_name='Nr. de socio')
