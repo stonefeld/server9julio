@@ -205,39 +205,40 @@ def cargar_db_async(df):
             persona.estacionamiento = False
             persona.save(no_existe=True)
 
+    name = 'NOSOCIO'
     try:
-        no_socio = personas.get(nombre_apellido='NOSOCIO')
+        no_socio = personas.get(nombre_apellido=name)
         no_socio.general = True
         no_socio.estacionamiento = True
         no_socio.save()
 
     except Exception:
-        Persona(nrSocio=0, nombre_apellido='NOSOCIO', general=True, estacionamiento=True, deuda=0.0).save()
+        Persona(nrSocio=0, nombre_apellido=name, general=True, estacionamiento=True, deuda=0.0).save()
 
     connection.close()
 
 
-# la unica funcion de este view es la de que el codigo de js pueda hacer un
+# La unica funcion de este view es la de que el codigo de js pueda hacer un
 # a estos datos para renderizarlos en tiempo real sin tener que hacer otro
 # request.
 def fetch_usuarios(request):
-    # dentro del get recibe como datos:
+    # dentro del GET recibe como datos:
     page = request.GET.get('page')  # la pagina que quiere visualizar.
     filter_string = request.GET.get('filter-string')  # el string de filtro.
     order_by = request.GET.get('order-by')
 
-    # separa el string para filtrar en un list con cada palabra ingresada.
+    # Separa el string para filtrar en un list con cada palabra ingresada.
     parsed_filter = filter_string.split(' ')
 
     personas = Persona.objects.all()
-    # filtra todos los socios con el string recibido por nombre de
+    # Filtra todos los socios con el string recibido por nombre de
     # socio.
     for filter in parsed_filter:
         personas = personas.filter(
             Q(nombre_apellido__icontains=filter) |
             Q(dni__icontains=filter) |
             Q(nrSocio__icontains=filter),
-            ~Q(nombre_apellido='nosocio')
+            ~Q(nombre_apellido='NOSOCIO')
         ).order_by(order_by)
 
     # Realiza la paginacion de los datos con un maximo de 20 proveedores por
