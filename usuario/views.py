@@ -115,41 +115,43 @@ def historial(request):
 @login_required
 def cargar_db(request):
     media_root = settings.MEDIA_ROOT
-    location = os.path.join(media_root, 'saldos.xls')
+    location = os.path.join(media_root, 'saldos.csv')
 
     try:
-        df = pd.read_excel(
+        df = pd.read_csv(
             location,
-            names=list('abcdefghijklmnopqrstuvwxyzaaa')
+            encoding='latin_1',
+            on_bad_lines='skip',
+            names=list('abcdefghijklmnopqrstuv')
         )
 
     except Exception:
         messages.warning(request, 'Ha habido un error. Suba el archivo de datos con extension .xls')
         return redirect('draganddrop:upload')
 
-    for col in list('cdefghijklmnopqrsy'):
+    for col in list('bdefghijklmnopqrst'):
         df.drop(col, inplace=True, axis=1)
 
-    df.drop('a.1', inplace=True, axis=1)
-    df.drop('a.2', inplace=True, axis=1)
-    df.drop('a.3', inplace=True, axis=1)
+    for ind in df.index:
+        if not pd.isna(df['v'][ind]):
+            df['u'][ind] = df['v'][ind]
 
+    df.drop('v', inplace=True, axis=1)
     df = df.rename(columns={
         'a': 'NrSocio',
-        'b': 'Socio',
-        't': 'N-1',
-        'u': 'N-2',
-        'v': 'N-3',
-        'w': 'Anterior',
-        'x': 'Punitorios',
-        'z': 'TipoDebito'
+        'c': 'Socio',
+        'u': 'Deuda',
     })
 
-    if df['NrSocio'][0] != 'Socio' or df['Socio'][0] != 'Nombre':
+    if df['NrSocio'][5] != 'Composición de Saldos':
         messages.warning(request, 'El archivo subido es incorrecto')
         return redirect('draganddrop:upload')
 
-    df = df.drop(0)
+    for row in range(10):
+        df = df.drop(row)
+
+    df = df.dropna(thresh=2)
+    df['Deuda'] = df['Deuda'].fillna(0)
 
     cargar_db_async(df)
 
@@ -164,10 +166,7 @@ def cargar_db_async(df):
     lista_usr = []
 
     for ind in df.index:
-        deuda = float(df['N-2'][ind] + df['N-3'][ind] + df['Anterior'][ind] + df['Punitorios'][ind])
-        if df['TipoDebito'][ind] == 'Sin Débito.':
-            deuda += df['N-1'][ind]
-
+        deuda = float(str(df['Deuda'][ind]).replace(',', ''))
         general = True
         if deuda > deuda_max_gen:
             general = False
