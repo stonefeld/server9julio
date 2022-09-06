@@ -27,8 +27,12 @@ def postpone(function):
 
 
 @postpone
-def socket_arduino(cantidad):
-    client(cantidad=cantidad)
+def socket_arduino(cantidad, molinete):
+    if molinete == '1':
+        client(cantidad=cantidad, ip='192.168.49.31')
+
+    elif molinete == '2':
+        client(cantidad=cantidad, ip='192.168.49.32')
 
 
 def respuesta(request):
@@ -193,6 +197,7 @@ def registro_nosocio(request):
     if request.method == 'POST':
         cantidad = request.POST.getlist('cantidad')
         direccion = request.POST.getlist('direccion')
+        molinete = request.POST.get('molinete')
 
         try:
             cantidad = int(cantidad[0])
@@ -214,7 +219,7 @@ def registro_nosocio(request):
             messages.warning(request, 'Debe seleccionar la cantidad de personas')
             return render(request, 'registroGeneral/registro_manual_nosocio.html', {'title': 'Acceso no socio'})
 
-        socket_arduino(cantidad)
+        socket_arduino(cantidad, molinete)
         return redirect('usuariosistema:home')
 
     elif request.method == 'GET':
