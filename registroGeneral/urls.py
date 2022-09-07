@@ -8,5 +8,7 @@ urlpatterns = [
     path('registro', views.registro, name='registro'),
     path('registro/socio', views.registro_socio, name='registro-socio'),
     path('registro/nosocio', views.registro_nosocio, name='registro-nosocio'),
-    path('descargar', views.downloadHistory, name='descargar-historial')
+    path('descargar', views.cargar_historial, name='descargar-historial'),
+    path('lista', views.lista_historiales, name='lista-historial'),
+    path('borrar-historial', views.borrar_historial, name='borrar-historial'),
 ]

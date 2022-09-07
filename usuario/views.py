@@ -1,3 +1,4 @@
+from datetime import datetime, time, date
 import os
 from threading import Thread
 
@@ -85,19 +86,30 @@ def historial(request):
     if request.method == 'GET':
         entradas = EntradaGeneral.objects.all()
         busqueda = request.GET.get('buscar')
+        fecha_inicio = request.GET.get('fecha-inicio')
+        fecha_final = request.GET.get('fecha-final')
+
+        context = {'title': 'Historial'}
 
         if busqueda:
-            entradas = EntradaGeneral.objects.filter(
+            entradas = entradas.filter(
                 Q(lugar__icontains=busqueda) |
                 Q(tiempo__icontains=busqueda) |
                 Q(persona__nombre_apellido__icontains=busqueda) |
                 Q(persona__dni__icontains=busqueda)
             ).distinct()
 
+        if fecha_inicio and fecha_final:
+            entradas = entradas.filter(tiempo__date__range=(fecha_inicio, fecha_final)).distinct()
+            context['finicio'] = fecha_inicio
+            context['ffinal'] = fecha_final
+
         table = HistorialTable(entradas)
         RequestConfig(request).configure(table)
 
-        return render(request, 'usuario/historial.html', {'table': table, 'title': 'Historial'})
+        context['table'] = table
+
+        return render(request, 'usuario/historial.html', context)
 
 
 @login_required
@@ -109,7 +121,7 @@ def cargar_db(request):
         df = pd.read_csv(
             location,
             encoding='latin_1',
-            error_bad_lines=False,
+            on_bad_lines='skip',
             names=list('abcdefghijklmnopqrstuv')
         )
 
@@ -117,21 +129,18 @@ def cargar_db(request):
         messages.warning(request, 'Ha habido un error al leer el archivo')
         return redirect('draganddrop:upload')
 
-    df.drop('b', inplace=True, axis=1)
-    df.drop('d', inplace=True, axis=1)
-
-    for column in list('ghijklmnopqrstuv'):
+    for column in list('bdefghijklmnopqrst'):
         df.drop(str(column), inplace=True, axis=1)
 
     for ind in df.index:
-        if not pd.isna(df['f'][ind]):
-            df['e'][ind] = df['f'][ind]
+        if not pd.isna(df['v'][ind]):
+            df['u'][ind] = df['v'][ind]
 
-    df.drop('f', inplace=True, axis=1)
+    df.drop('v', inplace=True, axis=1)
     df = df.rename(columns={
         'a': 'NrSocio',
         'c': 'Socio',
-        'e': 'Deuda'
+        'u': 'Deuda'
     })
     if df['NrSocio'][5] != 'Composición de Saldos':
         messages.warning(request, 'El archivo subido es incorrecto')
@@ -158,10 +167,9 @@ def cargar_db_async(df):
             try:
                 usuario = Persona.objects.get(nrSocio=int(df['NrSocio'][ind]))
                 listaUsuarios.append(usuario.id)
-                if usuario.general:
-                    usuario.general = False
-                    usuario.deuda = float(str(df['Deuda'][ind]).replace(',', ''))
-                    usuario.save()
+                usuario.general = False
+                usuario.deuda = float(str(df['Deuda'][ind]).replace(',', ''))
+                usuario.save()
 
             except:
                 partes_nombre = str(df['Socio'][ind]).strip().split(' ')
@@ -184,10 +192,9 @@ def cargar_db_async(df):
             try:
                 usuario = Persona.objects.get(nrSocio=int(df['NrSocio'][ind]))
                 listaUsuarios.append(usuario.id)
-                if not usuario.general:
-                    usuario.general = True
-                    usuario.deuda = float(str(df['Deuda'][ind]).replace(',', ''))
-                    usuario.save()
+                usuario.general = True
+                usuario.deuda = float(str(df['Deuda'][ind]).replace(',', ''))
+                usuario.save()
 
             except:
                 partes_nombre = str(df['Socio'][ind]).strip().split(' ')
@@ -210,7 +217,7 @@ def cargar_db_async(df):
     for persona in personas:
         if persona.id not in listaUsuarios:
             persona.general = False
-            persona.save()
+            persona.save(no_existe=True)
 
     try:
         noSocio = personas.get(nombre_apellido='NOSOCIO')
@@ -228,10 +235,9 @@ def cargar_db_async(df):
             try:
                 usuario = Persona.objects.get(nrSocio=int(df['NrSocio'][ind]))
                 listaUsuarios.append(usuario.id)
-                if usuario.estacionamiento:
-                    usuario.estacionamiento = False
-                    usuario.deuda = float(str(df['Deuda'][ind]).replace(',', ''))
-                    usuario.save()
+                usuario.estacionamiento = False
+                usuario.deuda = float(str(df['Deuda'][ind]).replace(',', ''))
+                usuario.save()
 
             except:
                 partes_nombre = str(df['Socio'][ind]).strip().split(' ')
@@ -254,10 +260,9 @@ def cargar_db_async(df):
             try:
                 usuario = Persona.objects.get(nrSocio=int(df['NrSocio'][ind]))
                 listaUsuarios.append(usuario.id)
-                if not usuario.estacionamiento:
-                    usuario.estacionamiento = True
-                    usuario.deuda = float(str(df['Deuda'][ind]).replace(',', ''))
-                    usuario.save()
+                usuario.estacionamiento = True
+                usuario.deuda = float(str(df['Deuda'][ind]).replace(',', ''))
+                usuario.save()
 
             except:
                 partes_nombre = str(df['Socio'][ind]).strip().split(' ')
@@ -280,7 +285,7 @@ def cargar_db_async(df):
     for persona in personas:
         if persona.id not in listaUsuarios:
             persona.estacionamiento = False
-            persona.save()
+            persona.save(no_existe=True)
 
     connection.close()
 

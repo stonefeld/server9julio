@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 
+{% load static %}
 {% load crispy_forms_tags %}
 {% load render_table from django_tables2 %}
 
@@ -42,11 +43,15 @@
           <div class="form-group" style="padding-top:10px">
             <button class="btn btn-outline-info" type="submit" name="direccion" value="ENTRADA">Entrada</button>
             <button class="btn btn-outline-info" type="submit" name="direccion" value="SALIDA">Salida</button>
+            <input id="molinete" style="display:none" name="molinete" value="1"/>
+            <button id="toggle-molinete" class="btn btn-outline-info" type="button">Molinete 1</button>
           </div>
         {% else %}
           <div class="form-group" style="padding-top:10px">
             <button class="btn btn-outline-info" type="submit" name="aceptar" value="{{ direccion }}">Aceptar</button>
             <button class="btn btn-outline-info" type="submit" name="rechazar">Rechazar</button>
+            <input id="molinete" style="display:none" name="molinete" value="1"/>
+            <button id="toggle-molinete" class="btn btn-outline-info" type="button">Molinete 1</button>
           </div>
         {% endif %}
         <div style="padding-top:40px; padding-left:10px; padding-right:10px; padding-bottom:10px">
@@ -56,4 +61,6 @@
 
     </div>
   </div>
+
+  <script src="{% static 'usuariosistema/toggle_molinete.js' %}"></script>
 {% endblock %}

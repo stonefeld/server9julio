@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 
+{% load static %}
 {% load crispy_forms_tags %}
 {% load render_table from django_tables2 %}
 
@@ -12,7 +13,7 @@
     <div class="row justify-content-center">
       <div class="content-section" style="padding:20px;">
         <div id="form_card" class="card-panel col s12">
-  
+
           <form method="POST">
             {% csrf_token %}
             <div class="form-group"style="padding-top:10px">
@@ -23,12 +24,16 @@
                 <input class="form-control" type="number" id="cantidad" name="cantidad" min="0"/>
               </div>
               <button class="btn btn-outline-info" type="submit" name="direccion" value="ENTRADA">Entrada</button>
-              <button class="btn btn-outline-info" type="submit" name="direccion"value="SALIDA" >Salida</button>
+              <button class="btn btn-outline-info" type="submit" name="direccion" value="SALIDA">Salida</button>
+              <input id="molinete" style="display:none" name="molinete" value="1"/>
+              <button id="toggle-molinete" class="btn btn-outline-info" type="button">Molinete 1</button>
             </div>
           </form>
-  
+
         </div>
       </div>
     </div>
   </div>
+
+  <script src="{% static 'usuariosistema/toggle_molinete.js' %}"></script>
 {% endblock %}

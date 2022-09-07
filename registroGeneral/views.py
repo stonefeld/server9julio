@@ -1,12 +1,14 @@
 import csv
+import os
 from threading import Thread
 
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
-from django.utils.timezone import localtime
+from django.utils.timezone import now
 
 from django_tables2 import RequestConfig
 
@@ -25,8 +27,12 @@ def postpone(function):
 
 
 @postpone
-def socket_arduino(cantidad):
-    client(cantidad=cantidad)
+def socket_arduino(cantidad, molinete):
+    if molinete == '1':
+        client(cantidad=cantidad, ip='192.168.49.31')
+
+    elif molinete == '2':
+        client(cantidad=cantidad, ip='192.168.49.32')
 
 
 def respuesta(request):
@@ -75,6 +81,7 @@ def registro_socio(request):
         direccion = request.POST.get('direccion')
         aceptar = request.POST.get('aceptar')
         rechazar = request.POST.get('rechazar')
+        molinete = request.POST.get('molinete')
 
         if direccion and not aceptar and not rechazar:
             persona_no_autorizada = []
@@ -120,7 +127,7 @@ def registro_socio(request):
                     return render(request, 'registroGeneral/registro_manual_socio.html', context)
 
                 cant = len(pks)
-                socket_arduino(cant)
+                socket_arduino(cant, molinete)
                 return redirect('usuariosistema:home')
 
             else:
@@ -159,6 +166,8 @@ def registro_socio(request):
                 entrada.save()
 
             messages.warning(request, 'Algunas entradas fueron registradas sin estar autorizadas')
+            cant = len(pks)
+            socket_arduino(cant, molinete)
             return redirect('usuariosistema:home')
 
         else:
@@ -177,8 +186,7 @@ def registro_socio(request):
                 Q(dni__icontains=busqueda)
             ).distinct()
 
-        table = EntradaGeneralTable(
-                persona.filter(~Q(nombre_apellido='NOSOCIO')))
+        table = EntradaGeneralTable(persona.filter(~Q(nombre_apellido='NOSOCIO')))
         RequestConfig(request).configure(table)
         return render(
             request,
@@ -192,10 +200,15 @@ def registro_nosocio(request):
     if request.method == 'POST':
         cantidad = request.POST.getlist('cantidad')
         direccion = request.POST.getlist('direccion')
+        molinete = request.POST.get('molinete')
 
         try:
             cantidad = int(cantidad[0])
             dire = str(direccion[0])
+            if cantidad > 10:
+                messages.warning(request, 'Error: Ingrese una cantidad menor o igual a 10')
+                return redirect('registroGeneral:registro-nosocio')
+
             for i in range(cantidad):
                 entrada = EntradaGeneral(
                     lugar='GENERAL',
@@ -206,15 +219,10 @@ def registro_nosocio(request):
                 entrada.save()
 
         except:
-            messages.warning(request,
-                             'Debe seleccionar la cantidad de personas')
-            return render(
-                request,
-                'registroGeneral/registro_manual_nosocio.html',
-                {'title': 'Acceso no socio'}
-            )
+            messages.warning(request, 'Debe seleccionar la cantidad de personas')
+            return render(request, 'registroGeneral/registro_manual_nosocio.html', {'title': 'Acceso no socio'})
 
-        socket_arduino(cantidad)
+        socket_arduino(cantidad, molinete)
         return redirect('usuariosistema:home')
 
     elif request.method == 'GET':
@@ -226,19 +234,67 @@ def registro_nosocio(request):
 
 
 @login_required
-def downloadHistory(request):
-    response = HttpResponse(content_type='text/csv')
-    writer = csv.writer(response)
-    writer.writerow(['Persona', 'Lugar', 'Fecha y Hora',
-                     'Dirección', 'Autorización'])
+def cargar_historial(request):
+    finicio = request.GET.get('fecha-inicio')
+    ffinal = request.GET.get('fecha-final')
 
-    for entrada in EntradaGeneral.objects.all().\
-            values_list('persona', 'lugar',
-                        'tiempo', 'direccion', 'autorizado'):
+    media_root = settings.MEDIA_ROOT
+    file_name = ('historial-%s.csv' % now()).replace(' ', '-')
+    location = os.path.join(media_root + '/historiales', file_name)
+    in_progress = location.replace('.csv', '.prog')
+
+    cargar_datos_csv(location, in_progress, finicio, ffinal)
+
+    messages.success(request, 'Podrá encontrar el historial generado en la lista luego de un rato')
+    return redirect('usuario:historial')
+
+
+@postpone
+def cargar_datos_csv(location, in_progress, finicio, ffinal):
+    prog = open(in_progress, 'w')
+    prog.write('')
+    prog.close()
+
+    file = open(location, 'w')
+
+    writer = csv.writer(file)
+    writer.writerow(['Persona', 'Lugar', 'Fecha y Hora', 'Direccion', 'Autorizacion'])
+
+    entradas = EntradaGeneral.objects.all()
+
+    if finicio and ffinal:
+        entradas = entradas.filter(tiempo__date__range=(finicio, ffinal))
+
+    for entrada in entradas.values_list('persona', 'lugar', 'tiempo', 'direccion', 'autorizado'):
         entrada_list = list(entrada)
         entrada_list[0] = Persona.objects.get(id=entrada_list[0]).nombre_apellido
         writer.writerow(entrada_list)
 
-    response['Content-Disposition'] = 'attachment; filename="historial.csv"'
+    file.close()
 
-    return response
+    if os.path.exists(in_progress):
+        os.remove(in_progress)
+
+
+@login_required
+def lista_historiales(request):
+    location = settings.MEDIA_ROOT + '/historiales'
+    list = sorted(os.listdir(location), reverse=True)
+
+    for f in list:
+        if f.endswith('.prog'):
+            list.remove(f)
+            list.remove(f.replace('.prog', '.csv'))
+
+    return render(request, 'registroGeneral/lista_historiales.html', {'lista': list, 'title': 'Lista historiales'})
+
+
+@login_required
+def borrar_historial(request):
+    historial = request.GET.get('historial')
+    his_location = settings.MEDIA_ROOT + '/historiales'
+
+    if os.path.exists(his_location + '/' + historial):
+        os.remove(his_location + '/' + historial)
+
+    return redirect('registroGeneral:lista-historial')

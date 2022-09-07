@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block subtitle %}
+  <h1>Lista Historiales</h1>
+{% endblock subtitle %}
+
+{% block content %}
+  <div class="content-section" style="padding:36px">
+    <div id="form_card" class="card-panel col s12">
+
+      <div class="d-flex">
+        <div class="mr-auto p-2">
+          <div class="mr-auto">
+          </div>
+        </div>
+
+        <div class="p-2">
+          <a href="{% url 'usuario:historial' %}" class="btn btn-outline-info">Ir a historial</a>
+        </div>
+      </div>
+
+      <div style="padding-top:40px; padding-left:10px; padding-right:10px; padding-bottom:10px">
+        <table class="table">
+          <tbody>
+            {% for file in lista %}
+            <tr>
+              <td><a href="/media/historiales/{{ file }}">{{ file }}</a></td>
+              <td><button id="borrar-btn" name="{{ file }}" type="button" class="btn btn-outline-info">Borrar</button></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    const borrarBtn = document.querySelectorAll('#borrar-btn').forEach(btn => {
+      btn.addEventListener('click', e => {
+        if (confirm('Atención:\nBorrar el historial es una acción irreversible') == true) {
+          window.location = `/general/borrar-historial?historial=${e.target.name}`
+        }
+      });
+    });
+  </script>
+{% endblock content %}

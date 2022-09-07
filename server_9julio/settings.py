@@ -31,8 +31,8 @@ SECRET_KEY = config['SECRET_KEY']
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-#                Vieja IP         DDNS                     TMP                 Nueva IP         Monti
-ALLOWED_HOSTS = ['192.168.0.180', 'server9julio.ddns.net', 'server9julio.net', '192.168.49.30', '192.168.100.39']
+#                Vieja IP         DDNS                     TMP                 Nueva IP         Monti              Fallback
+ALLOWED_HOSTS = ['192.168.0.180', 'server9julio.ddns.net', 'server9julio.net', '192.168.49.30', '192.168.100.39', '192.168.48.103']
 
 
 # Application definition

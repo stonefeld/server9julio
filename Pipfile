@@ -23,11 +23,4 @@ pillow = "*"
 python_version = "3.9"
 
 [dev-packages]
-python-language-server = "*"
-rope = "*"
-pyflakes = "*"
-mccabe = "*"
-pycodestyle = "*"
-pydocstyle = "*"
-autopep8 = "*"
 yapf = "*"
