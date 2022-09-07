@@ -81,6 +81,7 @@ def registro_socio(request):
         direccion = request.POST.get('direccion')
         aceptar = request.POST.get('aceptar')
         rechazar = request.POST.get('rechazar')
+        molinete = request.POST.get('molinete')
 
         if direccion and not aceptar and not rechazar:
             persona_no_autorizada = []
@@ -126,7 +127,7 @@ def registro_socio(request):
                     return render(request, 'registroGeneral/registro_manual_socio.html', context)
 
                 cant = len(pks)
-                socket_arduino(cant)
+                socket_arduino(cant, molinete)
                 return redirect('usuariosistema:home')
 
             else:
@@ -165,6 +166,8 @@ def registro_socio(request):
                 entrada.save()
 
             messages.warning(request, 'Algunas entradas fueron registradas sin estar autorizadas')
+            cant = len(pks)
+            socket_arduino(cant, molinete)
             return redirect('usuariosistema:home')
 
         else:
