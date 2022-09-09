@@ -120,7 +120,7 @@ def cargar_db(request):
     try:
         df = pd.read_csv(
             location,
-            # encoding='latin_1',
+            encoding='latin_1',
             on_bad_lines='skip',
             names=list('abcdefghijklmnopqrstuv')
         )
