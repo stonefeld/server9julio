@@ -120,7 +120,7 @@ def cargar_db(request):
     try:
         df = pd.read_csv(
             location,
-            encoding='latin_1',
+            # encoding='latin_1',
             on_bad_lines='skip',
             names=list('abcdefghijklmnopqrstuv')
         )
@@ -129,18 +129,18 @@ def cargar_db(request):
         messages.warning(request, 'Ha habido un error al leer el archivo')
         return redirect('draganddrop:upload')
 
-    for column in list('bdefghijklmnopqrst'):
+    for column in list('bdghijklmnopqrstuv'):
         df.drop(str(column), inplace=True, axis=1)
 
     for ind in df.index:
-        if not pd.isna(df['v'][ind]):
-            df['u'][ind] = df['v'][ind]
+        if not pd.isna(df['f'][ind]):
+            df['e'][ind] = df['f'][ind]
 
-    df.drop('v', inplace=True, axis=1)
+    df.drop('f', inplace=True, axis=1)
     df = df.rename(columns={
         'a': 'NrSocio',
         'c': 'Socio',
-        'u': 'Deuda'
+        'e': 'Deuda'
     })
     if df['NrSocio'][5] != 'Composición de Saldos':
         messages.warning(request, 'El archivo subido es incorrecto')
