@@ -18,6 +18,7 @@ Django = "*"
 qrcode = "*"
 xhtml2pdf = "*"
 pillow = "*"
+crispy-bootstrap4 = "*"
 
 [requires]
 python_version = "3.9"

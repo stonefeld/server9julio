@@ -1,93 +1,108 @@
 {% extends "base.html" %}
 
 {% block subtitle %}
-  <h1>Inicio</h1>
+<h1>Inicio</h1>
 {% endblock subtitle %}
 
 {% block content %}
-  <div class="content-area" style="padding-left:30px; padding-right:30px; padding-bottom:30px;" >
-    <div  class="wrapper">
-      <h2>Instrucciones</h2>
-        <a style="text-decoration:none">
-          <button style="text-decoration:none" class="btn btn-outline-info btn-lg" data-toggle="modal" data-target="#setearPassword">Cambiar Contraseña</button>
-        </a>
-        <div class="modal fade" id="setearPassword" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title" id="exampleModalLabel">Cambio Contraseña</h5>
-              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-              </button>
-            </div>
-            <div class="modal-body">
-              <label for="Acontraseña">Contraseña Actual:</label>
-              <input type="password" id="Acontraseña" name="Acontraseña"><br><br>
-              <label for="Ncontraseña">Contraseña Nueva:</label>
-              <input type="password" id="Ncontraseña" name="Ncontraseña"><br><br>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-primary" id = "cambiarContra" data-dismiss="modal">Confirmar Cambio</button>
-              <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-            </div>
+<div class="content-area" style="padding-left:30px; padding-right:30px; padding-bottom:30px;">
+  <div class="wrapper">
+    <h2>Instrucciones</h2>
+    <a style="text-decoration:none">
+      <button style="text-decoration:none" class="btn btn-outline-info btn-lg" data-toggle="modal"
+        data-target="#setearPassword">Cambiar Contraseña</button>
+      <a class="btn btn-outline-info btn-lg" href="{% url 'usuario:descargar-personas' %}">Descargar datos personas</a>
+    </a>
+    <div class="modal fade" id="setearPassword" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+      aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Cambio Contraseña</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <label for="Acontraseña">Contraseña Actual:</label>
+            <input type="password" id="Acontraseña" name="Acontraseña"><br><br>
+            <label for="Ncontraseña">Contraseña Nueva:</label>
+            <input type="password" id="Ncontraseña" name="Ncontraseña"><br><br>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" id="cambiarContra" data-dismiss="modal">Confirmar
+              Cambio</button>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
           </div>
         </div>
       </div>
-      <p style="font-size:18px; margin-top:20px;">
-        Bienvenido al Sistema de Control de Acceso de la <strong>Sociedad Alemana de Gimnasia de Villa Ballester</strong> -
-        <strong>SAGVB</strong>.<br><br>
-        El uso del sistema es bastante simple, como se puede ver en la barra horizontal de arriba están colocados
-        una serie de <strong>links</strong> que lo llevarán a las distintas secciones de nuestra página.<br>
-        El sistema se divide en <strong>4 secciones principales</strong>, estas son:<br>
-        <strong>Historial</strong>, <strong>Lista de socios</strong>,
-        <strong>Acceso manual</strong> y <strong>Actualizar datos</strong>.<br><br>
-        <ul style="text-align:justify">
-          <li>
-            En el <strong>Historial</strong> veremos un registro de todas las entradas y salidas de los usuarios en el establecimiento.
-          </li><br>
-          <li>
-            En la sección de <strong>Lista de socios</strong> habrá un listado de todos los usuarios donde podrá observarse si los usuarios
-            disponen de un <strong>número de tarjeta</strong>. En caso de no disponer, en esta sección podrá <strong>asignarle uno</strong>.
-          </li><br>
-          <li>
-            En el <strong>Acceso Manual</strong> tendrán la opción de permitirle el paso tanto a <strong>Socios</strong> como a
-            <strong>No Socios</strong> en caso de que por alguna razón el sistema automatizado falle. Para el <strong>acceso</strong>
-            de <strong>socios</strong> solo deberá seleccionar al socio o socios y especificar si están
-            <strong>entrando</strong> o <strong>saliendo</strong> de las instalaciones. En el caso del <strong>acceso</strong>
-            para <strong>no socios</strong> solo deberá especificar la cantidad de <strong>no socios</strong> que desean ingresar.
-          </li><br>
-          <li>
-            En la sección de <strong>Actualizar datos</strong> se subirá el archivo que contiene la información de todos los usuarios para cargar
-            a la <strong>base de datos</strong> de nuestro sistema. El archivo a subir debe ser del tipo <strong>.csv</strong>. En esta sección,
-            a su vez, podrá especificar la <strong>deuda máxima</strong> que los usuarios pueden tener para poder acceder a las instalaciones.
-          </li>
-        </ul><br>
-        <script type="text/javascript">
-          const cambiarContraseña = async () =>{
-            try {
-              var actual = document.getElementById('Acontraseña').value;
-              var nueva = document.getElementById('Ncontraseña').value;
-              const cuerpo = {
-                act: actual,
-                new: nueva
-              }
-              const options = {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(cuerpo)
-              };
-              const res = await fetch('/cambiarContrasena/', options);
-              var caja = await res.json();
-              location.href = "/";
-            } catch(err) {
-              console.error(err);
-            }
-          };
-          document.getElementById('cambiarContra').addEventListener('click', () =>{
-            cambiarContraseña();
-          });
-        </script>
-      </p>
     </div>
+    <p style="font-size:18px; margin-top:20px;">
+      Bienvenido al Sistema de Control de Acceso de la <strong>Sociedad Alemana de Gimnasia de Villa Ballester</strong>
+      -
+      <strong>SAGVB</strong>.<br><br>
+      El uso del sistema es bastante simple, como se puede ver en la barra horizontal de arriba están colocados
+      una serie de <strong>links</strong> que lo llevarán a las distintas secciones de nuestra página.<br>
+      El sistema se divide en <strong>4 secciones principales</strong>, estas son:<br>
+      <strong>Historial</strong>, <strong>Lista de socios</strong>,
+      <strong>Acceso manual</strong> y <strong>Actualizar datos</strong>.<br><br>
+    <ul style="text-align:justify">
+      <li>
+        En el <strong>Historial</strong> veremos un registro de todas las entradas y salidas de los usuarios en el
+        establecimiento.
+      </li><br>
+      <li>
+        En la sección de <strong>Lista de socios</strong> habrá un listado de todos los usuarios donde podrá observarse
+        si los usuarios
+        disponen de un <strong>número de tarjeta</strong>. En caso de no disponer, en esta sección podrá
+        <strong>asignarle uno</strong>.
+      </li><br>
+      <li>
+        En el <strong>Acceso Manual</strong> tendrán la opción de permitirle el paso tanto a <strong>Socios</strong>
+        como a
+        <strong>No Socios</strong> en caso de que por alguna razón el sistema automatizado falle. Para el
+        <strong>acceso</strong>
+        de <strong>socios</strong> solo deberá seleccionar al socio o socios y especificar si están
+        <strong>entrando</strong> o <strong>saliendo</strong> de las instalaciones. En el caso del
+        <strong>acceso</strong>
+        para <strong>no socios</strong> solo deberá especificar la cantidad de <strong>no socios</strong> que desean
+        ingresar.
+      </li><br>
+      <li>
+        En la sección de <strong>Actualizar datos</strong> se subirá el archivo que contiene la información de todos los
+        usuarios para cargar
+        a la <strong>base de datos</strong> de nuestro sistema. El archivo a subir debe ser del tipo
+        <strong>.csv</strong>. En esta sección,
+        a su vez, podrá especificar la <strong>deuda máxima</strong> que los usuarios pueden tener para poder acceder a
+        las instalaciones.
+      </li>
+    </ul><br>
+    <script type="text/javascript">
+      const cambiarContraseña = async () => {
+        try {
+          var actual = document.getElementById('Acontraseña').value;
+          var nueva = document.getElementById('Ncontraseña').value;
+          const cuerpo = {
+            act: actual,
+            new: nueva
+          }
+          const options = {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(cuerpo)
+          };
+          const res = await fetch('/cambiarContrasena/', options);
+          var caja = await res.json();
+          location.href = "/";
+        } catch (err) {
+          console.error(err);
+        }
+      };
+      document.getElementById('cambiarContra').addEventListener('click', () => {
+        cambiarContraseña();
+      });
+    </script>
+    </p>
   </div>
-{% endblock content%}
+</div>
+{% endblock content %}
